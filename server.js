@@ -19,11 +19,13 @@ const quoteRoutes = require('./routes/quote');
 const bookingRoutes = require('./routes/booking');
 const trackingRoutes = require('./routes/tracking');
 const webhookRoutes = require('./routes/webhook');
+const chatRoutes = require('./routes/chat');
 
 app.use('/api/quote', quoteRoutes);
 app.use('/api/booking', bookingRoutes);
 app.use('/api/tracking', trackingRoutes);
 app.use('/api/webhook', webhookRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
