@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project International Trade — บริการขนส่งสินค้าระหว่างประเทศ</title>
+  <title>Project International Trade — International Freight Services</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -21,13 +21,14 @@
       </div>
     </div>
     <ul class="nav-links">
-      <li><a href="#services">บริการ</a></li>
-      <li><a href="#quote">ขอใบเสนอราคา</a></li>
-      <li><a href="#booking">จองขนส่ง</a></li>
-      <li><a href="#tracking">ติดตามสินค้า</a></li>
-      <li><a href="#contact">ติดต่อเรา</a></li>
+      <li><a href="#services" data-i18n="nav.services">บริการ</a></li>
+      <li><a href="#quote" data-i18n="nav.quote">ขอใบเสนอราคา</a></li>
+      <li><a href="#booking" data-i18n="nav.booking">จองขนส่ง</a></li>
+      <li><a href="#tracking" data-i18n="nav.tracking">ติดตามสินค้า</a></li>
+      <li><a href="#contact" data-i18n="nav.contact">ติดต่อเรา</a></li>
     </ul>
-    <button class="btn-nav-cta" onclick="scrollToSection('quote')">ขอราคาฟรี</button>
+    <button class="btn-lang" id="langToggle" onclick="toggleLang()">🇬🇧 EN</button>
+    <button class="btn-nav-cta" onclick="scrollToSection('quote')" data-i18n="nav.cta">ขอราคาฟรี</button>
     <button class="hamburger" id="hamburger">☰</button>
   </div>
 </nav>
@@ -36,18 +37,18 @@
 <section class="hero" id="home">
   <div class="hero-bg"></div>
   <div class="container hero-content">
-    <div class="hero-badge">🌏 บริการขนส่งครบวงจร 50+ ประเทศ</div>
-    <h1 class="hero-title">ขนส่งสินค้าระหว่างประเทศ<br><span class="gradient-text">ปลอดภัย รวดเร็ว คุ้มค่า</span></h1>
-    <p class="hero-desc">บริการขนส่งสินค้าทางเรือ ทางอากาศ และทางบก ครบครัน ด้วยประสบการณ์กว่า 15 ปี พร้อมให้คำปรึกษาด้านพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก</p>
+    <div class="hero-badge" data-i18n="hero.badge">🌏 บริการขนส่งครบวงจร 50+ ประเทศ</div>
+    <h1 class="hero-title" data-i18n="hero.title">ขนส่งสินค้าระหว่างประเทศ<br><span class="gradient-text">ปลอดภัย รวดเร็ว คุ้มค่า</span></h1>
+    <p class="hero-desc" data-i18n="hero.desc">บริการขนส่งสินค้าทางเรือ ทางอากาศ และทางบก ครบครัน ด้วยประสบการณ์กว่า 15 ปี พร้อมให้คำปรึกษาด้านพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก</p>
     <div class="hero-actions">
-      <button class="btn-primary btn-lg" onclick="scrollToSection('quote')">📦 ขอใบเสนอราคา</button>
-      <button class="btn-outline btn-lg" onclick="scrollToSection('tracking')">🔍 ติดตามสินค้า</button>
+      <button class="btn-primary btn-lg" onclick="scrollToSection('quote')" data-i18n="hero.btn1">📦 ขอใบเสนอราคา</button>
+      <button class="btn-outline btn-lg" onclick="scrollToSection('tracking')" data-i18n="hero.btn2">🔍 ติดตามสินค้า</button>
     </div>
     <div class="hero-stats">
-      <div class="stat"><span class="stat-num">50+</span><span class="stat-label">ประเทศทั่วโลก</span></div>
-      <div class="stat"><span class="stat-num">15,000+</span><span class="stat-label">ลูกค้าพึงพอใจ</span></div>
-      <div class="stat"><span class="stat-num">99.2%</span><span class="stat-label">ส่งตรงเวลา</span></div>
-      <div class="stat"><span class="stat-num">24/7</span><span class="stat-label">บริการลูกค้า</span></div>
+      <div class="stat"><span class="stat-num">50+</span><span class="stat-label" data-i18n="hero.stat1">ประเทศทั่วโลก</span></div>
+      <div class="stat"><span class="stat-num">15,000+</span><span class="stat-label" data-i18n="hero.stat2">ลูกค้าพึงพอใจ</span></div>
+      <div class="stat"><span class="stat-num">99.2%</span><span class="stat-label" data-i18n="hero.stat3">ส่งตรงเวลา</span></div>
+      <div class="stat"><span class="stat-num">24/7</span><span class="stat-label" data-i18n="hero.stat4">บริการลูกค้า</span></div>
     </div>
   </div>
   <div class="hero-wave">
@@ -59,9 +60,9 @@
 <section class="section" id="services">
   <div class="container">
     <div class="section-header">
-      <span class="section-badge">บริการของเรา</span>
-      <h2>บริการขนส่งครบทุกรูปแบบ</h2>
-      <p>เลือกวิธีขนส่งที่เหมาะสมกับสินค้าและงบประมาณของคุณ</p>
+      <span class="section-badge" data-i18n="services.badge">บริการของเรา</span>
+      <h2 data-i18n="services.title">บริการขนส่งครบทุกรูปแบบ</h2>
+      <p data-i18n="services.desc">เลือกวิธีขนส่งที่เหมาะสมกับสินค้าและงบประมาณของคุณ</p>
     </div>
     <div class="services-grid">
       <div class="service-card" data-service="sea">
@@ -124,15 +125,15 @@
 <section class="section section-gray" id="quote">
   <div class="container">
     <div class="section-header">
-      <span class="section-badge">ใบเสนอราคา</span>
-      <h2>คำนวณราคาขนส่ง</h2>
-      <p>กรอกข้อมูลเพื่อรับใบเสนอราคาทันที หรือส่งอีเมลให้คุณ</p>
+      <span class="section-badge" data-i18n="quote.badge">ใบเสนอราคา</span>
+      <h2 data-i18n="quote.title">คำนวณราคาขนส่ง</h2>
+      <p data-i18n="quote.desc">กรอกข้อมูลเพื่อรับใบเสนอราคาทันที หรือส่งอีเมลให้คุณ</p>
     </div>
     <div class="quote-layout">
       <div class="quote-form-card">
         <div class="tabs">
-          <button class="tab active" data-tab="quick">คำนวณเร็ว</button>
-          <button class="tab" data-tab="full">ขอใบเสนอราคา</button>
+          <button class="tab active" data-tab="quick" data-i18n="quote.tab1">คำนวณเร็ว</button>
+          <button class="tab" data-tab="full" data-i18n="quote.tab2">ขอใบเสนอราคา</button>
         </div>
 
         <!-- Quick Calc -->
@@ -279,9 +280,9 @@
 <section class="section" id="booking">
   <div class="container">
     <div class="section-header">
-      <span class="section-badge">จองขนส่ง</span>
-      <h2>จองบริการขนส่ง</h2>
-      <p>กรอกข้อมูลเพื่อจองบริการขนส่ง รับหมายเลขติดตามทันที</p>
+      <span class="section-badge" data-i18n="booking.badge">จองขนส่ง</span>
+      <h2 data-i18n="booking.title">จองบริการขนส่ง</h2>
+      <p data-i18n="booking.desc">กรอกข้อมูลเพื่อจองบริการขนส่ง รับหมายเลขติดตามทันที</p>
     </div>
     <div class="booking-card">
       <form id="bookingForm">
@@ -417,16 +418,16 @@
 <section class="section section-dark" id="tracking">
   <div class="container">
     <div class="section-header light">
-      <span class="section-badge">ติดตามสินค้า</span>
-      <h2>ติดตามสถานะการขนส่ง</h2>
-      <p>กรอกหมายเลขติดตามเพื่อดูสถานะสินค้าของคุณ</p>
+      <span class="section-badge" data-i18n="tracking.badge">ติดตามสินค้า</span>
+      <h2 data-i18n="tracking.title">ติดตามสถานะการขนส่ง</h2>
+      <p data-i18n="tracking.desc">กรอกหมายเลขติดตามเพื่อดูสถานะสินค้าของคุณ</p>
     </div>
     <div class="tracking-box">
       <div class="tracking-input-wrap">
         <input type="text" id="trackingInput" placeholder="กรอกหมายเลขติดตาม เช่น PIT123456789" class="tracking-input">
         <button onclick="trackShipment()" class="btn-track">🔍 ค้นหา</button>
       </div>
-      <p class="tracking-hint">หมายเลขติดตามจะถูกส่งทางอีเมล หลังจากยืนยันการจอง</p>
+      <p class="tracking-hint" data-i18n="tracking.hint">หมายเลขติดตามจะถูกส่งทางอีเมล หลังจากยืนยันการจอง</p>
       <div id="trackingResult" class="tracking-result hidden"></div>
     </div>
   </div>
@@ -436,9 +437,9 @@
 <section class="section" id="integrations">
   <div class="container">
     <div class="section-header">
-      <span class="section-badge">การเชื่อมต่อ</span>
-      <h2>เชื่อมต่อทุก Platform</h2>
-      <p>รับการแจ้งเตือนและจัดการการขนส่งผ่าน tools ที่คุณใช้อยู่แล้ว</p>
+      <span class="section-badge" data-i18n="integrations.badge">การเชื่อมต่อ</span>
+      <h2 data-i18n="integrations.title">เชื่อมต่อทุก Platform</h2>
+      <p data-i18n="integrations.desc">รับการแจ้งเตือนและจัดการการขนส่งผ่าน tools ที่คุณใช้อยู่แล้ว</p>
     </div>
     <div class="integrations-grid">
       <div class="integration-card">
@@ -489,8 +490,8 @@
 <section class="section section-gray" id="why">
   <div class="container">
     <div class="section-header">
-      <span class="section-badge">ทำไมต้องเลือกเรา</span>
-      <h2>จุดเด่นของ Project International Trade</h2>
+      <span class="section-badge" data-i18n="why.badge">ทำไมต้องเลือกเรา</span>
+      <h2 data-i18n="why.title">จุดเด่นของ Project International Trade</h2>
     </div>
     <div class="why-grid">
       <div class="why-card"><div class="why-icon">🛡️</div><h4>ปลอดภัย 100%</h4><p>ประกันสินค้าครบถ้วน และติดตามตลอดเส้นทาง</p></div>
@@ -507,9 +508,9 @@
 <section class="section" id="contact">
   <div class="container">
     <div class="section-header">
-      <span class="section-badge">ติดต่อเรา</span>
-      <h2>ให้เราช่วยคุณ</h2>
-      <p>ทีมผู้เชี่ยวชาญพร้อมให้คำแนะนำทุกวัน 24/7</p>
+      <span class="section-badge" data-i18n="contact.badge">ติดต่อเรา</span>
+      <h2 data-i18n="contact.title">ให้เราช่วยคุณ</h2>
+      <p data-i18n="contact.desc">ทีมผู้เชี่ยวชาญพร้อมให้คำแนะนำทุกวัน 24/7</p>
     </div>
     <div class="contact-grid">
       <div class="contact-info">
@@ -614,6 +615,7 @@
   <div class="modal-box" id="modalBox"></div>
 </div>
 
+<script src="/js/i18n.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>
