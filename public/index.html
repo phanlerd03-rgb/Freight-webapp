@@ -25,6 +25,7 @@
       <li><a href="#quote" data-i18n="nav.quote">ขอใบเสนอราคา</a></li>
       <li><a href="#booking" data-i18n="nav.booking">จองขนส่ง</a></li>
       <li><a href="#tracking" data-i18n="nav.tracking">ติดตามสินค้า</a></li>
+      <li><a href="#alibaba">🛒 Alibaba</a></li>
       <li><a href="#products">🇹🇭 สินค้าส่งออก</a></li>
       <li><a href="#blog" data-i18n="nav.blog">บทความ</a></li>
       <li><a href="#contact" data-i18n="nav.contact">ติดต่อเรา</a></li>
@@ -506,6 +507,134 @@
   </div>
 </section>
 
+<!-- ALIBABA SOURCING HUB -->
+<section class="section alibaba-section" id="alibaba">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge alibaba-badge">🛒 Alibaba Sourcing Hub</span>
+      <h2 class="section-title" style="color:#fff">นำเข้าสินค้าจาก Alibaba<br>ครบวงจรกับ PIT Freight</h2>
+      <p class="section-subtitle" style="color:rgba(255,255,255,.75)">ค้นหา · ตรวจสอบ Supplier · คำนวณต้นทุน · นำเข้าถึงมือ</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="alibaba-tabs">
+      <button class="alibaba-tab-btn active" data-tab="sourcing" onclick="switchAlibabaTab('sourcing',this)">🛍️ ให้เราหาสินค้าให้</button>
+      <button class="alibaba-tab-btn" data-tab="search" onclick="switchAlibabaTab('search',this)">🤖 AI ช่วยค้นหา</button>
+      <button class="alibaba-tab-btn" data-tab="calc" onclick="switchAlibabaTab('calc',this)">💰 คำนวณต้นทุน</button>
+    </div>
+
+    <!-- Tab A: Sourcing Request -->
+    <div class="alibaba-tab-pane active" id="alibaba-sourcing">
+      <div class="alibaba-card">
+        <div class="alibaba-card-header">
+          <h3>🛍️ แจ้งความต้องการ — PIT Freight ค้นหาสินค้าใน Alibaba ให้</h3>
+          <p>บอกเราว่าต้องการอะไร เราจะหาสินค้า ตรวจสอบ Supplier และดูแลการนำเข้าจนถึงมือคุณ</p>
+        </div>
+        <div id="sourcingResult"></div>
+        <form onsubmit="submitSourcing(event)">
+          <div class="form-row-2">
+            <div class="form-group"><label>ชื่อสินค้าที่ต้องการ *</label><input type="text" name="sourcingProduct" required placeholder="เช่น เครื่องซีลถุง, ชุดโซลาร์เซลล์, ผ้าโพลีเอสเตอร์"></div>
+            <div class="form-group"><label>หมวดหมู่</label>
+              <select name="sourcingCategory">
+                <option value="">-- เลือก --</option>
+                <option>เครื่องจักร/อุปกรณ์</option>
+                <option>อิเล็กทรอนิกส์</option>
+                <option>สินค้าอุปโภคบริโภค</option>
+                <option>วัตถุดิบ</option>
+                <option>แฟชั่น/สิ่งทอ</option>
+                <option>อาหาร/เกษตร</option>
+                <option>อื่นๆ</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group"><label>รายละเอียดเพิ่มเติม (spec, มาตรฐาน, สี, ขนาด)</label><textarea name="sourcingDesc" rows="3" placeholder="บรรยาย spec ที่ต้องการ เช่น กำลังไฟ 220V, สีดำ, ขนาด 30x50cm..."></textarea></div>
+          <div class="form-row-3">
+            <div class="form-group"><label>งบประมาณ (USD)</label><input type="text" name="sourcingBudget" placeholder="เช่น 500-1000"></div>
+            <div class="form-group"><label>จำนวน</label><input type="text" name="sourcingQty" placeholder="เช่น 100"></div>
+            <div class="form-group"><label>หน่วย</label><input type="text" name="sourcingUnit" placeholder="ชิ้น, kg, ลัง"></div>
+          </div>
+          <div class="form-group"><label>วิธีขนส่งที่ต้องการ</label>
+            <select name="sourcingShipping">
+              <option value="">-- ไม่แน่ใจ / แนะนำให้ --</option>
+              <option>ทางเรือ (Sea)</option>
+              <option>ทางอากาศ (Air)</option>
+            </select>
+          </div>
+          <h4 style="margin:16px 0 12px;color:#1e3a5f">ข้อมูลติดต่อ</h4>
+          <div class="form-row-2">
+            <div class="form-group"><label>ชื่อ *</label><input type="text" name="sourcingName" required placeholder="ชื่อ-นามสกุล"></div>
+            <div class="form-group"><label>อีเมล *</label><input type="email" name="sourcingEmail" required placeholder="email@example.com"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group"><label>โทรศัพท์</label><input type="text" name="sourcingPhone" placeholder="0812345678"></div>
+            <div class="form-group"><label>บริษัท</label><input type="text" name="sourcingCompany" placeholder="ชื่อบริษัท (ถ้ามี)"></div>
+          </div>
+          <button type="submit" id="sourcingSubmitBtn" class="btn-alibaba-submit">📨 ส่งคำขอ Sourcing</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Tab B: AI Search -->
+    <div class="alibaba-tab-pane" id="alibaba-search">
+      <div class="alibaba-card">
+        <div class="alibaba-card-header">
+          <h3>🤖 AI ช่วยค้นหาและแนะนำ Keywords สำหรับ Alibaba</h3>
+          <p>พิมพ์ชื่อสินค้าที่ต้องการ AI จะวิเคราะห์ keyword ที่ดีที่สุด พร้อม link ค้นหาตรงได้เลย</p>
+        </div>
+        <div class="alibaba-search-bar">
+          <input type="text" id="alibabaSearchInput" placeholder="พิมพ์สินค้าที่ต้องการ เช่น เครื่องบรรจุภัณฑ์, LED strip, ผ้าไมโครไฟเบอร์..." class="alibaba-search-input">
+          <button id="searchBtn" onclick="searchAlibaba()" class="btn-alibaba-search">🤖 วิเคราะห์ด้วย AI</button>
+        </div>
+        <div id="searchResult"></div>
+      </div>
+    </div>
+
+    <!-- Tab C: Cost Calculator -->
+    <div class="alibaba-tab-pane" id="alibaba-calc">
+      <div class="alibaba-card">
+        <div class="alibaba-card-header">
+          <h3>💰 คำนวณต้นทุนนำเข้าจาก Alibaba มาไทย</h3>
+          <p>กรอกราคา FOB จาก Alibaba → ระบบคำนวณภาษี ค่าขนส่ง VAT รวมทุกอย่างให้</p>
+        </div>
+        <form id="calcForm">
+          <div class="form-row-3">
+            <div class="form-group"><label>ราคา FOB/ชิ้น (USD) *</label><input type="number" id="calcFOB" placeholder="เช่น 25.50" step="0.01"></div>
+            <div class="form-group"><label>จำนวน *</label><input type="number" id="calcQty" placeholder="เช่น 100"></div>
+            <div class="form-group"><label>หน่วย</label><input type="text" id="calcUnit" placeholder="ชิ้น, kg, ลัง"></div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group"><label>ประเภทสินค้า (อัตราภาษี)</label>
+              <select id="calcProductType">
+                <option value="general">ทั่วไป (20%)</option>
+                <option value="electronics">อิเล็กทรอนิกส์ (0%)</option>
+                <option value="clothing">เสื้อผ้า/สิ่งทอ (30%)</option>
+                <option value="food">อาหาร/เกษตร (30%)</option>
+                <option value="machinery">เครื่องจักร (10%)</option>
+                <option value="cosmetics">เครื่องสำอาง (20%)</option>
+                <option value="furniture">เฟอร์นิเจอร์ (20%)</option>
+                <option value="toys">ของเล่น (20%)</option>
+              </select>
+            </div>
+            <div class="form-group"><label>วิธีขนส่ง</label>
+              <select id="calcShipping">
+                <option value="sea_lcl">ทางเรือ LCL (รวมตู้)</option>
+                <option value="sea_fcl">ทางเรือ FCL (เต็มตู้ 20ft)</option>
+                <option value="air">ทางอากาศ</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="form-group"><label>น้ำหนักรวม (kg)</label><input type="number" id="calcWeight" placeholder="เช่น 150" step="0.1"></div>
+            <div class="form-group"><label>ปริมาตร (CBM) — สำหรับ Sea LCL</label><input type="number" id="calcCBM" placeholder="เช่น 1.5" step="0.1"></div>
+          </div>
+          <button type="button" id="calcBtn" onclick="calculateCost()" class="btn-alibaba-submit">💰 คำนวณต้นทุน</button>
+        </form>
+        <div id="calcResult" style="margin-top:20px"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- EXPORT PRODUCTS MARKETPLACE -->
 <section class="section" id="products">
   <div class="container">
@@ -808,6 +937,7 @@
 <script src="/js/chatbot.js"></script>
 <script src="/js/blog.js"></script>
 <script src="/js/products.js"></script>
+<script src="/js/alibaba.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>

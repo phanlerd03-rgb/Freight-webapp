@@ -23,6 +23,7 @@ const chatRoutes = require('./routes/chat');
 const blogRoutes = require('./routes/blog');
 const cronRoutes = require('./routes/cron');
 const productsRoutes = require('./routes/products');
+const alibabaRoutes = require('./routes/alibaba');
 
 app.use('/api/quote', quoteRoutes);
 app.use('/api/booking', bookingRoutes);
@@ -32,6 +33,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/cron', cronRoutes);
 app.use('/api/products', productsRoutes);
+app.use('/api/alibaba', alibabaRoutes);
 
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
