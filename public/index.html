@@ -25,6 +25,7 @@
       <li><a href="#quote" data-i18n="nav.quote">ขอใบเสนอราคา</a></li>
       <li><a href="#booking" data-i18n="nav.booking">จองขนส่ง</a></li>
       <li><a href="#tracking" data-i18n="nav.tracking">ติดตามสินค้า</a></li>
+      <li><a href="#blog" data-i18n="nav.blog">บทความ</a></li>
       <li><a href="#contact" data-i18n="nav.contact">ติดต่อเรา</a></li>
     </ul>
     <button class="btn-lang" id="langToggle" onclick="toggleLang()">🇬🇧 EN</button>
@@ -504,6 +505,51 @@
   </div>
 </section>
 
+<!-- BLOG -->
+<section class="section section-dark" id="blog">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge" data-i18n="blog.badge">บทความ & ข่าวสาร</span>
+      <h2 class="section-title" data-i18n="blog.title">อัปเดตข้อมูลการขนส่ง</h2>
+      <p class="section-subtitle" data-i18n="blog.subtitle">ความรู้ คู่มือ และราคาล่าสุดจากทีมงาน PIT Freight</p>
+    </div>
+
+    <!-- Filter Tabs -->
+    <div class="blog-filters" id="blogFilters">
+      <button class="blog-filter-btn active" data-category="" onclick="filterBlog(this, '')">
+        <span data-i18n="blog.filter.all">ทั้งหมด</span>
+      </button>
+      <button class="blog-filter-btn" data-category="คู่มือ" onclick="filterBlog(this, 'คู่มือ')">📘 คู่มือ</button>
+      <button class="blog-filter-btn" data-category="ราคา & โปรโมชัน" onclick="filterBlog(this, 'ราคา & โปรโมชัน')">💰 ราคา & โปร</button>
+      <button class="blog-filter-btn" data-category="ข่าวสาร" onclick="filterBlog(this, 'ข่าวสาร')">📰 ข่าวสาร</button>
+      <button class="blog-filter-btn" data-category="เคล็ดลับ" onclick="filterBlog(this, 'เคล็ดลับ')">💡 เคล็ดลับ</button>
+    </div>
+
+    <!-- Blog Grid -->
+    <div class="blog-grid" id="blogGrid">
+      <div class="blog-loading">
+        <div class="spinner"></div>
+        <p>กำลังโหลดบทความ...</p>
+      </div>
+    </div>
+
+    <div class="blog-load-more" id="blogLoadMore" style="display:none">
+      <button class="btn btn-outline" onclick="loadMoreBlog()">
+        <span data-i18n="blog.loadMore">โหลดเพิ่มเติม</span>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG POST MODAL -->
+<div class="blog-modal" id="blogModal" style="display:none">
+  <div class="blog-modal-overlay" onclick="closeBlogModal()"></div>
+  <div class="blog-modal-box">
+    <button class="blog-modal-close" onclick="closeBlogModal()">✕</button>
+    <div class="blog-modal-content" id="blogModalContent"></div>
+  </div>
+</div>
+
 <!-- CONTACT -->
 <section class="section" id="contact">
   <div class="container">
@@ -617,6 +663,7 @@
 
 <script src="/js/i18n.js"></script>
 <script src="/js/chatbot.js"></script>
+<script src="/js/blog.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>

@@ -5,6 +5,7 @@ const translations = {
     'nav.quote': 'ขอใบเสนอราคา',
     'nav.booking': 'จองขนส่ง',
     'nav.tracking': 'ติดตามสินค้า',
+    'nav.blog': 'บทความ',
     'nav.contact': 'ติดต่อเรา',
     'nav.cta': 'ขอราคาฟรี',
 
@@ -44,6 +45,12 @@ const translations = {
     'why.badge': 'ทำไมต้องเลือกเรา',
     'why.title': 'จุดเด่นของ Project International Trade',
 
+    'blog.badge': 'บทความ & ข่าวสาร',
+    'blog.title': 'อัปเดตข้อมูลการขนส่ง',
+    'blog.subtitle': 'ความรู้ คู่มือ และราคาล่าสุดจากทีมงาน PIT Freight',
+    'blog.filter.all': 'ทั้งหมด',
+    'blog.loadMore': 'โหลดเพิ่มเติม',
+
     'contact.badge': 'ติดต่อเรา',
     'contact.title': 'ให้เราช่วยคุณ',
     'contact.desc': 'ทีมผู้เชี่ยวชาญพร้อมให้คำแนะนำทุกวัน 24/7',
@@ -54,6 +61,7 @@ const translations = {
     'nav.quote': 'Get a Quote',
     'nav.booking': 'Book Shipment',
     'nav.tracking': 'Track Shipment',
+    'nav.blog': 'Blog',
     'nav.contact': 'Contact Us',
     'nav.cta': 'Free Quote',
 
@@ -92,6 +100,12 @@ const translations = {
 
     'why.badge': 'Why Choose Us',
     'why.title': 'Why Project International Trade',
+
+    'blog.badge': 'Articles & News',
+    'blog.title': 'Shipping Updates & Guides',
+    'blog.subtitle': 'Knowledge, guides, and latest rates from PIT Freight team',
+    'blog.filter.all': 'All',
+    'blog.loadMore': 'Load More',
 
     'contact.badge': 'Contact Us',
     'contact.title': 'How Can We Help?',
