@@ -40,7 +40,13 @@ function renderBlogCard(post) {
         <div class="blog-card-summary">${post.summary || ''}</div>
         <div class="blog-card-footer">
           <div class="blog-card-tags">${tags}</div>
-          <span class="blog-card-read">อ่านต่อ →</span>
+          <div class="blog-card-actions">
+            <button class="blog-share-btn" onclick="event.stopPropagation();shareFacebook('${post.slug}','${post.title.replace(/'/g,"\\'")}')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+              แชร์
+            </button>
+            <span class="blog-card-read">อ่านต่อ →</span>
+          </div>
         </div>
       </div>
     </div>`;
@@ -129,10 +135,24 @@ async function openBlogPost(slug) {
         ${post.summary ? `<p class="blog-post-summary">${post.summary}</p>` : ''}
         ${tags ? `<div class="blog-post-tags">${tags}</div>` : ''}
         <div class="blog-post-html">${post.content || '<p>ไม่มีเนื้อหา</p>'}</div>
+        <div class="blog-post-share">
+          <span class="blog-post-share-label">แชร์บทความนี้</span>
+          <button class="blog-share-btn blog-share-btn--large" onclick="shareFacebook('${post.slug}','${(post.title||'').replace(/'/g,"\\'")}')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            แชร์ไป Facebook
+          </button>
+        </div>
       </div>`;
   } catch (err) {
     content.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444">⚠️ ไม่สามารถโหลดบทความได้</div>`;
   }
+}
+
+// Share to Facebook
+function shareFacebook(slug, title) {
+  const url = encodeURIComponent(`${location.origin}/#blog-${slug}`);
+  const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+  window.open(fbUrl, '_blank', 'width=600,height=400,noopener');
 }
 
 // Close modal
