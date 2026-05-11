@@ -9,6 +9,7 @@
 require('dotenv').config({ override: true });
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { pickImage } = require('./newsImagePicker');
 const { Client } = require('@notionhq/client');
 const Anthropic = require('@anthropic-ai/sdk');
 const path = require('path');
@@ -175,7 +176,7 @@ async function createNotionPost(title, summary, content, articleId, date) {
       Category: { select: { name: 'ข่าวสาร' } },
       Tags: { multi_select: [{ name: 'กฎระเบียบ' }, { name: 'ศุลกากร' }] },
       Author: { rich_text: [{ text: { content: 'กรมศุลกากร (Auto)' } }] },
-      'Cover Image': { url: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=80' },
+      'Cover Image': { url: pickImage(title, articleId) },
       'Published Date': { date: { start: date } },
       Published: { checkbox: true },
       Language: { select: { name: 'th' } },
