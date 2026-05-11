@@ -20,6 +20,44 @@ function categoryEmoji(cat) {
   return map[cat] || '📄';
 }
 
+// ===== SHARE (Web Share API + Copy Link fallback) =====
+async function shareBlog(slug, title) {
+  const url = `${location.origin}/blog/${slug}`;
+
+  // มือถือ: ใช้ native share sheet (TikTok, LINE, Facebook, ฯลฯ)
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: title, text: title + ' — PIT Freight', url: url });
+      return;
+    } catch (e) {
+      if (e.name === 'AbortError') return; // user ยกเลิกเอง
+    }
+  }
+
+  // Desktop fallback: copy link
+  try {
+    await navigator.clipboard.writeText(url);
+  } catch (e) {
+    prompt('คัดลอก link นี้:', url);
+    return;
+  }
+  showShareToast();
+}
+
+function showShareToast() {
+  const existing = document.getElementById('shareToast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.id = 'shareToast';
+  t.textContent = '✅ คัดลอก Link แล้ว!';
+  t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1e3a5f;color:#fff;padding:12px 28px;border-radius:10px;font-size:14px;font-weight:600;z-index:99999;box-shadow:0 4px 16px rgba(0,0,0,.25);transition:opacity .3s';
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2200);
+}
+
+// Share icon SVG
+const shareIcon = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
+
 // Render a single blog card
 function renderBlogCard(post) {
   const cover = post.cover
@@ -41,9 +79,8 @@ function renderBlogCard(post) {
         <div class="blog-card-footer">
           <div class="blog-card-tags">${tags}</div>
           <div class="blog-card-actions">
-            <button class="blog-share-btn" onclick="event.stopPropagation();shareFacebook('${post.slug}','${post.title.replace(/'/g,"\\'")}')">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-              แชร์
+            <button class="blog-share-btn" onclick="event.stopPropagation();shareBlog('${post.slug}','${post.title.replace(/'/g,"\\'")}')">
+              ${shareIcon} แชร์
             </button>
             <span class="blog-card-read">อ่านต่อ →</span>
           </div>
@@ -137,22 +174,14 @@ async function openBlogPost(slug) {
         <div class="blog-post-html">${post.content || '<p>ไม่มีเนื้อหา</p>'}</div>
         <div class="blog-post-share">
           <span class="blog-post-share-label">แชร์บทความนี้</span>
-          <button class="blog-share-btn blog-share-btn--large" onclick="shareFacebook('${post.slug}','${(post.title||'').replace(/'/g,"\\'")}')">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-            แชร์ไป Facebook
+          <button class="blog-share-btn blog-share-btn--large" onclick="shareBlog('${post.slug}','${(post.title||'').replace(/'/g,"\\'")}')">
+            ${shareIcon} แชร์บทความ
           </button>
         </div>
       </div>`;
   } catch (err) {
     content.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444">⚠️ ไม่สามารถโหลดบทความได้</div>`;
   }
-}
-
-// Share to Facebook — ใช้ /blog/:slug เพื่อให้ Facebook scrape OG tags ได้
-function shareFacebook(slug, title) {
-  const url = encodeURIComponent(`${location.origin}/blog/${slug}`);
-  const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-  window.open(fbUrl, '_blank', 'width=620,height=450,noopener');
 }
 
 // Close modal
@@ -215,9 +244,8 @@ async function loadLatestBlogs() {
             <h3 class="latest-blog-title">${post.title}</h3>
             ${isFeature ? `<p class="latest-blog-summary">${post.summary || ''}</p>` : ''}
             <div class="latest-blog-footer">
-              <button class="blog-share-btn" onclick="event.stopPropagation();shareFacebook('${post.slug}','${post.title.replace(/'/g,"\\'")}')">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                แชร์
+              <button class="blog-share-btn" onclick="event.stopPropagation();shareBlog('${post.slug}','${post.title.replace(/'/g,"\\'")}')">
+                ${shareIcon} แชร์
               </button>
               <span class="blog-card-read">อ่านต่อ →</span>
             </div>
