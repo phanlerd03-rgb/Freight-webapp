@@ -9,9 +9,9 @@ const IMAGE_POOL = {
   sea: [
     'https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=800&q=80', // container ship
     'https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?w=800&q=80', // port containers
-    'https://images.unsplash.com/photo-1520637836862-4d197d17c95a?w=800&q=80', // cargo ship
+    'https://images.unsplash.com/photo-1605745341112-85968b19335b?w=800&q=80', // cargo ship
     'https://images.unsplash.com/photo-1516216628859-9bccecab13ca?w=800&q=80', // harbor
-    'https://images.unsplash.com/photo-1570610379853-c2be38cc5a6e?w=800&q=80', // shipping port
+    'https://images.unsplash.com/photo-1624953587687-daf255b6b80a?w=800&q=80', // shipping port
   ],
   // ทางอากาศ / สนามบิน
   air: [
@@ -40,7 +40,7 @@ const IMAGE_POOL = {
   ],
   // อเมริกา
   usa: [
-    'https://images.unsplash.com/photo-1485944929-0c6f2d7e84b9?w=800&q=80', // LA port
+    'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=800&q=80', // LA port
     'https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=800&q=80', // USA city
     'https://images.unsplash.com/photo-1534430480872-3498386e7856?w=800&q=80', // trade
   ],
