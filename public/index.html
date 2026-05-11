@@ -25,6 +25,7 @@
       <li><a href="#quote" data-i18n="nav.quote">ขอใบเสนอราคา</a></li>
       <li><a href="#booking" data-i18n="nav.booking">จองขนส่ง</a></li>
       <li><a href="#tracking" data-i18n="nav.tracking">ติดตามสินค้า</a></li>
+      <li><a href="#products">🇹🇭 สินค้าส่งออก</a></li>
       <li><a href="#blog" data-i18n="nav.blog">บทความ</a></li>
       <li><a href="#contact" data-i18n="nav.contact">ติดต่อเรา</a></li>
     </ul>
@@ -505,6 +506,148 @@
   </div>
 </section>
 
+<!-- EXPORT PRODUCTS MARKETPLACE -->
+<section class="section" id="products">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">🇹🇭 สินค้าไทยส่งออก</span>
+      <h2 class="section-title">Thai Export Products</h2>
+      <p class="section-subtitle">สินค้าคุณภาพจากผู้ประกอบการไทย พร้อมส่งออกทั่วโลก<br>Quality Thai products ready for global export</p>
+    </div>
+
+    <!-- Search + Filter + Submit Button -->
+    <div class="products-toolbar">
+      <div class="products-search-wrap">
+        <input type="text" class="products-search" placeholder="🔍 ค้นหาสินค้า / Search products..." oninput="onProductSearch(this.value)">
+      </div>
+      <button class="btn-submit-product" onclick="openSubmitProductForm()">
+        + ลงประกาศสินค้า
+      </button>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="product-filters">
+      <button class="product-filter-btn active" onclick="setProductCategory('all',this)">ทั้งหมด</button>
+      <button class="product-filter-btn" onclick="setProductCategory('🌾 เกษตร/อาหาร',this)">🌾 เกษตร/อาหาร</button>
+      <button class="product-filter-btn" onclick="setProductCategory('💄 เครื่องสำอาง/สุขภาพ',this)">💄 เครื่องสำอาง</button>
+      <button class="product-filter-btn" onclick="setProductCategory('🌿 สมุนไพร/ธรรมชาติ',this)">🌿 สมุนไพร</button>
+      <button class="product-filter-btn" onclick="setProductCategory('👗 สิ่งทอ/แฟชั่น',this)">👗 สิ่งทอ</button>
+      <button class="product-filter-btn" onclick="setProductCategory('🔌 อิเล็กทรอนิกส์',this)">🔌 อิเล็กทรอนิกส์</button>
+      <button class="product-filter-btn" onclick="setProductCategory('🏭 อุตสาหกรรม',this)">🏭 อุตสาหกรรม</button>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid" id="productsGrid">
+      <div class="products-loading"><div class="spinner"></div><p>กำลังโหลดสินค้า...</p></div>
+    </div>
+    <div style="text-align:center;margin-top:32px">
+      <button id="productsLoadMore" class="btn-load-more" style="display:none" onclick="loadProducts()">โหลดเพิ่มเติม</button>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCT DETAIL MODAL -->
+<div class="product-modal" id="productModal" style="display:none">
+  <div class="product-modal-overlay" onclick="closeProductModal()"></div>
+  <div class="product-modal-box">
+    <button class="product-modal-close" onclick="closeProductModal()">✕</button>
+    <div class="product-modal-content" id="productModalContent"></div>
+  </div>
+</div>
+
+<!-- INQUIRY MODAL -->
+<div class="product-modal" id="inquiryModal" style="display:none">
+  <div class="product-modal-overlay" onclick="closeInquiryModal()"></div>
+  <div class="product-modal-box product-modal-box--sm">
+    <button class="product-modal-close" onclick="closeInquiryModal()">✕</button>
+    <div style="padding:32px">
+      <h3 id="inquiryModalTitle" style="margin-bottom:20px;color:#1e3a5f">ขอใบเสนอราคา</h3>
+      <form onsubmit="submitInquiry(event)">
+        <input type="hidden" id="inquiryProductId" name="inquiryProductId">
+        <input type="hidden" id="inquiryProductName" name="inquiryProductName">
+        <div class="form-row-2">
+          <div class="form-group"><label>ชื่อ / Name *</label><input type="text" name="buyerName" required placeholder="Your full name"></div>
+          <div class="form-group"><label>อีเมล / Email *</label><input type="email" name="buyerEmail" required placeholder="email@example.com"></div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group"><label>โทรศัพท์ / Phone</label><input type="text" name="buyerPhone" placeholder="+66 or international"></div>
+          <div class="form-group"><label>ประเทศ / Country *</label><input type="text" name="buyerCountry" required placeholder="e.g. Japan, USA, Singapore"></div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group"><label>จำนวน / Quantity</label><input type="text" name="quantity" placeholder="e.g. 1000"></div>
+          <div class="form-group"><label>หน่วย / Unit</label><input type="text" name="quantityUnit" placeholder="e.g. kg, pcs, carton"></div>
+        </div>
+        <div class="form-group"><label>ข้อความเพิ่มเติม / Message</label><textarea name="inquiryMessage" rows="3" placeholder="Specifications, delivery terms, or any questions..."></textarea></div>
+        <button type="submit" id="inquirySubmitBtn" class="btn-inquiry-submit">📩 ส่งคำขอ / Send Inquiry</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- SUBMIT PRODUCT MODAL -->
+<div class="product-modal" id="submitProductModal" style="display:none">
+  <div class="product-modal-overlay" onclick="closeSubmitProductModal()"></div>
+  <div class="product-modal-box product-modal-box--lg">
+    <button class="product-modal-close" onclick="closeSubmitProductModal()">✕</button>
+    <div style="padding:32px;overflow-y:auto;max-height:90vh">
+      <h3 style="margin-bottom:4px;color:#1e3a5f">📦 ลงประกาศสินค้าส่งออก</h3>
+      <p style="color:#64748b;font-size:13px;margin-bottom:24px">สินค้าจะแสดงบนเว็บหลังผ่านการตรวจสอบจาก Admin (1-2 วันทำการ)</p>
+      <form onsubmit="submitProduct(event)">
+        <h4 style="color:#1e3a5f;margin-bottom:12px">ข้อมูลสินค้า</h4>
+        <div class="form-row-2">
+          <div class="form-group"><label>ชื่อสินค้า (ภาษาไทย) *</label><input type="text" name="productNameTH" required placeholder="เช่น ข้าวหอมมะลิอินทรีย์"></div>
+          <div class="form-group"><label>Product Name (English)</label><input type="text" name="productNameEN" placeholder="e.g. Organic Jasmine Rice"></div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group"><label>หมวดหมู่ *</label>
+            <select name="productCategory" required>
+              <option value="">-- เลือกหมวดหมู่ --</option>
+              <option>🌾 เกษตร/อาหาร</option>
+              <option>💄 เครื่องสำอาง/สุขภาพ</option>
+              <option>👗 สิ่งทอ/แฟชั่น</option>
+              <option>🔌 อิเล็กทรอนิกส์</option>
+              <option>🌿 สมุนไพร/ธรรมชาติ</option>
+              <option>🏭 อุตสาหกรรม</option>
+              <option>📦 อื่นๆ</option>
+            </select>
+          </div>
+          <div class="form-group"><label>จังหวัด / Province</label><input type="text" name="productProvince" placeholder="เช่น เชียงราย, สุรินทร์"></div>
+        </div>
+        <div class="form-group"><label>รายละเอียดสินค้า (ภาษาไทย)</label><textarea name="productDescTH" rows="3" placeholder="บรรยายสินค้า คุณสมบัติ ข้อมูลสำคัญ..."></textarea></div>
+        <div class="form-group"><label>Product Description (English)</label><textarea name="productDescEN" rows="3" placeholder="Describe your product, specifications, key features..."></textarea></div>
+        <div class="form-row-3">
+          <div class="form-group"><label>ราคา / Price Range</label><input type="text" name="productPrice" placeholder="เช่น $2-5/kg"></div>
+          <div class="form-group"><label>MOQ</label><input type="text" name="productMOQ" placeholder="เช่น 500"></div>
+          <div class="form-group"><label>หน่วย / Unit</label><input type="text" name="productUnit" placeholder="kg, pcs, carton"></div>
+        </div>
+        <div class="form-row-2">
+          <div class="form-group"><label>HS Code</label><input type="text" name="productHSCode" placeholder="เช่น 1006.30"></div>
+          <div class="form-group"><label>รูปภาพสินค้า (URL)</label><input type="url" name="productCover" placeholder="https://..."></div>
+        </div>
+        <div class="form-group">
+          <label>มาตรฐาน / Certifications</label>
+          <div class="cert-checkboxes">
+            <label><input type="checkbox" name="certifications" value="Halal"> Halal</label>
+            <label><input type="checkbox" name="certifications" value="Organic"> Organic</label>
+            <label><input type="checkbox" name="certifications" value="GMP"> GMP</label>
+            <label><input type="checkbox" name="certifications" value="FDA Thailand"> FDA Thailand</label>
+            <label><input type="checkbox" name="certifications" value="ISO"> ISO</label>
+            <label><input type="checkbox" name="certifications" value="GAP"> GAP</label>
+          </div>
+        </div>
+        <h4 style="color:#1e3a5f;margin:20px 0 12px">ข้อมูลผู้ประกอบการ</h4>
+        <div class="form-row-2">
+          <div class="form-group"><label>ชื่อบริษัท/ผู้ประกอบการ *</label><input type="text" name="sellerName" required placeholder="ชื่อบริษัทหรือชื่อ"></div>
+          <div class="form-group"><label>อีเมล *</label><input type="email" name="sellerEmail" required placeholder="contact@example.com"></div>
+        </div>
+        <div class="form-group"><label>โทรศัพท์</label><input type="text" name="sellerPhone" placeholder="เบอร์ติดต่อ"></div>
+        <p style="font-size:12px;color:#94a3b8;margin:12px 0">* ข้อมูลติดต่อของคุณจะไม่แสดงสาธารณะ PIT Freight จะเป็นตัวกลางติดต่อแทน</p>
+        <button type="submit" id="submitProductBtn" class="btn-inquiry-submit" style="width:100%">📦 ส่งข้อมูลลงประกาศ</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- BLOG -->
 <section class="section section-dark" id="blog">
   <div class="container">
@@ -664,6 +807,7 @@
 <script src="/js/i18n.js"></script>
 <script src="/js/chatbot.js"></script>
 <script src="/js/blog.js"></script>
+<script src="/js/products.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>
