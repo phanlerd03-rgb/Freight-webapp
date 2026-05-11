@@ -28,6 +28,18 @@ function selectMethod(method) {
   }, 400);
 }
 
+// Bulk / RoRo — scroll to contact with pre-filled message
+function openContactForService(serviceName) {
+  scrollToSection('contact');
+  setTimeout(() => {
+    const msgEl = document.getElementById('contactMessage') || document.querySelector('textarea[name="message"]');
+    if (msgEl) {
+      msgEl.value = `สนใจบริการ ${serviceName} — ขอใบเสนอราคาและรายละเอียดเพิ่มเติม`;
+      msgEl.focus();
+    }
+  }, 500);
+}
+
 // ===== TABS =====
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
