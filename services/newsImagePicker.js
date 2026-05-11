@@ -36,7 +36,7 @@ const IMAGE_POOL = {
   europe: [
     'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=800&q=80', // europe port
     'https://images.unsplash.com/photo-1491557345352-5929e343eb89?w=800&q=80', // europe trade
-    'https://images.unsplash.com/photo-1485081669329-e4f13cf1d466?w=800&q=80', // hamburg port
+    'https://images.unsplash.com/photo-1508193638397-1c4234db14d8?w=800&q=80', // hamburg port
   ],
   // อเมริกา
   usa: [
@@ -48,7 +48,7 @@ const IMAGE_POOL = {
   asean: [
     'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=800&q=80', // bangkok
     'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=800&q=80', // thailand trade
-    'https://images.unsplash.com/photo-1583418007992-a8e33a92e7ed?w=800&q=80', // asean
+    'https://images.unsplash.com/photo-1519922639192-e73293ca430e?w=800&q=80', // asean
   ],
   // เอกสาร / ศุลกากร / กฎระเบียบ
   customs: [
@@ -68,7 +68,7 @@ const IMAGE_POOL = {
   // สินค้าเกษตร / อาหาร
   agriculture: [
     'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80', // farm
-    'https://images.unsplash.com/photo-1536304993881-ff86e0c9d7f9?w=800&q=80', // rice
+    'https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80', // rice
     'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=800&q=80', // food export
     'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&q=80', // tropical fruits
   ],
