@@ -95,12 +95,21 @@ app.get('/blog/:slug', async (req, res) => {
   <!-- SEO -->
   <meta name="description" content="${esc(summary)}">
 
-  <!-- Redirect to main app -->
-  <meta http-equiv="refresh" content="0;url=/#blog-${slug}">
-  <script>window.location.replace('/#blog-${slug}');</script>
+  <!-- Redirect to main app (delay so Facebook scraper can read OG tags) -->
+  <script>
+    // Only redirect real browsers, not scrapers
+    if (!/facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|WhatsApp/i.test(navigator.userAgent)) {
+      window.location.replace('/#blog-${slug}');
+    }
+  </script>
 </head>
-<body>
-  <p>กำลังโหลด... <a href="/#blog-${slug}">คลิกที่นี่</a></p>
+<body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f8fafc">
+  <div style="text-align:center;padding:40px">
+    <img src="/images/logo.png" alt="PIT Freight" style="height:60px;margin-bottom:20px" onerror="this.style.display='none'">
+    <h2 style="color:#1e3a5f;margin-bottom:8px">${esc(title)}</h2>
+    <p style="color:#64748b;margin-bottom:24px">${esc(summary)}</p>
+    <a href="/#blog-${slug}" style="background:#e64d2e;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600">อ่านบทความ →</a>
+  </div>
 </body>
 </html>`);
   } catch (err) {
