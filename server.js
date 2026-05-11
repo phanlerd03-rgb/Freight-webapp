@@ -35,6 +35,80 @@ app.use('/api/cron', cronRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/alibaba', alibabaRoutes);
 
+// ===== /blog/:slug — Open Graph meta tags for Facebook Share =====
+app.get('/blog/:slug', async (req, res) => {
+  const { slug } = req.params;
+  const siteUrl = process.env.SITE_URL || 'https://pitfreight.com';
+
+  try {
+    const { Client } = require('@notionhq/client');
+    const notion = new Client({ auth: process.env.NOTION_TOKEN });
+
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_BLOG_DB,
+      filter: {
+        and: [
+          { property: 'Published', checkbox: { equals: true } },
+          { property: 'Slug', rich_text: { equals: slug } },
+        ],
+      },
+      page_size: 1,
+    });
+
+    if (!response.results.length) {
+      return res.redirect('/#blog');
+    }
+
+    const page = response.results[0];
+    const p = page.properties;
+    const title = p.Title?.title?.map(t => t.plain_text).join('') || 'PIT Freight Blog';
+    const summary = p.Summary?.rich_text?.map(t => t.plain_text).join('') || 'บทความจาก PIT Freight';
+    const cover = p['Cover Image']?.url || `${siteUrl}/images/og-default.jpg`;
+    const pageUrl = `${siteUrl}/blog/${slug}`;
+
+    const esc = s => s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    res.send(`<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${esc(title)} — PIT Freight</title>
+
+  <!-- Open Graph (Facebook) -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="${esc(pageUrl)}">
+  <meta property="og:title" content="${esc(title)}">
+  <meta property="og:description" content="${esc(summary)}">
+  <meta property="og:image" content="${esc(cover)}">
+  <meta property="og:image:width" content="800">
+  <meta property="og:image:height" content="420">
+  <meta property="og:site_name" content="PIT Freight">
+  <meta property="og:locale" content="th_TH">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${esc(title)}">
+  <meta name="twitter:description" content="${esc(summary)}">
+  <meta name="twitter:image" content="${esc(cover)}">
+
+  <!-- SEO -->
+  <meta name="description" content="${esc(summary)}">
+
+  <!-- Redirect to main app -->
+  <meta http-equiv="refresh" content="0;url=/#blog-${slug}">
+  <script>window.location.replace('/#blog-${slug}');</script>
+</head>
+<body>
+  <p>กำลังโหลด... <a href="/#blog-${slug}">คลิกที่นี่</a></p>
+</body>
+</html>`);
+  } catch (err) {
+    console.error('OG route error:', err.message);
+    res.redirect('/#blog');
+  }
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });

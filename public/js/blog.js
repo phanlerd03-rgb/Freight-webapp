@@ -148,11 +148,11 @@ async function openBlogPost(slug) {
   }
 }
 
-// Share to Facebook
+// Share to Facebook — ใช้ /blog/:slug เพื่อให้ Facebook scrape OG tags ได้
 function shareFacebook(slug, title) {
-  const url = encodeURIComponent(`${location.origin}/#blog-${slug}`);
+  const url = encodeURIComponent(`${location.origin}/blog/${slug}`);
   const fbUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
-  window.open(fbUrl, '_blank', 'width=600,height=400,noopener');
+  window.open(fbUrl, '_blank', 'width=620,height=450,noopener');
 }
 
 // Close modal
