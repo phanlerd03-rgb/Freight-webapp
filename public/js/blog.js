@@ -179,4 +179,52 @@ const blogObserver = new IntersectionObserver((entries) => {
 document.addEventListener('DOMContentLoaded', () => {
   const section = document.getElementById('blog');
   if (section) blogObserver.observe(section);
+  loadLatestBlogs();
 });
+
+// ===== LATEST BLOGS (หน้าแรก) =====
+async function loadLatestBlogs() {
+  const grid = document.getElementById('latestBlogsGrid');
+  if (!grid) return;
+
+  try {
+    const r = await fetch('/api/blog?limit=3');
+    const data = await r.json();
+    const posts = data.posts || [];
+
+    if (!posts.length) {
+      grid.innerHTML = '<p style="color:#64748b;grid-column:1/-1;text-align:center">ยังไม่มีบทความ</p>';
+      return;
+    }
+
+    grid.innerHTML = posts.map((post, i) => {
+      const cover = post.cover
+        ? `<img class="latest-blog-cover" src="${post.cover}" alt="${post.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+        : '';
+      const placeholder = `<div class="latest-blog-cover-placeholder" ${post.cover ? 'style="display:none"' : ''}>${categoryEmoji(post.category)}</div>`;
+      const isFeature = i === 0;
+
+      return `
+        <div class="latest-blog-card ${isFeature ? 'latest-blog-card--feature' : ''}" onclick="openBlogPost('${post.slug}')">
+          ${cover}${placeholder}
+          <div class="latest-blog-body">
+            <div class="latest-blog-meta">
+              ${post.category ? `<span class="blog-card-category">${categoryEmoji(post.category)} ${post.category}</span>` : ''}
+              <span class="blog-card-date">${formatBlogDate(post.date)}</span>
+            </div>
+            <h3 class="latest-blog-title">${post.title}</h3>
+            ${isFeature ? `<p class="latest-blog-summary">${post.summary || ''}</p>` : ''}
+            <div class="latest-blog-footer">
+              <button class="blog-share-btn" onclick="event.stopPropagation();shareFacebook('${post.slug}','${post.title.replace(/'/g,"\\'")}')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                แชร์
+              </button>
+              <span class="blog-card-read">อ่านต่อ →</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    if (grid) grid.innerHTML = '';
+  }
+}
