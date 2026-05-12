@@ -1,0 +1,371 @@
+/* ===================================================
+   APPLE-STYLE DESIGN LAYER — PIT Freight
+   Partial redesign: Typography · Navbar · Cards · Buttons · Animations
+   =================================================== */
+
+/* ---------- FONT ---------- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Sarabun', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---------- APPLE DESIGN TOKENS ---------- */
+:root {
+  --ap-blue:    #0071e3;
+  --ap-blue-h:  #0077ed;
+  --ap-dark:    #1d1d1f;
+  --ap-mid:     #424245;
+  --ap-gray:    #6e6e73;
+  --ap-light:   #f5f5f7;
+  --ap-white:   #ffffff;
+  --ap-radius:  20px;
+  --ap-shadow:  0 2px 20px rgba(0,0,0,.07);
+  --ap-shadow-lg: 0 12px 48px rgba(0,0,0,.10);
+  --ap-transition: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* ---------- NAVBAR — frosted glass ---------- */
+.navbar {
+  height: 52px;
+  background: rgba(255,255,255,.78) !important;
+  backdrop-filter: saturate(180%) blur(24px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(24px) !important;
+  border-bottom: 1px solid rgba(0,0,0,.09) !important;
+  box-shadow: none !important;
+}
+.navbar.scrolled { box-shadow: 0 1px 0 rgba(0,0,0,.08) !important; }
+
+.nav-inner { height: 52px !important; gap: 20px; }
+
+.logo-name {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ap-dark);
+}
+.logo-sub { font-size: 10px; color: var(--ap-gray); }
+
+.nav-links a {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--ap-dark);
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: color .15s;
+}
+.nav-links a:hover { color: var(--ap-blue); background: transparent !important; }
+
+.btn-nav-cta {
+  background: var(--ap-blue) !important;
+  border-radius: 980px !important;
+  padding: 8px 18px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  transition: background .2s !important;
+}
+.btn-nav-cta:hover { background: var(--ap-blue-h) !important; opacity: 1 !important; }
+
+.btn-lang {
+  border-radius: 980px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  border-color: rgba(0,0,0,.15) !important;
+  color: var(--ap-dark) !important;
+}
+.btn-lang:hover { border-color: var(--ap-blue) !important; color: var(--ap-blue) !important; }
+
+/* Mobile nav open - adjust top */
+.nav-links.open { top: 52px !important; }
+
+/* ---------- HERO — Apple-scale typography ---------- */
+.hero { padding-top: 52px !important; }
+
+.hero-title {
+  font-size: clamp(44px, 6.5vw, 84px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.035em !important;
+  line-height: 1.05 !important;
+  color: #fff !important;
+}
+
+.hero-desc {
+  font-size: clamp(17px, 2vw, 21px) !important;
+  font-weight: 400 !important;
+  line-height: 1.65 !important;
+  color: rgba(255,255,255,.82) !important;
+  max-width: 560px;
+}
+
+.hero-badge {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  border-radius: 980px !important;
+  background: rgba(255,255,255,.14) !important;
+  border-color: rgba(255,255,255,.25) !important;
+}
+
+.stat-num { font-size: 34px !important; font-weight: 700 !important; letter-spacing: -0.02em !important; }
+.stat-label { font-size: 12px !important; letter-spacing: 0 !important; }
+
+/* ---------- SECTION HEADER — Apple large type ---------- */
+.section-badge {
+  background: transparent !important;
+  color: var(--ap-blue) !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  display: block !important;
+  margin-bottom: 12px !important;
+}
+.section-header.light .section-badge { color: rgba(255,255,255,.7) !important; }
+
+.section-header h2 {
+  font-size: clamp(32px, 4vw, 52px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+  line-height: 1.08 !important;
+  color: var(--ap-dark) !important;
+}
+.section-header.light h2 { color: #fff !important; }
+
+.section-header p {
+  font-size: clamp(16px, 1.8vw, 19px) !important;
+  color: var(--ap-gray) !important;
+  line-height: 1.65 !important;
+  font-weight: 400 !important;
+}
+.section-header.light p { color: rgba(255,255,255,.75) !important; }
+
+/* ---------- SECTION PADDING ---------- */
+.section { padding: 100px 0 !important; }
+
+/* ---------- SECTION BG — Apple gray ---------- */
+.section-gray { background: var(--ap-light) !important; }
+
+/* ---------- BUTTONS — Apple pill style ---------- */
+.btn-primary {
+  background: var(--ap-blue) !important;
+  border-radius: 980px !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  transition: background .2s, transform .2s !important;
+}
+.btn-primary:hover {
+  background: var(--ap-blue-h) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.btn-primary.btn-lg { padding: 16px 36px !important; font-size: 16px !important; }
+
+.btn-outline.btn-lg {
+  border-radius: 980px !important;
+  border-color: rgba(255,255,255,.55) !important;
+  font-weight: 500 !important;
+}
+.btn-outline.btn-lg:hover {
+  border-color: #fff !important;
+  background: rgba(255,255,255,.12) !important;
+}
+
+.btn-service {
+  border-radius: 980px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  background: rgba(0,113,227,.08) !important;
+  color: var(--ap-blue) !important;
+  border: none !important;
+  padding: 10px 22px !important;
+  width: auto !important;
+}
+.service-card:hover .btn-service, .service-card.featured .btn-service {
+  background: var(--ap-blue) !important;
+  color: #fff !important;
+}
+
+/* ---------- CARDS — Apple rounded + clean shadow ---------- */
+.service-card {
+  border-radius: var(--ap-radius) !important;
+  border: 1px solid rgba(0,0,0,.06) !important;
+  box-shadow: var(--ap-shadow) !important;
+  transition: transform 0.35s var(--ap-transition), box-shadow 0.35s var(--ap-transition) !important;
+}
+.service-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: var(--ap-shadow-lg) !important;
+}
+.service-card::before { display: none !important; }
+
+/* Keep Bulk/RoRo accent bars but Apple-style */
+.service-card[data-service="bulk"] { border-top: 3px solid #0ea5e9 !important; }
+.service-card[data-service="roro"] { border-top: 3px solid #f59e0b !important; }
+
+.service-card h3 { font-size: 19px !important; font-weight: 700 !important; letter-spacing: -0.01em !important; color: var(--ap-dark) !important; }
+.service-card p { color: var(--ap-gray) !important; font-size: 14px !important; }
+.service-icon { font-size: 44px !important; margin-bottom: 18px !important; }
+
+.service-badge {
+  border-radius: 980px !important;
+  font-size: 11px !important;
+  padding: 3px 12px !important;
+  font-weight: 600 !important;
+  background: var(--ap-light) !important;
+  color: var(--ap-gray) !important;
+}
+.service-badge.popular { background: #fef3c7 !important; color: #92400e !important; }
+.service-badge.urgent  { background: #fee2e2 !important; color: #991b1b !important; }
+
+.integration-card {
+  border-radius: var(--ap-radius) !important;
+  border: 1px solid rgba(0,0,0,.06) !important;
+  box-shadow: var(--ap-shadow) !important;
+  transition: transform 0.35s var(--ap-transition), box-shadow 0.35s var(--ap-transition) !important;
+}
+.integration-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--ap-shadow-lg) !important;
+}
+.integration-card h4 { letter-spacing: -0.01em !important; color: var(--ap-dark) !important; }
+.integration-card p { color: var(--ap-gray) !important; }
+
+.why-card {
+  border-radius: var(--ap-radius) !important;
+  border: 1px solid rgba(0,0,0,.06) !important;
+  box-shadow: var(--ap-shadow) !important;
+  transition: transform 0.35s var(--ap-transition), box-shadow 0.35s var(--ap-transition) !important;
+}
+.why-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--ap-shadow-lg) !important;
+  border-color: rgba(0,113,227,.2) !important;
+}
+.why-card h4 { letter-spacing: -0.01em !important; color: var(--ap-dark) !important; }
+.why-card p { color: var(--ap-gray) !important; }
+
+/* Quote & Booking cards */
+.quote-form-card, .booking-card, .contact-form-card {
+  border-radius: var(--ap-radius) !important;
+  border: 1px solid rgba(0,0,0,.07) !important;
+  box-shadow: var(--ap-shadow-lg) !important;
+}
+
+.info-card {
+  border-radius: var(--ap-radius) !important;
+  border: 1px solid rgba(0,0,0,.06) !important;
+  box-shadow: var(--ap-shadow) !important;
+}
+
+/* Form inputs Apple style */
+.form-group input, .form-group select, .form-group textarea {
+  border-radius: 10px !important;
+  border-color: rgba(0,0,0,.12) !important;
+  font-size: 15px !important;
+  color: var(--ap-dark) !important;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  border-color: var(--ap-blue) !important;
+  box-shadow: 0 0 0 3px rgba(0,113,227,.14) !important;
+}
+
+/* ---------- BLOG CARDS ---------- */
+.blog-card {
+  border-radius: var(--ap-radius) !important;
+  border: 1px solid rgba(0,0,0,.06) !important;
+  box-shadow: var(--ap-shadow) !important;
+  overflow: hidden !important;
+  transition: transform 0.35s var(--ap-transition), box-shadow 0.35s var(--ap-transition) !important;
+}
+.blog-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: var(--ap-shadow-lg) !important;
+}
+.blog-card-title { font-weight: 700 !important; letter-spacing: -0.01em !important; color: var(--ap-dark) !important; }
+.blog-card-summary { color: var(--ap-gray) !important; }
+
+.latest-blog-card {
+  border-radius: var(--ap-radius) !important;
+  border: 1px solid rgba(0,0,0,.06) !important;
+  box-shadow: var(--ap-shadow) !important;
+  transition: transform 0.35s var(--ap-transition), box-shadow 0.35s var(--ap-transition) !important;
+}
+.latest-blog-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: var(--ap-shadow-lg) !important;
+}
+
+/* ---------- TRACKING ---------- */
+.tracking-input-wrap {
+  border-radius: var(--ap-radius) !important;
+  box-shadow: var(--ap-shadow-lg) !important;
+}
+.tracking-result { border-radius: var(--ap-radius) !important; }
+.btn-track { border-radius: 0 !important; }
+
+/* ---------- FOOTER ---------- */
+.footer { background: #1d1d1f !important; }
+.footer-inner a { transition: color .15s !important; }
+.footer-inner a:hover { color: #fff !important; }
+
+/* ---------- MODAL ---------- */
+.modal-box { border-radius: 22px !important; }
+.modal-close { border-radius: 50% !important; }
+
+/* ---------- CONTACT ---------- */
+.contact-icon { border-radius: 14px !important; }
+
+/* ---------- SCROLL REVEAL ANIMATIONS ---------- */
+.ap-reveal {
+  opacity: 0;
+  transform: translateY(36px);
+  transition:
+    opacity  0.72s var(--ap-transition),
+    transform 0.72s var(--ap-transition);
+}
+.ap-reveal.ap-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered delay helpers */
+.ap-d1 { transition-delay: 0.08s; }
+.ap-d2 { transition-delay: 0.16s; }
+.ap-d3 { transition-delay: 0.24s; }
+.ap-d4 { transition-delay: 0.32s; }
+.ap-d5 { transition-delay: 0.40s; }
+.ap-d6 { transition-delay: 0.48s; }
+
+/* ---------- MISC POLISH ---------- */
+.gradient-text {
+  background: linear-gradient(135deg, #a8d8ff, #7fffd4) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+/* Smooth button for tab */
+.tab { font-weight: 500 !important; letter-spacing: 0 !important; }
+.tab.active { color: var(--ap-blue) !important; border-bottom-color: var(--ap-blue) !important; }
+
+/* Tracker button */
+.btn-track {
+  background: var(--ap-blue) !important;
+  font-weight: 500 !important;
+}
+
+/* Section title standalone (latest blogs) */
+.section-title { font-weight: 700 !important; letter-spacing: -0.02em !important; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .section { padding: 72px 0 !important; }
+  .hero-title { font-size: clamp(36px, 10vw, 56px) !important; }
+  .section-header h2 { font-size: clamp(28px, 7vw, 38px) !important; }
+  .nav-links.open { top: 52px !important; }
+}
