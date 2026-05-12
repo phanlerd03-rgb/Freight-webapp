@@ -48,6 +48,53 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// ===== Debug / Test Notifications =====
+app.get('/api/debug/test', async (req, res) => {
+  const results = {};
+  const lineService = require('./services/lineoa');
+  const gsService   = require('./services/googlesheet');
+  const { Client }  = require('@notionhq/client');
+
+  // Test LINE
+  try {
+    await lineService.notifyBooking({
+      trackingNumber: 'TEST001', senderName: 'Debug Test', senderEmail: 'test@pitfreight.com',
+      origin: 'Bangkok', destination: 'Tokyo', shippingMethod: 'sea',
+      weight: 10, estimatedCost: 5000,
+    });
+    results.line = '✅ ส่งสำเร็จ';
+  } catch (e) { results.line = '❌ ' + e.message; }
+
+  // Test Google Sheets
+  try {
+    await gsService.logBooking({
+      trackingNumber: 'TEST001', senderName: 'Debug Test', senderEmail: 'test@pitfreight.com',
+      senderPhone: '0812345678', origin: 'Bangkok', destination: 'Tokyo',
+      cargoType: 'ทั่วไป', weight: 10, shippingMethod: 'sea', estimatedCost: 5000,
+    });
+    results.gsheets = '✅ บันทึกสำเร็จ';
+  } catch (e) { results.gsheets = '❌ ' + e.message; }
+
+  // Test Notion
+  try {
+    const notion = new Client({ auth: process.env.NOTION_TOKEN });
+    await notion.databases.retrieve({ database_id: process.env.NOTION_BOOKINGS_DB });
+    results.notion = '✅ เชื่อมต่อสำเร็จ';
+  } catch (e) { results.notion = '❌ ' + e.message; }
+
+  // Env check
+  results.env = {
+    line_token:   process.env.LINE_CHANNEL_ACCESS_TOKEN ? '✅ มีค่า' : '❌ ไม่มีค่า',
+    sheet_id:     process.env.GOOGLE_SHEET_ID ? '✅ มีค่า' : '❌ ไม่มีค่า',
+    gsa_email:    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL ? '✅ มีค่า' : '❌ ไม่มีค่า',
+    gsa_key:      process.env.GOOGLE_PRIVATE_KEY ? '✅ มีค่า ('+process.env.GOOGLE_PRIVATE_KEY.length+' chars)' : '❌ ไม่มีค่า',
+    notion_token: process.env.NOTION_TOKEN ? '✅ มีค่า' : '❌ ไม่มีค่า',
+    notion_db:    process.env.NOTION_BOOKINGS_DB ? '✅ มีค่า' : '❌ ไม่มีค่า',
+  };
+
+  res.json(results);
+});
+
 // ===== /blog/:slug — Open Graph meta tags for Facebook Share =====
 app.get('/blog/:slug', async (req, res) => {
   const { slug } = req.params;
