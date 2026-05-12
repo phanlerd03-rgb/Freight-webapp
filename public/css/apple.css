@@ -132,23 +132,41 @@ body {
   font-weight: 700 !important;
   letter-spacing: -0.025em !important;
   line-height: 1.08 !important;
-  color: var(--ap-dark) !important;
+  color: #1d1d1f !important;
 }
-.section-header.light h2 { color: #fff !important; }
+.section-header.light h2 { color: #ffffff !important; }
 
 .section-header p {
   font-size: clamp(16px, 1.8vw, 19px) !important;
-  color: var(--ap-gray) !important;
+  color: #4a4a50 !important;
   line-height: 1.65 !important;
   font-weight: 400 !important;
 }
-.section-header.light p { color: rgba(255,255,255,.75) !important; }
+.section-header.light p { color: rgba(255,255,255,.85) !important; }
 
 /* ---------- SECTION PADDING ---------- */
 .section { padding: 100px 0 !important; }
 
 /* ---------- SECTION BG — Apple gray ---------- */
 .section-gray { background: var(--ap-light) !important; }
+
+/* ---------- DARK SECTION — force bright text ---------- */
+/* Fix: section-dark headers that don't have .light class */
+.section-dark .section-header h2,
+.section-dark .section-header .section-title {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+.section-dark .section-header p,
+.section-dark .section-header .section-subtitle {
+  color: rgba(255,255,255,.82) !important;
+}
+.section-dark .section-header .section-badge {
+  color: #a8d8ff !important;
+  background: rgba(255,255,255,.10) !important;
+  padding: 2px 10px !important;
+  border-radius: 980px !important;
+}
 
 /* ---------- BUTTONS — Apple pill style ---------- */
 .btn-primary {
