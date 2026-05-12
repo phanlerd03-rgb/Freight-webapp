@@ -29,6 +29,7 @@ const cronRoutes = require('./routes/cron');
 const productsRoutes = require('./routes/products');
 const alibabaRoutes = require('./routes/alibaba');
 const adminRoutes = require('./routes/admin');
+const contactRoutes = require('./routes/contact');
 
 app.use('/api/quote', quoteRoutes);
 app.use('/api/booking', bookingRoutes);
@@ -40,6 +41,7 @@ app.use('/api/cron', cronRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/alibaba', alibabaRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/contact', contactRoutes);
 
 // ===== Admin Panel Page =====
 app.get('/admin', (req, res) => {
@@ -135,4 +137,6 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`\n🚢 Freight Webapp running at http://localhost:${PORT}\n`);
+  // Init Google Sheets headers on startup
+  require('./services/googlesheet').ensureHeaders().catch(() => {});
 });

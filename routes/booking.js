@@ -5,6 +5,8 @@ const db = require('../data/db');
 const emailService = require('../services/email');
 const notionService = require('../services/notion');
 const slackService = require('../services/slack');
+const lineService = require('../services/lineoa');
+const gsService = require('../services/googlesheet');
 
 function generateTracking() {
   const prefix = 'PIT';
@@ -46,6 +48,8 @@ router.post('/create', async (req, res) => {
       emailService.sendBookingConfirmation(booking),
       notionService.addBookingToNotion(booking),
       slackService.newBookingAlert(booking),
+      lineService.notifyBooking(booking),
+      gsService.logBooking(booking),
     ]);
 
     res.json({ success: true, trackingNumber: booking.trackingNumber, booking });

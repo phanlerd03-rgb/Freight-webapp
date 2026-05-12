@@ -5,6 +5,8 @@ const db = require('../data/db');
 const emailService = require('../services/email');
 const notionService = require('../services/notion');
 const slackService = require('../services/slack');
+const lineService = require('../services/lineoa');
+const gsService = require('../services/googlesheet');
 
 // Pricing matrix (USD per kg base, then convert to THB ~36)
 const RATES = {
@@ -95,6 +97,8 @@ router.post('/request', async (req, res) => {
       emailService.sendQuoteEmail(quote),
       notionService.addQuoteToNotion(quote),
       slackService.newQuoteAlert(quote),
+      lineService.notifyQuote(quote),
+      gsService.logQuote(quote),
     ]);
 
     res.json({ success: true, message: 'ส่งใบเสนอราคาทางอีเมลแล้ว', quote });

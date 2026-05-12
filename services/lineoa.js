@@ -120,4 +120,126 @@ async function handleWebhook(events) {
   }
 }
 
-module.exports = { sendBookingConfirmation, sendStatusUpdate, handleWebhook, pushMessage, broadcastMessage };
+// ─── Admin Flex builder ───────────────────────────────
+function adminFlex({ emoji, title, color, rows, link }) {
+  const bodyContents = rows.map(([label, value]) => ({
+    type: 'box', layout: 'horizontal', spacing: 'sm',
+    contents: [
+      { type: 'text', text: label, size: 'sm', color: '#888888', flex: 3, wrap: true },
+      { type: 'text', text: String(value || '-'), size: 'sm', weight: 'bold', color: '#1d1d1f', flex: 5, wrap: true, align: 'end' },
+    ],
+  }));
+
+  if (link) {
+    bodyContents.push({ type: 'separator', margin: 'md' });
+    bodyContents.push({
+      type: 'button', style: 'primary', color: color || '#0071e3',
+      action: { type: 'uri', label: '🔗 จัดการ / Admin Panel', uri: link },
+      margin: 'md', height: 'sm',
+    });
+  }
+
+  return {
+    type: 'flex',
+    altText: `${emoji} ${title} — PIT Freight`,
+    contents: {
+      type: 'bubble',
+      header: {
+        type: 'box', layout: 'vertical', paddingAll: '14px',
+        backgroundColor: color || '#1a3a5c',
+        contents: [
+          { type: 'text', text: `${emoji}  ${title}`, weight: 'bold', color: '#ffffff', size: 'md', wrap: true },
+          { type: 'text', text: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }), size: 'xs', color: 'rgba(255,255,255,.7)', margin: 'xs' },
+        ],
+      },
+      body: {
+        type: 'box', layout: 'vertical', spacing: 'sm', paddingAll: '16px',
+        contents: bodyContents,
+      },
+    },
+  };
+}
+
+// ─── Admin notify functions ───────────────────────────
+const SITE = process.env.SITE_URL || 'https://pitfreight.com';
+
+async function notifyQuote(q) {
+  return broadcastMessage([adminFlex({
+    emoji: '📋', title: 'ใบเสนอราคาใหม่', color: '#0071e3',
+    rows: [
+      ['ชื่อ', q.name],
+      ['Email', q.email],
+      ['โทร', q.phone || '-'],
+      ['เส้นทาง', `${q.origin} → ${q.destination}`],
+      ['วิธีขนส่ง', q.shippingMethod],
+      ['น้ำหนัก', `${q.weight} kg`],
+      ['ราคาประมาณ', q.totalCost ? `฿${q.totalCost.toLocaleString()}` : '-'],
+    ],
+  })]);
+}
+
+async function notifyBooking(b) {
+  return broadcastMessage([adminFlex({
+    emoji: '🚢', title: 'การจองใหม่', color: '#1a3a5c',
+    rows: [
+      ['Tracking', b.trackingNumber],
+      ['ผู้ส่ง', b.senderName],
+      ['Email', b.senderEmail],
+      ['เส้นทาง', `${b.origin} → ${b.destination}`],
+      ['วิธีขนส่ง', b.shippingMethod],
+      ['น้ำหนัก', `${b.weight} kg`],
+      ['ค่าขนส่ง', b.estimatedCost ? `฿${b.estimatedCost.toLocaleString()}` : '-'],
+    ],
+  })]);
+}
+
+async function notifyContact(c) {
+  return broadcastMessage([adminFlex({
+    emoji: '✉️', title: 'ข้อความติดต่อใหม่', color: '#7c3aed',
+    rows: [
+      ['ชื่อ', c.name],
+      ['Email', c.email],
+      ['โทร', c.phone || '-'],
+      ['บริษัท', c.company || '-'],
+      ['บริการที่สนใจ', c.service || '-'],
+      ['ข้อความ', (c.message || '').substring(0, 60) + ((c.message || '').length > 60 ? '…' : '')],
+    ],
+  })]);
+}
+
+async function notifyAlibaba(a) {
+  return broadcastMessage([adminFlex({
+    emoji: '🛒', title: 'Alibaba Sourcing ใหม่', color: '#e05c19',
+    rows: [
+      ['สินค้า', a.productName],
+      ['หมวด', a.category || '-'],
+      ['งบประมาณ', a.budget ? `$${a.budget}` : '-'],
+      ['จำนวน', `${a.quantity || '-'} ${a.unit || ''}`],
+      ['ขนส่ง', a.shippingMethod || '-'],
+      ['ชื่อ', a.name],
+      ['Email', a.email],
+    ],
+  })]);
+}
+
+async function notifyProduct(p) {
+  return broadcastMessage([adminFlex({
+    emoji: '📦', title: 'สินค้าใหม่รออนุมัติ', color: '#f59e0b',
+    rows: [
+      ['สินค้า', p.nameTH],
+      ['หมวด', p.category || '-'],
+      ['ราคา', p.priceRange || '-'],
+      ['MOQ', p.moq || '-'],
+      ['จังหวัด', p.province || '-'],
+      ['ผู้ขาย', p.sellerName],
+      ['Email', p.sellerEmail],
+    ],
+    link: `${SITE}/admin`,
+  })]);
+}
+
+module.exports = {
+  sendBookingConfirmation, sendStatusUpdate, handleWebhook,
+  pushMessage, broadcastMessage,
+  notifyQuote, notifyBooking, notifyContact, notifyAlibaba, notifyProduct,
+};

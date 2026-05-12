@@ -11,6 +11,8 @@ const router = express.Router();
 const { Client } = require('@notionhq/client');
 const Anthropic = require('@anthropic-ai/sdk');
 const nodemailer = require('nodemailer');
+const lineService = require('../services/lineoa');
+const gsService = require('../services/googlesheet');
 
 function getNotion() { return new Client({ auth: process.env.NOTION_TOKEN }); }
 function getClaude() { return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }); }
@@ -86,6 +88,13 @@ router.post('/sourcing', async (req, res) => {
           <hr><p style="color:#666;font-size:13px">PIT Freight — pitfreight.com</p>`,
       });
     } catch (e) {}
+
+    // LINE + Google Sheets
+    const data = { productName, category, description, budget, quantity, unit, shippingMethod, destination, name, email, phone, company };
+    await Promise.allSettled([
+      lineService.notifyAlibaba(data),
+      gsService.logAlibaba(data),
+    ]);
 
     res.json({ success: true });
   } catch (err) {

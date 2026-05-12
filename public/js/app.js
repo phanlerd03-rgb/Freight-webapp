@@ -339,10 +339,26 @@ document.getElementById('contactForm')?.addEventListener('submit', async (e) => 
   e.preventDefault();
   const btn = e.target.querySelector('button[type="submit"]');
   setLoading(btn, true, 'กำลังส่ง...');
-  await new Promise(r => setTimeout(r, 1200));
-  showToast('✅ ส่งข้อความแล้ว ทีมงานจะติดต่อกลับเร็วๆ นี้!', 'success');
-  e.target.reset();
-  setLoading(btn, false, '📨 ส่งข้อความ');
+  try {
+    const fd = new FormData(e.target);
+    const body = Object.fromEntries(fd.entries());
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('✅ ส่งข้อความแล้ว ทีมงานจะติดต่อกลับเร็วๆ นี้!', 'success');
+      e.target.reset();
+    } else {
+      showToast('⚠️ ' + (data.error || 'เกิดข้อผิดพลาด'), 'error');
+    }
+  } catch (err) {
+    showToast('⚠️ ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่', 'error');
+  } finally {
+    setLoading(btn, false, '📨 ส่งข้อความ');
+  }
 });
 
 // ===== MODAL =====

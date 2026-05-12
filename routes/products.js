@@ -9,6 +9,8 @@ const express = require('express');
 const router = express.Router();
 const { Client } = require('@notionhq/client');
 const nodemailer = require('nodemailer');
+const lineService = require('../services/lineoa');
+const gsService = require('../services/googlesheet');
 
 function getNotion() { return new Client({ auth: process.env.NOTION_TOKEN }); }
 function getProductsDb() { return process.env.NOTION_PRODUCTS_DB; }
@@ -133,17 +135,12 @@ router.post('/submit', async (req, res) => {
       },
     });
 
-    // แจ้ง Admin ทาง LINE
-    const siteUrl = process.env.SITE_URL || 'https://pitfreight.com';
-    sendLineNotify(
-      `🆕 สินค้าใหม่รอตรวจสอบ!\n\n` +
-      `📦 สินค้า: ${nameTH}\n` +
-      `🗂 หมวด: ${category || '-'}\n` +
-      `👤 ผู้ขาย: ${sellerName}\n` +
-      `📧 Email: ${sellerEmail}\n` +
-      `📞 โทร: ${sellerPhone || '-'}\n\n` +
-      `🔗 กดอนุมัติได้ที่:\n${siteUrl}/admin`
-    );
+    // LINE (Flex) + Google Sheets
+    const productData = { nameTH, nameEN, category, priceRange, moq, province, sellerName, sellerEmail, sellerPhone };
+    await Promise.allSettled([
+      lineService.notifyProduct(productData),
+      gsService.logProduct(productData),
+    ]);
 
     // แจ้ง Admin ทาง Email
     try {
