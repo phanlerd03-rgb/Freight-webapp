@@ -18,11 +18,13 @@ async function pushMessage(userId, messages) {
 }
 
 async function broadcastMessage(messages) {
-  if (!TOKEN) return null;
+  if (!TOKEN) { console.log('⚠️ LINE: no token'); return null; }
   try {
-    await axios.post(`${LINE_API}/broadcast`, { messages }, { headers: headers() });
+    const r = await axios.post(`${LINE_API}/broadcast`, { messages }, { headers: headers() });
+    console.log('✅ LINE broadcast sent', r.status);
+    return r;
   } catch (err) {
-    console.error('Line broadcast error:', err.response?.data || err.message);
+    console.error('⚠️ LINE broadcast error:', JSON.stringify(err.response?.data) || err.message);
   }
 }
 

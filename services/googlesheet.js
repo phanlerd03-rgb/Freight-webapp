@@ -38,12 +38,41 @@ async function getSheets() {
   return google.sheets({ version: 'v4', auth });
 }
 
+// ── Create missing sheet tabs ──────────────────────────
+async function ensureSheetTabs(sheets) {
+  try {
+    const meta = await sheets.spreadsheets.get({ spreadsheetId: SHEET_ID });
+    const existing = meta.data.sheets.map(s => s.properties.title);
+    const needed = Object.values(SHEETS).filter(name => !existing.includes(name));
+    if (!needed.length) return;
+
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SHEET_ID,
+      resource: {
+        requests: needed.map(title => ({
+          addSheet: { properties: { title } }
+        })),
+      },
+    });
+    console.log('✅ GSheets: created tabs:', needed.join(', '));
+  } catch (err) {
+    console.error('⚠️ GSheets ensureSheetTabs:', err.message);
+  }
+}
+
+let tabsReady = false;
+
 async function appendRow(sheetName, values) {
   try {
     const sheets = await getSheets();
     if (!sheets) {
       console.log('⚠️ Google Sheets: env vars not configured, skipping');
       return;
+    }
+    // Create tabs on first use
+    if (!tabsReady) {
+      await ensureSheetTabs(sheets);
+      tabsReady = true;
     }
     await sheets.spreadsheets.values.append({
       spreadsheetId: SHEET_ID,
@@ -52,6 +81,7 @@ async function appendRow(sheetName, values) {
       insertDataOption: 'INSERT_ROWS',
       resource: { values: [values] },
     });
+    console.log(`✅ GSheets: logged to ${sheetName}`);
   } catch (err) {
     console.error('⚠️ Google Sheets append error:', err.message);
   }
