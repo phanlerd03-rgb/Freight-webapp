@@ -23,6 +23,25 @@ function getMailer() {
   });
 }
 
+// ===== LINE Notification =====
+async function sendLineNotify(message) {
+  const token = process.env.LINE_CHANNEL_ACCESS_TOKEN;
+  if (!token) return;
+  try {
+    const axios = require('axios');
+    await axios.post('https://api.line.me/v2/bot/message/broadcast', {
+      messages: [{ type: 'text', text: message }]
+    }, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+  } catch (err) {
+    console.log('⚠️ LINE notify error:', err.response?.data || err.message);
+  }
+}
+
 // ===== GET /api/products — รายการสินค้าที่อนุมัติแล้ว =====
 router.get('/', async (req, res) => {
   try {
@@ -113,6 +132,18 @@ router.post('/submit', async (req, res) => {
         'Submitted Date': { date: { start: new Date().toISOString().split('T')[0] } },
       },
     });
+
+    // แจ้ง Admin ทาง LINE
+    const siteUrl = process.env.SITE_URL || 'https://pitfreight.com';
+    sendLineNotify(
+      `🆕 สินค้าใหม่รอตรวจสอบ!\n\n` +
+      `📦 สินค้า: ${nameTH}\n` +
+      `🗂 หมวด: ${category || '-'}\n` +
+      `👤 ผู้ขาย: ${sellerName}\n` +
+      `📧 Email: ${sellerEmail}\n` +
+      `📞 โทร: ${sellerPhone || '-'}\n\n` +
+      `🔗 กดอนุมัติได้ที่:\n${siteUrl}/admin`
+    );
 
     // แจ้ง Admin ทาง Email
     try {
