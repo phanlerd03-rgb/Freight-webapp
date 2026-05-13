@@ -123,7 +123,7 @@ async function handleWebhook(events) {
 }
 
 // ─── Admin Flex builder ───────────────────────────────
-function adminFlex({ emoji, title, color, rows, link }) {
+function adminFlex({ emoji, title, color, rows, link, shareUrl }) {
   const bodyContents = rows.map(([label, value]) => ({
     type: 'box', layout: 'horizontal', spacing: 'sm',
     contents: [
@@ -138,6 +138,20 @@ function adminFlex({ emoji, title, color, rows, link }) {
       type: 'button', style: 'primary', color: color || '#0071e3',
       action: { type: 'uri', label: '🔗 จัดการ / Admin Panel', uri: link },
       margin: 'md', height: 'sm',
+    });
+  }
+
+  // ─── Footer with share button ───────────────────────
+  const footerContents = [];
+  if (shareUrl) {
+    const lineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;
+    footerContents.push({
+      type: 'button', style: 'primary', color: color || '#0071e3', height: 'sm',
+      action: { type: 'uri', label: '🔗 อ่านบทความเต็ม', uri: shareUrl },
+    });
+    footerContents.push({
+      type: 'button', style: 'secondary', height: 'sm', margin: 'sm',
+      action: { type: 'uri', label: '📤 แชร์ให้เพื่อน LINE', uri: lineShareUrl },
     });
   }
 
@@ -158,6 +172,12 @@ function adminFlex({ emoji, title, color, rows, link }) {
         type: 'box', layout: 'vertical', spacing: 'sm', paddingAll: '16px',
         contents: bodyContents,
       },
+      ...(footerContents.length ? {
+        footer: {
+          type: 'box', layout: 'vertical', spacing: 'sm', paddingAll: '12px',
+          contents: footerContents,
+        },
+      } : {}),
     },
   };
 }
@@ -240,8 +260,58 @@ async function notifyProduct(p) {
   })]);
 }
 
+// ─── Blog broadcast with share button ────────────────
+async function broadcastBlog({ title, summary, slug, color, emoji, coverText }) {
+  const url = `${SITE}/blog/${slug}`;
+  const lineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(url)}`;
+
+  return broadcastMessage([{
+    type: 'flex',
+    altText: `${emoji || '📄'} ${title} — PIT Freight`,
+    contents: {
+      type: 'bubble',
+      size: 'kilo',
+      header: {
+        type: 'box', layout: 'vertical',
+        backgroundColor: color || '#1a3a5c', paddingAll: '16px',
+        contents: [
+          { type: 'text', text: `${emoji || '📄'}  บทความใหม่จาก PIT Freight`, color: 'rgba(255,255,255,.7)', size: 'xs', weight: 'bold' },
+          { type: 'text', text: title, color: '#ffffff', size: 'md', weight: 'bold', wrap: true, margin: 'sm' },
+        ],
+      },
+      body: {
+        type: 'box', layout: 'vertical', spacing: 'sm', paddingAll: '14px',
+        contents: [
+          { type: 'text', text: summary, size: 'sm', color: '#555555', wrap: true },
+          ...(coverText ? [
+            { type: 'separator', margin: 'md' },
+            { type: 'text', text: coverText, size: 'xs', color: '#888888', wrap: true, margin: 'md' },
+          ] : []),
+        ],
+      },
+      footer: {
+        type: 'box', layout: 'vertical', spacing: 'sm', paddingAll: '12px',
+        contents: [
+          {
+            type: 'button', style: 'primary', color: color || '#1a3a5c', height: 'sm',
+            action: { type: 'uri', label: '📖 อ่านบทความเต็ม', uri: url },
+          },
+          {
+            type: 'button', style: 'secondary', height: 'sm',
+            action: { type: 'uri', label: '📤 แชร์ให้เพื่อนใน LINE', uri: lineShareUrl },
+          },
+          {
+            type: 'button', style: 'secondary', height: 'sm',
+            action: { type: 'uri', label: '💬 ขอใบเสนอราคาฟรี', uri: `${SITE}/#quote` },
+          },
+        ],
+      },
+    },
+  }]);
+}
+
 module.exports = {
   sendBookingConfirmation, sendStatusUpdate, handleWebhook,
-  pushMessage, broadcastMessage,
+  pushMessage, broadcastMessage, broadcastBlog,
   notifyQuote, notifyBooking, notifyContact, notifyAlibaba, notifyProduct,
 };

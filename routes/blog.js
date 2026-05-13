@@ -139,4 +139,52 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
+// POST /api/blog/broadcast — broadcast บทความไปยัง LINE OA
+// Body: { slug, adminPassword }
+router.post('/broadcast', async (req, res) => {
+  try {
+    const { slug, adminPassword } = req.body;
+    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // ดึงบทความจาก Notion
+    const response = await notion.databases.query({
+      database_id: BLOG_DB,
+      filter: {
+        and: [
+          { property: 'Published', checkbox: { equals: true } },
+          { property: 'Slug', rich_text: { equals: slug } },
+        ],
+      },
+      page_size: 1,
+    });
+
+    if (!response.results.length) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    const page = response.results[0];
+    const p = page.properties;
+    const title   = richText(p.Title?.title) || 'PIT Freight Blog';
+    const summary = richText(p.Summary?.rich_text) || '';
+    const category = p.Category?.select?.name || '';
+
+    const emojiMap = { 'คู่มือ': '📋', 'ข่าวสาร': '📰', 'กฎระเบียบ': '⚖️', 'ราคา & โปรโมชัน': '🏷️', 'เคล็ดลับ': '💡' };
+    const colorMap = { 'คู่มือ': '#1a3a5c', 'ข่าวสาร': '#0071e3', 'กฎระเบียบ': '#7c3aed', 'ราคา & โปรโมชัน': '#e05c19', 'เคล็ดลับ': '#27ae60' };
+
+    const lineService = require('../services/lineoa');
+    await lineService.broadcastBlog({
+      title, summary, slug,
+      emoji: emojiMap[category] || '📄',
+      color: colorMap[category] || '#1a3a5c',
+    });
+
+    res.json({ success: true, message: `Broadcast "${title}" สำเร็จ` });
+  } catch (err) {
+    console.error('Blog broadcast error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
