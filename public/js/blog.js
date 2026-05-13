@@ -3,11 +3,34 @@
 let blogPage = 1;
 let blogCategory = '';
 let blogLang = '';
+let blogSearch = '';
 let blogHasMore = false;
+let searchTimer = null;
 
 // UI text helper — switches based on active language filter
 function ui(th, en) {
   return blogLang === 'en' ? en : th;
+}
+
+// Debounced search (350ms)
+function debouncedSearch(val) {
+  clearTimeout(searchTimer);
+  const clearBtn = document.getElementById('blogSearchClear');
+  if (clearBtn) clearBtn.style.display = val ? 'flex' : 'none';
+  searchTimer = setTimeout(() => {
+    blogSearch = val.trim();
+    loadBlog(true);
+  }, 350);
+}
+
+// Clear search
+function clearBlogSearch() {
+  const input = document.getElementById('blogSearchInput');
+  const clearBtn = document.getElementById('blogSearchClear');
+  if (input) input.value = '';
+  if (clearBtn) clearBtn.style.display = 'none';
+  blogSearch = '';
+  loadBlog(true);
 }
 
 // Format date TH/EN
@@ -122,6 +145,7 @@ async function loadBlog(reset = false) {
     const params = new URLSearchParams({ limit: 6, page: blogPage });
     if (blogCategory) params.set('category', blogCategory);
     if (blogLang) params.set('lang', blogLang);
+    if (blogSearch) params.set('search', blogSearch);
 
     const res = await fetch(`/api/blog?${params}`);
     const data = await res.json();
@@ -129,7 +153,10 @@ async function loadBlog(reset = false) {
     if (reset) grid.innerHTML = '';
 
     if (!data.posts?.length && reset) {
-      grid.innerHTML = `<div class="blog-loading"><p>${ui('ยังไม่มีบทความในหมวดนี้', 'No articles found in this category.')}</p></div>`;
+      const emptyMsg = blogSearch
+        ? ui(`ไม่พบบทความที่ตรงกับ "${blogSearch}"`, `No articles found for "${blogSearch}"`)
+        : ui('ยังไม่มีบทความในหมวดนี้', 'No articles found in this category.');
+      grid.innerHTML = `<div class="blog-loading"><p>🔍 ${emptyMsg}</p></div>`;
       document.getElementById('blogLoadMore').style.display = 'none';
       return;
     }

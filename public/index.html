@@ -831,7 +831,18 @@
       <p class="section-subtitle" data-i18n="blog.subtitle">ความรู้ คู่มือ และราคาล่าสุดจากทีมงาน PIT Freight</p>
     </div>
 
-    <!-- Filter Tabs -->
+    <!-- Search Bar -->
+    <div class="blog-search-wrap">
+      <div class="blog-search-box">
+        <span class="blog-search-icon">🔍</span>
+        <input type="text" id="blogSearchInput" class="blog-search-input"
+          placeholder="ค้นหาบทความ... / Search articles..."
+          oninput="debouncedSearch(this.value)"
+          autocomplete="off">
+        <button class="blog-search-clear" id="blogSearchClear" onclick="clearBlogSearch()" style="display:none">✕</button>
+      </div>
+    </div>
+
     <!-- Language Filter -->
     <div class="blog-lang-filters" id="blogLangFilters">
       <button class="blog-lang-filter-btn active" onclick="filterBlogLang(this, '')">🌐 All</button>

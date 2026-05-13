@@ -52,12 +52,13 @@ function blocksToHtml(blocks) {
 // GET /api/blog — list published posts
 router.get('/', async (req, res) => {
   try {
-    const { category, tag, lang, limit = 10, page = 1 } = req.query;
+    const { category, tag, lang, search, limit = 10, page = 1 } = req.query;
 
     const filters = [{ property: 'Published', checkbox: { equals: true } }];
     if (category) filters.push({ property: 'Category', select: { equals: category } });
     if (tag) filters.push({ property: 'Tags', multi_select: { contains: tag } });
     if (lang) filters.push({ property: 'Language', select: { equals: lang } });
+    if (search) filters.push({ property: 'Title', title: { contains: search } });
 
     const response = await notion.databases.query({
       database_id: BLOG_DB,
