@@ -2,6 +2,7 @@
 
 let blogPage = 1;
 let blogCategory = '';
+let blogLang = '';
 let blogHasMore = false;
 
 // Format date TH/EN
@@ -58,6 +59,18 @@ function showShareToast() {
 // Share icon SVG
 const shareIcon = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>`;
 
+// Language flag badge
+function langBadge(lang) {
+  if (lang === 'en') return '<span class="blog-lang-badge blog-lang-badge--en">🇬🇧 EN</span>';
+  if (lang === 'both') return '<span class="blog-lang-badge blog-lang-badge--both">🇹🇭🇬🇧</span>';
+  return '<span class="blog-lang-badge blog-lang-badge--th">🇹🇭 TH</span>';
+}
+
+// Read label based on language
+function readLabel(lang) {
+  return lang === 'en' ? 'Read more →' : 'อ่านต่อ →';
+}
+
 // Render a single blog card
 function renderBlogCard(post) {
   const cover = post.cover
@@ -72,6 +85,7 @@ function renderBlogCard(post) {
       <div class="blog-card-body">
         <div class="blog-card-meta">
           ${post.category ? `<span class="blog-card-category">${categoryEmoji(post.category)} ${post.category}</span>` : ''}
+          ${langBadge(post.language)}
           <span class="blog-card-date">${formatBlogDate(post.date)}</span>
         </div>
         <div class="blog-card-title">${post.title}</div>
@@ -80,9 +94,9 @@ function renderBlogCard(post) {
           <div class="blog-card-tags">${tags}</div>
           <div class="blog-card-actions">
             <button class="blog-share-btn" onclick="event.stopPropagation();shareBlog('${post.slug}','${post.title.replace(/'/g,"\\'")}')">
-              ${shareIcon} แชร์
+              ${shareIcon} ${post.language === 'en' ? 'Share' : 'แชร์'}
             </button>
-            <span class="blog-card-read">อ่านต่อ →</span>
+            <span class="blog-card-read">${readLabel(post.language)}</span>
           </div>
         </div>
       </div>
@@ -102,6 +116,7 @@ async function loadBlog(reset = false) {
   try {
     const params = new URLSearchParams({ limit: 6, page: blogPage });
     if (blogCategory) params.set('category', blogCategory);
+    if (blogLang) params.set('lang', blogLang);
 
     const res = await fetch(`/api/blog?${params}`);
     const data = await res.json();
@@ -132,6 +147,14 @@ function filterBlog(btn, category) {
   document.querySelectorAll('.blog-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   blogCategory = category;
+  loadBlog(true);
+}
+
+// Filter by language
+function filterBlogLang(btn, lang) {
+  document.querySelectorAll('.blog-lang-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  blogLang = lang;
   loadBlog(true);
 }
 

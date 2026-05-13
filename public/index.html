@@ -832,11 +832,19 @@
     </div>
 
     <!-- Filter Tabs -->
+    <!-- Language Filter -->
+    <div class="blog-lang-filters" id="blogLangFilters">
+      <button class="blog-lang-filter-btn active" onclick="filterBlogLang(this, '')">🌐 All</button>
+      <button class="blog-lang-filter-btn" onclick="filterBlogLang(this, 'th')">🇹🇭 ภาษาไทย</button>
+      <button class="blog-lang-filter-btn" onclick="filterBlogLang(this, 'en')">🇬🇧 English</button>
+    </div>
+
+    <!-- Category Filter -->
     <div class="blog-filters" id="blogFilters">
       <button class="blog-filter-btn active" data-category="" onclick="filterBlog(this, '')">
         <span data-i18n="blog.filter.all">ทั้งหมด</span>
       </button>
-      <button class="blog-filter-btn" data-category="คู่มือ" onclick="filterBlog(this, 'คู่มือ')">📘 คู่มือ</button>
+      <button class="blog-filter-btn" data-category="คู่มือ" onclick="filterBlog(this, 'คู่มือ')">📘 คู่มือ / Guide</button>
       <button class="blog-filter-btn" data-category="ราคา & โปรโมชัน" onclick="filterBlog(this, 'ราคา & โปรโมชัน')">💰 ราคา & โปร</button>
       <button class="blog-filter-btn" data-category="ข่าวสาร" onclick="filterBlog(this, 'ข่าวสาร')">📰 ข่าวสาร</button>
       <button class="blog-filter-btn" data-category="เคล็ดลับ" onclick="filterBlog(this, 'เคล็ดลับ')">💡 เคล็ดลับ</button>
