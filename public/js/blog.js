@@ -5,6 +5,11 @@ let blogCategory = '';
 let blogLang = '';
 let blogHasMore = false;
 
+// UI text helper — switches based on active language filter
+function ui(th, en) {
+  return blogLang === 'en' ? en : th;
+}
+
 // Format date TH/EN
 function formatBlogDate(dateStr) {
   if (!dateStr) return '';
@@ -110,7 +115,7 @@ async function loadBlog(reset = false) {
 
   if (reset) {
     blogPage = 1;
-    grid.innerHTML = `<div class="blog-loading"><div class="spinner"></div><p>กำลังโหลดบทความ...</p></div>`;
+    grid.innerHTML = `<div class="blog-loading"><div class="spinner"></div><p>${ui('กำลังโหลดบทความ...', 'Loading articles...')}</p></div>`;
   }
 
   try {
@@ -124,7 +129,7 @@ async function loadBlog(reset = false) {
     if (reset) grid.innerHTML = '';
 
     if (!data.posts?.length && reset) {
-      grid.innerHTML = `<div class="blog-loading"><p>ยังไม่มีบทความในหมวดนี้</p></div>`;
+      grid.innerHTML = `<div class="blog-loading"><p>${ui('ยังไม่มีบทความในหมวดนี้', 'No articles found in this category.')}</p></div>`;
       document.getElementById('blogLoadMore').style.display = 'none';
       return;
     }
@@ -138,8 +143,12 @@ async function loadBlog(reset = false) {
     if (loadMoreEl) loadMoreEl.style.display = blogHasMore ? 'block' : 'none';
 
   } catch (err) {
-    grid.innerHTML = `<div class="blog-loading"><p>⚠️ ไม่สามารถโหลดบทความได้</p></div>`;
+    grid.innerHTML = `<div class="blog-loading"><p>⚠️ ${ui('ไม่สามารถโหลดบทความได้', 'Unable to load articles.')}</p></div>`;
   }
+
+  // Update Load More button text
+  const loadMoreSpan = document.querySelector('#blogLoadMore span');
+  if (loadMoreSpan) loadMoreSpan.textContent = ui('โหลดเพิ่มเติม', 'Load more');
 }
 
 // Filter by category
@@ -150,11 +159,22 @@ function filterBlog(btn, category) {
   loadBlog(true);
 }
 
-// Filter by language
+// Filter by language — also update section UI text
 function filterBlogLang(btn, lang) {
   document.querySelectorAll('.blog-lang-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   blogLang = lang;
+
+  // Update section subtitle
+  const subtitle = document.querySelector('#blog .section-subtitle');
+  if (subtitle) subtitle.textContent = lang === 'en'
+    ? 'Knowledge, guides and latest updates from PIT Freight team'
+    : 'ความรู้ คู่มือ และราคาล่าสุดจากทีมงาน PIT Freight';
+
+  // Update category filter labels
+  const allBtn = document.querySelector('.blog-filter-btn[data-category=""]');
+  if (allBtn) allBtn.innerHTML = `<span>${lang === 'en' ? 'All' : 'ทั้งหมด'}</span>`;
+
   loadBlog(true);
 }
 
@@ -171,11 +191,12 @@ async function openBlogPost(slug) {
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
 
-  content.innerHTML = `<div style="padding:60px;text-align:center"><div class="spinner" style="margin:0 auto 16px;border-top-color:var(--primary)"></div><p style="color:#64748b">กำลังโหลด...</p></div>`;
+  content.innerHTML = `<div style="padding:60px;text-align:center"><div class="spinner" style="margin:0 auto 16px;border-top-color:var(--primary)"></div><p style="color:#64748b">${ui('กำลังโหลด...', 'Loading...')}</p></div>`;
 
   try {
     const res = await fetch(`/api/blog/${slug}`);
     const post = await res.json();
+    const isEn = post.language === 'en';
 
     const cover = post.cover
       ? `<img class="blog-post-cover" src="${post.cover}" alt="${post.title}">`
@@ -188,22 +209,23 @@ async function openBlogPost(slug) {
       <div class="blog-post-body">
         <div class="blog-post-meta">
           ${post.category ? `<span class="blog-post-category">${categoryEmoji(post.category)} ${post.category}</span>` : ''}
+          ${langBadge(post.language)}
           <span class="blog-post-date">${formatBlogDate(post.date)}</span>
           ${post.author ? `<span class="blog-post-author">✍️ ${post.author}</span>` : ''}
         </div>
         <h1 class="blog-post-title">${post.title}</h1>
         ${post.summary ? `<p class="blog-post-summary">${post.summary}</p>` : ''}
         ${tags ? `<div class="blog-post-tags">${tags}</div>` : ''}
-        <div class="blog-post-html">${post.content || '<p>ไม่มีเนื้อหา</p>'}</div>
+        <div class="blog-post-html">${post.content || `<p>${isEn ? 'No content available.' : 'ไม่มีเนื้อหา'}</p>`}</div>
         <div class="blog-post-share">
-          <span class="blog-post-share-label">แชร์บทความนี้</span>
+          <span class="blog-post-share-label">${isEn ? 'Share this article' : 'แชร์บทความนี้'}</span>
           <button class="blog-share-btn blog-share-btn--large" onclick="shareBlog('${post.slug}','${(post.title||'').replace(/'/g,"\\'")}')">
-            ${shareIcon} แชร์บทความ
+            ${shareIcon} ${isEn ? 'Share article' : 'แชร์บทความ'}
           </button>
         </div>
       </div>`;
   } catch (err) {
-    content.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444">⚠️ ไม่สามารถโหลดบทความได้</div>`;
+    content.innerHTML = `<div style="padding:40px;text-align:center;color:#ef4444">⚠️ ${ui('ไม่สามารถโหลดบทความได้', 'Unable to load article.')}</div>`;
   }
 }
 
