@@ -60,38 +60,77 @@
   </div>
 </section>
 
-<!-- MSC QUICK-ACTION BAR -->
-<div class="msc-quickbar">
-  <div class="msc-quickbar-inner">
-    <a href="#tracking" class="msc-quickbar-tile" onclick="scrollToSection('tracking');return false;">
-      <div class="msc-tile-icon">🔍</div>
-      <div>
-        <div class="msc-tile-label">ติดตามสินค้า</div>
-        <div class="msc-tile-sub">Track your shipment</div>
-      </div>
-    </a>
-    <a href="#quote" class="msc-quickbar-tile" onclick="scrollToSection('quote');return false;">
-      <div class="msc-tile-icon">💲</div>
-      <div>
-        <div class="msc-tile-label">ขอใบเสนอราคา</div>
-        <div class="msc-tile-sub">Get a free quote</div>
-      </div>
-    </a>
-    <a href="#booking" class="msc-quickbar-tile" onclick="scrollToSection('booking');return false;">
-      <div class="msc-tile-icon">📦</div>
-      <div>
-        <div class="msc-tile-label">จองขนส่ง</div>
-        <div class="msc-tile-sub">Book a shipment</div>
-      </div>
-    </a>
-    <a href="#contact" class="msc-quickbar-tile" onclick="scrollToSection('contact');return false;">
-      <div class="msc-tile-icon">📞</div>
-      <div>
-        <div class="msc-tile-label">ติดต่อเรา</div>
-        <div class="msc-tile-sub">Contact our team</div>
-      </div>
-    </a>
-  </div>
+<!-- MSC QUICK-ACTION BAR (overlapping hero) -->
+<div class="msc-quickbar" id="mscQuickbar">
+  <div class="container">
+    <div class="msc-quickbar-inner">
+
+      <!-- Tiles -->
+      <a href="#tracking" class="msc-quickbar-tile" onclick="scrollToSection('tracking');return false;">
+        <div class="msc-tile-icon">🔍</div>
+        <div>
+          <div class="msc-tile-label">ติดตามสินค้า</div>
+          <div class="msc-tile-sub">Track shipment</div>
+        </div>
+      </a>
+      <a href="#quote" class="msc-quickbar-tile" onclick="scrollToSection('quote');return false;">
+        <div class="msc-tile-icon">💲</div>
+        <div>
+          <div class="msc-tile-label">ขอใบเสนอราคา</div>
+          <div class="msc-tile-sub">Get a quote</div>
+        </div>
+      </a>
+      <a href="#booking" class="msc-quickbar-tile" onclick="scrollToSection('booking');return false;">
+        <div class="msc-tile-icon">📦</div>
+        <div>
+          <div class="msc-tile-label">จองขนส่ง</div>
+          <div class="msc-tile-sub">Book a shipment</div>
+        </div>
+      </a>
+      <a href="#contact" class="msc-quickbar-tile" onclick="scrollToSection('contact');return false;">
+        <div class="msc-tile-icon">📞</div>
+        <div>
+          <div class="msc-tile-label">ติดต่อเรา</div>
+          <div class="msc-tile-sub">Contact us</div>
+        </div>
+      </a>
+
+      <!-- ☰ Hamburger toggle (mobile) -->
+      <button class="msc-quickbar-toggle" id="mscQbToggle" onclick="toggleMscQuickMenu()" aria-label="เมนูเพิ่มเติม">
+        <span></span><span></span><span></span>
+      </button>
+
+    </div><!-- /.msc-quickbar-inner -->
+
+    <!-- Dropdown panel (mobile) -->
+    <div class="msc-quickbar-dropdown" id="mscQbDropdown">
+      <a href="#tracking" class="msc-qb-drop-item" onclick="scrollToSection('tracking');closeMscQuickMenu();return false;">
+        <span class="msc-qb-drop-icon">🔍</span>
+        <div><strong>ติดตามสินค้า</strong><small>Track shipment</small></div>
+      </a>
+      <a href="#quote" class="msc-qb-drop-item" onclick="scrollToSection('quote');closeMscQuickMenu();return false;">
+        <span class="msc-qb-drop-icon">💲</span>
+        <div><strong>ขอใบเสนอราคา</strong><small>Get a quote</small></div>
+      </a>
+      <a href="#booking" class="msc-qb-drop-item" onclick="scrollToSection('booking');closeMscQuickMenu();return false;">
+        <span class="msc-qb-drop-icon">📦</span>
+        <div><strong>จองขนส่ง</strong><small>Book a shipment</small></div>
+      </a>
+      <a href="#contact" class="msc-qb-drop-item" onclick="scrollToSection('contact');closeMscQuickMenu();return false;">
+        <span class="msc-qb-drop-icon">📞</span>
+        <div><strong>ติดต่อเรา</strong><small>Contact us</small></div>
+      </a>
+      <a href="#services" class="msc-qb-drop-item" onclick="scrollToSection('services');closeMscQuickMenu();return false;">
+        <span class="msc-qb-drop-icon">🚢</span>
+        <div><strong>บริการขนส่ง</strong><small>Our services</small></div>
+      </a>
+      <a href="#blog" class="msc-qb-drop-item" onclick="scrollToSection('blog');closeMscQuickMenu();return false;">
+        <span class="msc-qb-drop-icon">📰</span>
+        <div><strong>บทความ</strong><small>Blog & News</small></div>
+      </a>
+    </div>
+
+  </div><!-- /.container -->
 </div>
 
 <!-- LATEST BLOG (หน้าแรก) -->
@@ -1068,5 +1107,29 @@
 <script src="/js/alibaba.js"></script>
 <script src="/js/app.js"></script>
 <script src="/js/apple.js"></script>
+<script>
+// ===== MSC QUICK-ACTION BAR — hamburger toggle =====
+function toggleMscQuickMenu() {
+  const btn = document.getElementById('mscQbToggle');
+  const drop = document.getElementById('mscQbDropdown');
+  const isOpen = drop.classList.contains('open');
+  if (isOpen) {
+    drop.classList.remove('open');
+    btn.classList.remove('open');
+  } else {
+    drop.classList.add('open');
+    btn.classList.add('open');
+  }
+}
+function closeMscQuickMenu() {
+  document.getElementById('mscQbDropdown')?.classList.remove('open');
+  document.getElementById('mscQbToggle')?.classList.remove('open');
+}
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+  const bar = document.getElementById('mscQuickbar');
+  if (bar && !bar.contains(e.target)) closeMscQuickMenu();
+});
+</script>
 </body>
 </html>

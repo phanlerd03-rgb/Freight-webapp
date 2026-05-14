@@ -161,71 +161,174 @@ body {
   letter-spacing: 0.02em !important;
 }
 
-/* Hero wave to quick-bar */
-.hero-wave svg path { fill: var(--msc-gray-light) !important; }
+/* Hero wave to quick-bar — hide wave since bar overlaps */
+.hero-wave { display: none !important; }
 
-/* ---------- QUICK-ACTION BAR (MSC-hallmark shortcut tiles) ---------- */
-/* Injected below hero via JS */
+/* Extra bottom padding for overlap room */
+.hero { padding-bottom: 80px !important; }
+
+/* ---------- QUICK-ACTION BAR — overlap hero + hamburger ---------- */
 .msc-quickbar {
-  background: var(--msc-gray-light);
-  border-bottom: 1px solid var(--msc-gray-mid);
-  padding: 0;
+  position: relative;
+  z-index: 20;
+  margin-top: -52px;          /* overlap hero bottom */
+  padding-bottom: 0;
 }
+.msc-quickbar .container { position: relative; }
+
+/* The white card row */
 .msc-quickbar-inner {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  max-width: 1200px;
-  margin: 0 auto;
+  display: flex;
+  align-items: stretch;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 8px 40px rgba(0,43,92,.18);
+  overflow: hidden;
+  border: 1px solid var(--msc-gray-mid);
 }
+
+/* Each tile */
 .msc-quickbar-tile {
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 22px 28px;
+  padding: 20px 22px;
   cursor: pointer;
   border-right: 1px solid var(--msc-gray-mid);
   border-bottom: 3px solid transparent;
-  transition: all .2s var(--msc-transition);
+  transition: border-bottom-color .2s, background .2s, box-shadow .2s;
   background: #fff;
   text-decoration: none;
   color: var(--msc-dark);
+  min-width: 0;
 }
-.msc-quickbar-tile:last-child { border-right: none; }
+.msc-quickbar-tile:last-of-type { border-right: none; }
 .msc-quickbar-tile:hover {
   border-bottom-color: var(--msc-orange);
-  background: #fff;
-  box-shadow: 0 4px 16px rgba(0,0,0,.07);
+  background: #FAFBFD;
 }
-.msc-quickbar-tile:hover .msc-tile-icon { color: var(--msc-orange); }
+.msc-quickbar-tile:hover .msc-tile-label { color: var(--msc-orange); }
+
 .msc-tile-icon {
-  font-size: 28px;
-  color: var(--msc-navy);
+  font-size: 26px;
   flex-shrink: 0;
-  transition: color .2s;
 }
 .msc-tile-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--msc-navy);
+  line-height: 1.3;
+  transition: color .2s;
+  white-space: nowrap;
+}
+.msc-tile-sub {
+  font-size: 11px;
+  color: var(--msc-gray-text);
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* -------- ☰ HAMBURGER BUTTON -------- */
+.msc-quickbar-toggle {
+  display: none;              /* hidden desktop */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 20px 20px;
+  background: var(--msc-navy);
+  border: none;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background .2s;
+  min-width: 56px;
+}
+.msc-quickbar-toggle:hover { background: var(--msc-navy-mid); }
+.msc-quickbar-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform .25s, opacity .25s;
+}
+/* Animate to X when open */
+.msc-quickbar-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.msc-quickbar-toggle.open span:nth-child(2) { opacity: 0; }
+.msc-quickbar-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* -------- DROPDOWN PANEL -------- */
+.msc-quickbar-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 12px 40px rgba(0,43,92,.20);
+  border: 1px solid var(--msc-gray-mid);
+  overflow: hidden;
+  z-index: 100;
+  animation: qbDropIn .22s ease;
+}
+.msc-quickbar-dropdown.open { display: block; }
+
+@keyframes qbDropIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.msc-qb-drop-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  text-decoration: none;
+  color: var(--msc-dark);
+  border-bottom: 1px solid var(--msc-gray-mid);
+  transition: background .15s;
+}
+.msc-qb-drop-item:last-child { border-bottom: none; }
+.msc-qb-drop-item:hover { background: var(--msc-gray-light); }
+.msc-qb-drop-icon { font-size: 22px; flex-shrink: 0; }
+.msc-qb-drop-item strong {
+  display: block;
   font-size: 14px;
   font-weight: 700;
   color: var(--msc-navy);
-  line-height: 1.2;
 }
-.msc-tile-sub {
-  font-size: 12px;
-  color: var(--msc-gray-text);
-  margin-top: 2px;
+.msc-qb-drop-item:hover strong { color: var(--msc-orange); }
+.msc-qb-drop-item small { font-size: 12px; color: var(--msc-gray-text); }
+
+/* -------- RESPONSIVE -------- */
+@media (max-width: 900px) {
+  .msc-quickbar-tile .msc-tile-sub { display: none; }
+  .msc-quickbar-tile { padding: 18px 16px; gap: 10px; }
 }
-@media (max-width: 768px) {
-  .msc-quickbar-inner {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .msc-quickbar-tile { padding: 16px 18px; }
+
+@media (max-width: 640px) {
+  .msc-quickbar { margin-top: -44px; }
+
+  /* Show only first 2 tiles on mobile */
+  .msc-quickbar-tile:nth-child(3),
+  .msc-quickbar-tile:nth-child(4) { display: none; }
+
+  /* Show hamburger */
+  .msc-quickbar-toggle { display: flex; }
 }
-@media (max-width: 480px) {
-  .msc-quickbar-inner { grid-template-columns: 1fr; }
+
+@media (max-width: 400px) {
+  /* Show only 1 tile on very small */
+  .msc-quickbar-tile:nth-child(2) { display: none; }
+  .msc-quickbar-tile { padding: 16px 14px; }
 }
 
 /* ---------- SECTION HEADER — Corporate bold ---------- */
 .section { padding: 88px 0 !important; }
+
+/* First section after quickbar needs top-padding to clear the overlap */
+.latest-blogs-section { padding-top: 80px !important; }
 .section-gray { background: var(--msc-gray-light) !important; }
 
 .section-badge {
