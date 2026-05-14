@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Project International Trade — International Freight Services</title>
-  <link rel="stylesheet" href="/css/style.css?v=4">
+  <link rel="stylesheet" href="/css/style.css?v=5">
   <link rel="stylesheet" href="/css/apple.css?v=2">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -28,6 +28,7 @@
       <li><a href="#tracking" data-i18n="nav.tracking">ติดตามสินค้า</a></li>
       <li><a href="#alibaba">🛒 Alibaba</a></li>
       <li><a href="#products">🇹🇭 สินค้าส่งออก</a></li>
+      <li><a href="#tools">🤖 AI Tools</a></li>
       <li><a href="#blog" data-i18n="nav.blog">บทความ</a></li>
       <li><a href="#contact" data-i18n="nav.contact">ติดต่อเรา</a></li>
     </ul>
@@ -823,6 +824,218 @@
   </div>
 </section>
 
+<!-- SMART FREIGHT INTELLIGENCE TOOLS -->
+<section class="section section-gray" id="tools">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">🤖 AI-Powered</span>
+      <h2 class="section-title">Smart Freight Intelligence Tools</h2>
+      <p class="section-subtitle">เครื่องมือ AI ช่วยวิเคราะห์เส้นทาง ต้นทุน และสร้างเอกสารธุรกิจอัตโนมัติ</p>
+    </div>
+
+    <!-- TAB BUTTONS -->
+    <div class="tools-tab-bar">
+      <button class="tools-tab-btn active" onclick="switchToolTab('freightCalc', this)">⚓ Freight Calc</button>
+      <button class="tools-tab-btn" onclick="switchToolTab('tradeProfile', this)">📊 Trade Profile</button>
+      <button class="tools-tab-btn" onclick="switchToolTab('routeIntel', this)">🌊 Route Intel</button>
+      <button class="tools-tab-btn" onclick="switchToolTab('forecast', this)">📈 Forecast</button>
+      <button class="tools-tab-btn" onclick="switchToolTab('proposal', this)">✍️ Proposal</button>
+    </div>
+
+    <!-- TAB 1: FREIGHT CALCULATOR -->
+    <div class="tools-tab-pane active" id="tool-freightCalc">
+      <div class="tools-card">
+        <div class="tools-card-header">
+          <div class="tools-card-icon">⚓</div>
+          <div>
+            <h3 class="tools-card-title">Freight Cost Calculator</h3>
+            <p class="tools-card-desc">เปรียบเทียบราคา Sea / Air / Rail พร้อม Transit Time และคำแนะนำ AI</p>
+          </div>
+        </div>
+        <div class="tools-form-grid">
+          <div class="tools-form-group">
+            <label class="tools-label">สินค้า / ประเภทสินค้า</label>
+            <input type="text" id="fc-product" class="tools-input" placeholder="เช่น เฟอร์นิเจอร์ไม้, อิเล็กทรอนิกส์">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">น้ำหนัก (kg)</label>
+            <input type="number" id="fc-weight" class="tools-input" placeholder="เช่น 500">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ปริมาตร CBM</label>
+            <input type="number" id="fc-cbm" class="tools-input" placeholder="เช่น 2.5" step="0.1">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ต้นทาง</label>
+            <input type="text" id="fc-origin" class="tools-input" placeholder="เช่น Bangkok, Thailand">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ปลายทาง</label>
+            <input type="text" id="fc-dest" class="tools-input" placeholder="เช่น Shanghai, China">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">Incoterms</label>
+            <select id="fc-incoterms" class="tools-input">
+              <option value="FOB">FOB</option>
+              <option value="CIF">CIF</option>
+              <option value="EXW">EXW</option>
+              <option value="DAP">DAP</option>
+              <option value="DDP">DDP</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-tool-run" onclick="runFreightCalc(event)">⚓ คำนวณค่าขนส่ง</button>
+        <div id="freightCalcResult" class="tools-result-area"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: TRADE PROFILE REPORT -->
+    <div class="tools-tab-pane" id="tool-tradeProfile">
+      <div class="tools-card">
+        <div class="tools-card-header">
+          <div class="tools-card-icon">📊</div>
+          <div>
+            <h3 class="tools-card-title">Trade Profile Report</h3>
+            <p class="tools-card-desc">วิเคราะห์โปรไฟล์ธุรกิจลูกค้า พร้อม Closing % และกลยุทธ์การขาย</p>
+          </div>
+        </div>
+        <div class="tools-form-grid">
+          <div class="tools-form-group">
+            <label class="tools-label">ชื่อบริษัท</label>
+            <input type="text" id="tp-company" class="tools-input" placeholder="เช่น ABC Trading Co.">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ประเทศ</label>
+            <input type="text" id="tp-country" class="tools-input" placeholder="เช่น China, USA, Japan">
+          </div>
+          <div class="tools-form-group tools-form-group--wide">
+            <label class="tools-label">สินค้าที่สั่ง / สนใจ</label>
+            <input type="text" id="tp-products" class="tools-input" placeholder="เช่น ข้าวหอมมะลิ, มะพร้าว, สมุนไพร">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ปริมาณ (TEU/ปี)</label>
+            <input type="text" id="tp-volume" class="tools-input" placeholder="เช่น 5-10 TEU/year">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">เส้นทางหลัก</label>
+            <input type="text" id="tp-routes" class="tools-input" placeholder="เช่น Bangkok → Shanghai">
+          </div>
+          <div class="tools-form-group tools-form-group--wide">
+            <label class="tools-label">Pain Points / ความกังวล</label>
+            <input type="text" id="tp-pain" class="tools-input" placeholder="เช่น ราคาแพง, ส่งช้า, เอกสารยุ่งยาก">
+          </div>
+        </div>
+        <button class="btn-tool-run" onclick="runTradeProfile(event)">📊 วิเคราะห์โปรไฟล์</button>
+        <div id="tradeProfileResult" class="tools-result-area"></div>
+      </div>
+    </div>
+
+    <!-- TAB 3: ROUTE INTELLIGENCE -->
+    <div class="tools-tab-pane" id="tool-routeIntel">
+      <div class="tools-card">
+        <div class="tools-card-header">
+          <div class="tools-card-icon">🌊</div>
+          <div>
+            <h3 class="tools-card-title">Route Intelligence</h3>
+            <p class="tools-card-desc">แนะนำ Carrier ที่ดีที่สุด 4 อันดับ พร้อมข้อมูลท่าเรือ, Transit Time และความถี่</p>
+          </div>
+        </div>
+        <div class="tools-form-grid">
+          <div class="tools-form-group">
+            <label class="tools-label">ต้นทาง (Port/City)</label>
+            <input type="text" id="ri-origin" class="tools-input" placeholder="เช่น Bangkok (BKK)">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ปลายทาง (Port/City)</label>
+            <input type="text" id="ri-dest" class="tools-input" placeholder="เช่น Rotterdam (RTM)">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ประเภทสินค้า</label>
+            <input type="text" id="ri-commodity" class="tools-input" placeholder="เช่น General Cargo, Reefer, Hazmat">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ปริมาณ (TEU)</label>
+            <input type="text" id="ri-volume" class="tools-input" placeholder="เช่น 1 TEU, 2 FCL">
+          </div>
+        </div>
+        <button class="btn-tool-run" onclick="runRouteIntel(event)">🌊 ค้นหาเส้นทาง</button>
+        <div id="routeIntelResult" class="tools-result-area"></div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SHIPMENT FORECAST -->
+    <div class="tools-tab-pane" id="tool-forecast">
+      <div class="tools-card">
+        <div class="tools-card-header">
+          <div class="tools-card-icon">📈</div>
+          <div>
+            <h3 class="tools-card-title">Shipment Forecast</h3>
+            <p class="tools-card-desc">พยากรณ์ยอดส่งออก 12 เดือน พร้อมระบุ Peak Season และ Low Season</p>
+          </div>
+        </div>
+        <div class="tools-form-grid">
+          <div class="tools-form-group">
+            <label class="tools-label">ประเภทสินค้า</label>
+            <input type="text" id="fo-commodity" class="tools-input" placeholder="เช่น ข้าว, ยางพารา, อาหารแปรรูป">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">เส้นทางการค้า</label>
+            <input type="text" id="fo-route" class="tools-input" placeholder="เช่น Thailand → EU">
+          </div>
+          <div class="tools-form-group tools-form-group--wide">
+            <label class="tools-label">ประวัติการส่งออก (ถ้ามี)</label>
+            <input type="text" id="fo-history" class="tools-input" placeholder="เช่น ปีที่แล้ว 120 TEU, เพิ่มขึ้น 15%">
+          </div>
+        </div>
+        <button class="btn-tool-run" onclick="runForecast(event)">📈 พยากรณ์ยอด</button>
+        <div id="forecastResult" class="tools-result-area"></div>
+      </div>
+    </div>
+
+    <!-- TAB 5: PROPOSAL GENERATOR -->
+    <div class="tools-tab-pane" id="tool-proposal">
+      <div class="tools-card">
+        <div class="tools-card-header">
+          <div class="tools-card-icon">✍️</div>
+          <div>
+            <h3 class="tools-card-title">Proposal Generator</h3>
+            <p class="tools-card-desc">สร้างใบเสนอราคาและ Business Proposal แบบ 2 ภาษา พร้อม Copy / Email / Print</p>
+          </div>
+        </div>
+        <div class="tools-form-grid">
+          <div class="tools-form-group">
+            <label class="tools-label">ชื่อบริษัทลูกค้า</label>
+            <input type="text" id="pg-company" class="tools-input" placeholder="เช่น Sunrise Imports Ltd.">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ชื่อผู้ติดต่อ</label>
+            <input type="text" id="pg-contact" class="tools-input" placeholder="เช่น Mr. Wang Wei">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ประเทศ / ตลาดเป้าหมาย</label>
+            <input type="text" id="pg-country" class="tools-input" placeholder="เช่น China, Japan, USA">
+          </div>
+          <div class="tools-form-group tools-form-group--wide">
+            <label class="tools-label">ความต้องการ / สินค้าที่สนใจ</label>
+            <input type="text" id="pg-requirements" class="tools-input" placeholder="เช่น FCL 20' สินค้าอาหาร Bangkok→Shanghai">
+          </div>
+          <div class="tools-form-group tools-form-group--wide">
+            <label class="tools-label">บริการที่ต้องการนำเสนอ</label>
+            <input type="text" id="pg-services" class="tools-input" placeholder="เช่น Sea Freight, Customs, Insurance">
+          </div>
+          <div class="tools-form-group">
+            <label class="tools-label">ระยะเวลา Validity</label>
+            <input type="text" id="pg-timeline" class="tools-input" placeholder="เช่น 30 วัน">
+          </div>
+        </div>
+        <button class="btn-tool-run" onclick="runProposal(event)">✍️ สร้าง Proposal</button>
+        <div id="proposalResult" class="tools-result-area"></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
 <!-- BLOG -->
 <section class="section section-dark" id="blog">
   <div class="container">
@@ -1033,6 +1246,7 @@
 <script src="/js/blog.js?v=2"></script>
 <script src="/js/products.js?v=4"></script>
 <script src="/js/alibaba.js?v=2"></script>
+<script src="/js/tools.js?v=1"></script>
 <script src="/js/app.js?v=2"></script>
 <script src="/js/apple.js?v=2"></script>
 <script>

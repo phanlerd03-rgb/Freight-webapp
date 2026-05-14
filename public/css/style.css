@@ -1136,3 +1136,142 @@ img { max-width: 100%; }
   .latest-blog-card:nth-child(3) { display: block; }
   .latest-blogs-header { flex-direction: column; align-items: flex-start; }
 }
+
+/* ============================================================
+   SMART FREIGHT INTELLIGENCE TOOLS
+   ============================================================ */
+
+/* Tab Bar */
+.tools-tab-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 28px; }
+.tools-tab-btn { padding: 10px 22px; border-radius: 24px; border: 2px solid #e2e8f0; background: #fff; color: #64748b; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.tools-tab-btn:hover { border-color: #e64d2e; color: #e64d2e; }
+.tools-tab-btn.active { background: linear-gradient(135deg,#e64d2e,#c0392b); border-color: transparent; color: #fff; box-shadow: 0 4px 14px rgba(230,77,46,.35); }
+
+/* Tab Panes */
+.tools-tab-pane { display: none; }
+.tools-tab-pane.active { display: block; animation: fadeIn .25s ease; }
+
+/* Tool Card */
+.tools-card { background: #fff; border-radius: 20px; padding: 32px; box-shadow: 0 4px 24px rgba(0,0,0,.07); max-width: 860px; margin: 0 auto; }
+.tools-card-header { display: flex; align-items: flex-start; gap: 16px; margin-bottom: 28px; }
+.tools-card-icon { font-size: 36px; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; background: #fff7f5; border-radius: 16px; flex-shrink: 0; }
+.tools-card-title { font-size: 20px; font-weight: 700; color: #1e293b; margin: 0 0 4px; }
+.tools-card-desc { font-size: 14px; color: #64748b; margin: 0; }
+
+/* Form Grid */
+.tools-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.tools-form-group { display: flex; flex-direction: column; gap: 6px; }
+.tools-form-group--wide { grid-column: 1 / -1; }
+.tools-label { font-size: 13px; font-weight: 600; color: #374151; }
+.tools-input { padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: #1e293b; background: #f8fafc; transition: border-color .2s, box-shadow .2s; outline: none; font-family: inherit; }
+.tools-input:focus { border-color: #e64d2e; box-shadow: 0 0 0 3px rgba(230,77,46,.12); background: #fff; }
+
+/* Run Button */
+.btn-tool-run { display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg,#e64d2e,#c0392b); color: #fff; padding: 13px 32px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; transition: all .2s; box-shadow: 0 4px 14px rgba(230,77,46,.35); font-family: inherit; }
+.btn-tool-run:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(230,77,46,.45); }
+.btn-tool-run:active { transform: translateY(0); }
+.btn-tool-run:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+/* Result Area */
+.tools-result-area { margin-top: 24px; }
+
+/* Loading / Error */
+.tool-loading { display: flex; align-items: center; gap: 12px; padding: 20px; color: #64748b; font-size: 14px; }
+.tool-loading-spinner { width: 22px; height: 22px; border: 3px solid #e2e8f0; border-top-color: #e64d2e; border-radius: 50%; animation: spin .7s linear infinite; flex-shrink: 0; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.tool-error { background: #fff5f5; border: 1.5px solid #fecaca; border-radius: 12px; padding: 16px 20px; color: #b91c1c; font-size: 14px; }
+
+/* Result Header */
+.tool-result-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #f1f5f9; }
+.tool-result-title { font-size: 17px; font-weight: 700; color: #1e293b; }
+.tool-result-badge { background: linear-gradient(135deg,#dcfce7,#bbf7d0); color: #15803d; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+/* Freight Calc */
+.freight-options-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 20px; }
+.freight-option { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 16px; padding: 20px; transition: all .2s; position: relative; overflow: hidden; }
+.freight-option.best-value { border-color: #e64d2e; background: #fff7f5; }
+.freight-option.best-value::before { content: "⭐ แนะนำ"; position: absolute; top: 0; right: 0; background: #e64d2e; color: #fff; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 0 14px 0 10px; }
+.freight-option-icon { font-size: 28px; margin-bottom: 8px; }
+.freight-option-mode { font-size: 13px; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+.freight-option-price { font-size: 22px; font-weight: 800; color: #e64d2e; margin-bottom: 4px; }
+.freight-option-transit { font-size: 13px; color: #64748b; margin-bottom: 12px; }
+.freight-option-pros { list-style: none; padding: 0; margin: 0; }
+.freight-option-pros li { font-size: 12.5px; color: #475569; padding: 2px 0; }
+.freight-option-pros li::before { content: "✓ "; color: #22c55e; font-weight: 700; }
+
+/* Trade Profile */
+.trade-profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.closing-chance-wrap { text-align: center; padding: 20px; background: #f8fafc; border-radius: 16px; }
+.closing-chance-label { font-size: 13px; color: #64748b; margin-bottom: 8px; }
+.closing-chance-value { font-size: 52px; font-weight: 800; line-height: 1; }
+.closing-chance-value.high { color: #16a34a; }
+.closing-chance-value.med { color: #d97706; }
+.closing-chance-value.low { color: #dc2626; }
+.closing-chance-desc { font-size: 13px; color: #64748b; margin-top: 6px; }
+.profile-section { margin-bottom: 16px; }
+.profile-section-title { font-size: 13px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+.profile-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.profile-tag { background: #e0f2fe; color: #0369a1; padding: 4px 12px; border-radius: 20px; font-size: 12.5px; font-weight: 600; }
+.profile-tag.warn { background: #fef9c3; color: #854d0e; }
+.profile-tag.action { background: #dcfce7; color: #15803d; }
+
+/* Route Intel */
+.carriers-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+.carrier-card { background: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 18px; position: relative; transition: all .2s; }
+.carrier-card.top-pick { border-color: #e64d2e; background: #fff7f5; }
+.carrier-card.top-pick::after { content: "#1 Pick"; position: absolute; top: 12px; right: 12px; background: #e64d2e; color: #fff; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 8px; }
+.carrier-name { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+.carrier-transit { font-size: 13px; color: #64748b; margin-bottom: 10px; }
+.carrier-details { display: flex; flex-direction: column; gap: 4px; }
+.carrier-detail-item { font-size: 12.5px; color: #475569; }
+
+/* Forecast Chart */
+.forecast-chart-wrap { margin-bottom: 20px; }
+.forecast-months { display: flex; align-items: flex-end; gap: 6px; height: 160px; margin-bottom: 6px; }
+.forecast-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.forecast-bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 4px; background: linear-gradient(to top,#e64d2e,#f87171); position: relative; }
+.forecast-bar.peak { background: linear-gradient(to top,#c0392b,#e64d2e); }
+.forecast-bar.low { background: linear-gradient(to top,#94a3b8,#cbd5e1); }
+.forecast-bar-val { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 9px; font-weight: 700; color: #475569; white-space: nowrap; }
+.forecast-bar-month { font-size: 10px; color: #64748b; margin-top: 4px; font-weight: 600; }
+.forecast-legend { display: flex; gap: 16px; justify-content: center; font-size: 12px; color: #64748b; margin-top: 8px; }
+.forecast-legend-item { display: flex; align-items: center; gap: 5px; }
+.forecast-legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+.forecast-summary { background: #f0fdf4; border: 1.5px solid #bbf7d0; border-radius: 12px; padding: 14px 18px; font-size: 14px; color: #15803d; }
+
+/* Proposal */
+.proposal-body { background: #f8fafc; border-radius: 14px; padding: 24px; font-size: 14px; line-height: 1.8; color: #1e293b; max-height: 480px; overflow-y: auto; margin-bottom: 16px; border: 1.5px solid #e2e8f0; }
+.proposal-body h1 { font-size: 18px; color: #1e3a5f; border-bottom: 2px solid #e64d2e; padding-bottom: 6px; margin: 16px 0 8px; }
+.proposal-body h2 { font-size: 15px; color: #1e3a5f; margin: 16px 0 8px; }
+.proposal-body h3 { font-size: 14px; color: #1e3a5f; margin: 12px 0 6px; }
+.proposal-body hr { border: none; border-top: 1px solid #e2e8f0; margin: 16px 0; }
+.proposal-body strong { color: #1e3a5f; }
+.proposal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-tool-action { display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all .2s; font-family: inherit; }
+.btn-tool-action.primary { background: #e64d2e; color: #fff; }
+.btn-tool-action.primary:hover { background: #c0392b; }
+.btn-tool-action.secondary { background: #f1f5f9; color: #475569; border: 1.5px solid #e2e8f0; }
+.btn-tool-action.secondary:hover { background: #e2e8f0; }
+.btn-tool-action.line-btn { background: #06C755; color: #fff; }
+.btn-tool-action.line-btn:hover { background: #05a847; }
+
+/* Tool Tips */
+.tool-tips { margin-top: 20px; }
+.tool-tips-title { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 10px; text-transform: uppercase; letter-spacing: .5px; }
+.tool-tips-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.tool-tips-list li { font-size: 13px; color: #475569; padding: 8px 14px; background: #f8fafc; border-radius: 8px; border-left: 3px solid #e64d2e; }
+
+/* Tools Toast */
+.tools-toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #1e293b; color: #fff; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 600; z-index: 9999; opacity: 0; transition: opacity .25s; pointer-events: none; white-space: nowrap; }
+.tools-toast.show { opacity: 1; }
+
+/* Responsive Tools */
+@media (max-width: 700px) {
+  .tools-tab-btn { padding: 8px 14px; font-size: 13px; }
+  .tools-card { padding: 20px 16px; }
+  .tools-form-grid { grid-template-columns: 1fr; }
+  .tools-form-group--wide { grid-column: auto; }
+  .freight-options-grid { grid-template-columns: 1fr; }
+  .trade-profile-grid { grid-template-columns: 1fr; }
+  .carriers-grid { grid-template-columns: 1fr; }
+}

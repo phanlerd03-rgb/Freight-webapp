@@ -30,6 +30,7 @@ const productsRoutes = require('./routes/products');
 const alibabaRoutes = require('./routes/alibaba');
 const adminRoutes = require('./routes/admin');
 const contactRoutes = require('./routes/contact');
+const toolsRoutes = require('./routes/tools');
 
 app.use('/api/quote', quoteRoutes);
 app.use('/api/booking', bookingRoutes);
@@ -42,6 +43,7 @@ app.use('/api/products', productsRoutes);
 app.use('/api/alibaba', alibabaRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/tools', toolsRoutes);
 
 // ===== Admin Panel Page =====
 app.get('/admin', (req, res) => {
