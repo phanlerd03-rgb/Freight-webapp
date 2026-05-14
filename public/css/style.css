@@ -991,6 +991,14 @@ img { max-width: 100%; }
 .btn-inquiry-submit:disabled { opacity: .6; cursor: not-allowed; }
 .inquiry-note { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 8px; }
 
+/* Share Buttons */
+.btn-product-share { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 10px; width: 100%; justify-content: center; }
+.btn-product-share:hover { background: #e8f0fb; color: var(--primary); border-color: var(--primary); }
+.btn-product-share svg { flex-shrink: 0; }
+.btn-product-share--modal { padding: 11px 20px; font-size: 14px; border-radius: 12px; background: #f8fafc; border: 1.5px solid #e2e8f0; margin-top: 10px; }
+.btn-product-share--modal:hover { background: #e8f0fb; color: var(--primary); border-color: var(--primary); }
+.product-modal-actions { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
+
 /* Forms */
 .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }

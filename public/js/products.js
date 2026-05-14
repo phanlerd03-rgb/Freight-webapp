@@ -13,6 +13,20 @@ const CATEGORY_EMOJI = {
 
 function categoryEmoji(cat) { return CATEGORY_EMOJI[cat] || '📦'; }
 
+// ===== SHARE PRODUCT =====
+function shareProduct(e, nameTH, nameEN, desc) {
+  e.stopPropagation();
+  const url = 'https://pitfreight.com/#products';
+  const title = `${nameTH}${nameEN ? ' / ' + nameEN : ''} — Thai Export | PIT Freight`;
+  const text = `🇹🇭 ${nameTH}${nameEN ? ' (' + nameEN + ')' : ''}\n${desc ? desc.substring(0, 100) + '...' : ''}\n\nสินค้าไทยคุณภาพพร้อมส่งออกทั่วโลก ผ่าน PIT Freight\n${url}`;
+  if (navigator.share) {
+    navigator.share({ title, text, url }).catch(() => {});
+  } else {
+    const copyText = `${title}\n\n${text}`;
+    navigator.clipboard ? navigator.clipboard.writeText(copyText).then(() => showProductToast('📋 คัดลอกลิงก์แล้ว! / Link copied!')) : showProductToast('🔗 ' + url);
+  }
+}
+
 // ===== RENDER PRODUCT CARD =====
 function renderProductCard(p) {
   const cover = p.cover
@@ -20,6 +34,9 @@ function renderProductCard(p) {
     : '';
   const placeholder = `<div class="product-card-cover-placeholder" ${p.cover ? 'style="display:none"' : ''}>${categoryEmoji(p.category)}</div>`;
   const certs = p.certifications.slice(0, 3).map(c => `<span class="product-cert">${c}</span>`).join('');
+  const descSafe = (p.descriptionTH || p.descriptionEN || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+  const nameTHSafe = p.nameTH.replace(/'/g, "\\'");
+  const nameENSafe = (p.nameEN || '').replace(/'/g, "\\'");
 
   return `
     <div class="product-card" onclick="openProductModal('${p.id}')">
@@ -39,6 +56,10 @@ function renderProductCard(p) {
             ${p.priceRange ? `<span class="product-price">${p.priceRange}</span>` : ''}
           </div>
         </div>
+        <button class="btn-product-share" onclick="shareProduct(event,'${nameTHSafe}','${nameENSafe}','${descSafe}')" title="แชร์สินค้า / Share">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          แชร์
+        </button>
       </div>
     </div>`;
 }
@@ -118,9 +139,15 @@ async function openProductModal(productId) {
         ${p.descriptionTH ? `<div class="product-modal-desc"><h4>รายละเอียดสินค้า</h4><p>${p.descriptionTH}</p></div>` : ''}
         ${p.descriptionEN ? `<div class="product-modal-desc"><h4>Product Description</h4><p>${p.descriptionEN}</p></div>` : ''}
 
-        <button class="btn-inquiry" onclick="openInquiryForm('${p.id}','${p.nameTH.replace(/'/g,"\\'")}')">
-          📩 ขอใบเสนอราคา / Request a Quote
-        </button>
+        <div class="product-modal-actions">
+          <button class="btn-inquiry" onclick="openInquiryForm('${p.id}','${p.nameTH.replace(/'/g,"\\'")}')">
+            📩 ขอใบเสนอราคา / Request a Quote
+          </button>
+          <button class="btn-product-share btn-product-share--modal" onclick="shareProduct(event,'${p.nameTH.replace(/'/g,"\\'")}','${(p.nameEN||'').replace(/'/g,"\\'")}','${(p.descriptionTH||p.descriptionEN||'').replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            แชร์สินค้านี้ / Share
+          </button>
+        </div>
         <p class="inquiry-note">PIT Freight จะเป็นตัวกลางติดต่อผู้ขายและดูแลการส่งออกให้ครบวงจร</p>
       </div>`;
   } catch (e) {
