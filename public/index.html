@@ -11,117 +11,119 @@
 </head>
 <body>
 
-<!-- NAV -->
+<!-- NAV — MSC style: transparent, logo center, hamburger left -->
 <nav class="navbar" id="navbar">
   <div class="container nav-inner">
-    <div class="logo">
+    <!-- Left: hamburger -->
+    <button class="hamburger" id="hamburger">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+
+    <!-- Center: logo -->
+    <div class="logo logo-center">
       <span class="logo-icon">🚢</span>
       <div>
         <div class="logo-name">Project International Trade</div>
         <div class="logo-sub">International Freight Services</div>
       </div>
     </div>
+
+    <!-- Right: nav links + lang + cta -->
     <ul class="nav-links">
       <li><a href="#services" data-i18n="nav.services">บริการ</a></li>
       <li><a href="#quote" data-i18n="nav.quote">ขอใบเสนอราคา</a></li>
       <li><a href="#booking" data-i18n="nav.booking">จองขนส่ง</a></li>
       <li><a href="#tracking" data-i18n="nav.tracking">ติดตามสินค้า</a></li>
-      <li><a href="#alibaba">🛒 Alibaba</a></li>
-      <li><a href="#products">🇹🇭 สินค้าส่งออก</a></li>
+      <li><a href="#alibaba">Alibaba</a></li>
+      <li><a href="#products">สินค้าส่งออก</a></li>
       <li><a href="#blog" data-i18n="nav.blog">บทความ</a></li>
       <li><a href="#contact" data-i18n="nav.contact">ติดต่อเรา</a></li>
     </ul>
-    <button class="btn-lang" id="langToggle" onclick="toggleLang()">🇬🇧 EN</button>
+    <button class="btn-lang" id="langToggle" onclick="toggleLang()">EN</button>
     <button class="btn-nav-cta" onclick="scrollToSection('quote')" data-i18n="nav.cta">ขอราคาฟรี</button>
-    <button class="hamburger" id="hamburger">☰</button>
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- HERO — MSC style: ship photo + two-column layout -->
 <section class="hero" id="home">
-  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
   <div class="container hero-content">
-    <div class="hero-badge" data-i18n="hero.badge">🌏 บริการขนส่งครบวงจร 50+ ประเทศ</div>
-    <h1 class="hero-title" data-i18n="hero.title">ขนส่งสินค้าระหว่างประเทศ<br><span class="gradient-text">ปลอดภัย รวดเร็ว คุ้มค่า</span></h1>
-    <p class="hero-desc" data-i18n="hero.desc">บริการขนส่งสินค้าทางเรือ ทางอากาศ และทางบก ครบครัน ด้วยประสบการณ์กว่า 15 ปี พร้อมให้คำปรึกษาด้านพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก</p>
-    <div class="hero-actions">
-      <button class="btn-primary btn-lg" onclick="scrollToSection('quote')" data-i18n="hero.btn1">📦 ขอใบเสนอราคา</button>
-      <button class="btn-outline btn-lg" onclick="scrollToSection('tracking')" data-i18n="hero.btn2">🔍 ติดตามสินค้า</button>
+
+    <!-- LEFT: headline + stats -->
+    <div class="hero-left">
+      <p class="hero-eyebrow">LEADER IN</p>
+      <h1 class="hero-title">SHIPPING &amp;<br>LOGISTICS</h1>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">50+</span>
+          <span class="stat-label" data-i18n="hero.stat1">ประเทศทั่วโลก</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">15K+</span>
+          <span class="stat-label" data-i18n="hero.stat2">ลูกค้าพึงพอใจ</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">99.2%</span>
+          <span class="stat-label" data-i18n="hero.stat3">ส่งตรงเวลา</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">24/7</span>
+          <span class="stat-label" data-i18n="hero.stat4">บริการลูกค้า</span>
+        </div>
+      </div>
     </div>
-    <div class="hero-stats">
-      <div class="stat"><span class="stat-num">50+</span><span class="stat-label" data-i18n="hero.stat1">ประเทศทั่วโลก</span></div>
-      <div class="stat"><span class="stat-num">15,000+</span><span class="stat-label" data-i18n="hero.stat2">ลูกค้าพึงพอใจ</span></div>
-      <div class="stat"><span class="stat-num">99.2%</span><span class="stat-label" data-i18n="hero.stat3">ส่งตรงเวลา</span></div>
-      <div class="stat"><span class="stat-num">24/7</span><span class="stat-label" data-i18n="hero.stat4">บริการลูกค้า</span></div>
+
+    <!-- RIGHT: floating action widget -->
+    <div class="hero-widget">
+      <!-- Tab headers -->
+      <div class="hw-tabs">
+        <button class="hw-tab active" data-hw="tracking" onclick="switchHWTab(this,'tracking')">ติดตามสินค้า</button>
+        <button class="hw-tab" data-hw="quote"    onclick="switchHWTab(this,'quote')">ขอใบเสนอราคา</button>
+        <button class="hw-tab" data-hw="contact"  onclick="switchHWTab(this,'contact')">ติดต่อเรา</button>
+      </div>
+
+      <!-- Tab: Tracking -->
+      <div class="hw-pane active" id="hw-tracking">
+        <p class="hw-hint">กรอกหมายเลขติดตามสินค้าของคุณ</p>
+        <div class="hw-input-row">
+          <input type="text" id="hwTrackInput" class="hw-input" placeholder="เช่น PIT123456789">
+          <button class="hw-btn" onclick="document.getElementById('trackingInput').value=document.getElementById('hwTrackInput').value;scrollToSection('tracking');trackShipment();">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab: Quote -->
+      <div class="hw-pane" id="hw-quote">
+        <p class="hw-hint">รับใบเสนอราคาภายใน 24 ชั่วโมง</p>
+        <div class="hw-input-row">
+          <input type="text" id="hwOrigin" class="hw-input" placeholder="ต้นทาง — Origin" value="กรุงเทพฯ">
+        </div>
+        <div class="hw-input-row" style="margin-top:10px">
+          <input type="text" id="hwDest" class="hw-input" placeholder="ปลายทาง — Destination">
+          <button class="hw-btn" onclick="scrollToSection('quote')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab: Contact -->
+      <div class="hw-pane" id="hw-contact">
+        <p class="hw-hint">ทีมงานพร้อมให้คำปรึกษา 24/7</p>
+        <a href="tel:+66634467735" class="hw-contact-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.8 2 2 0 015.06 2H8a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L9.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          +66 63 446 7735
+        </a>
+        <a href="https://lin.ee/GdtXwYn" target="_blank" class="hw-contact-btn hw-contact-btn--line">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+          Line OA
+        </a>
+      </div>
     </div>
-  </div>
-  <div class="hero-wave">
-    <svg viewBox="0 0 1200 100" preserveAspectRatio="none"><path d="M0,50 C300,100 900,0 1200,50 L1200,100 L0,100 Z" fill="#f8fafc"/></svg>
+
   </div>
 </section>
 
-<!-- QUICK-ACTION BAR — premium slim floating -->
-<div class="qbar" id="mscQuickbar">
-  <div class="container">
-
-    <!-- Desktop: slim pill row -->
-    <div class="qbar-row">
-      <a class="qbar-item" href="#tracking" onclick="scrollToSection('tracking');return false;">
-        <svg class="qbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-        <span class="qbar-label">ติดตามสินค้า</span>
-      </a>
-      <span class="qbar-sep"></span>
-      <a class="qbar-item" href="#quote" onclick="scrollToSection('quote');return false;">
-        <svg class="qbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M9 13h2m4 0h2"/></svg>
-        <span class="qbar-label">ขอใบเสนอราคา</span>
-      </a>
-      <span class="qbar-sep"></span>
-      <a class="qbar-item" href="#booking" onclick="scrollToSection('booking');return false;">
-        <svg class="qbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14M5 8a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v0a2 2 0 01-2 2M5 8l-1 10a2 2 0 002 2h12a2 2 0 002-2L19 8"/></svg>
-        <span class="qbar-label">จองขนส่ง</span>
-      </a>
-      <span class="qbar-sep"></span>
-      <a class="qbar-item" href="#contact" onclick="scrollToSection('contact');return false;">
-        <svg class="qbar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.8 19.79 19.79 0 01.08 4.18 2 2 0 012.06 2H5a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-        <span class="qbar-label">ติดต่อเรา</span>
-      </a>
-
-      <!-- ☰ More button (visible on mobile) -->
-      <button class="qbar-more" id="mscQbToggle" onclick="toggleMscQuickMenu()" aria-label="เมนูทั้งหมด">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-    </div>
-
-    <!-- Dropdown (mobile) -->
-    <div class="qbar-dropdown" id="mscQbDropdown">
-      <a class="qbar-drop-item" href="#tracking" onclick="scrollToSection('tracking');closeMscQuickMenu();return false;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
-        <div><strong>ติดตามสินค้า</strong><span>Track shipment</span></div>
-      </a>
-      <a class="qbar-drop-item" href="#quote" onclick="scrollToSection('quote');closeMscQuickMenu();return false;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18M9 13h2m4 0h2"/></svg>
-        <div><strong>ขอใบเสนอราคา</strong><span>Get a quote</span></div>
-      </a>
-      <a class="qbar-drop-item" href="#booking" onclick="scrollToSection('booking');closeMscQuickMenu();return false;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 8h14M5 8a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v0a2 2 0 01-2 2M5 8l-1 10a2 2 0 002 2h12a2 2 0 002-2L19 8"/></svg>
-        <div><strong>จองขนส่ง</strong><span>Book a shipment</span></div>
-      </a>
-      <a class="qbar-drop-item" href="#contact" onclick="scrollToSection('contact');closeMscQuickMenu();return false;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.8 19.79 19.79 0 01.08 4.18 2 2 0 012.06 2H5a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-        <div><strong>ติดต่อเรา</strong><span>Contact us</span></div>
-      </a>
-      <a class="qbar-drop-item" href="#services" onclick="scrollToSection('services');closeMscQuickMenu();return false;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l3-8 3 5 3-3 3 6"/><path d="M3 20h18M3 4h18"/></svg>
-        <div><strong>บริการขนส่ง</strong><span>Our services</span></div>
-      </a>
-      <a class="qbar-drop-item" href="#blog" onclick="scrollToSection('blog');closeMscQuickMenu();return false;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
-        <div><strong>บทความ</strong><span>Blog &amp; News</span></div>
-      </a>
-    </div>
-
-  </div>
-</div>
 
 <!-- LATEST BLOG (หน้าแรก) -->
 <section class="section latest-blogs-section" id="latest-blogs">
@@ -1098,28 +1100,13 @@
 <script src="/js/app.js"></script>
 <script src="/js/apple.js"></script>
 <script>
-// ===== MSC QUICK-ACTION BAR — hamburger toggle =====
-function toggleMscQuickMenu() {
-  const btn = document.getElementById('mscQbToggle');
-  const drop = document.getElementById('mscQbDropdown');
-  const isOpen = drop.classList.contains('open');
-  if (isOpen) {
-    drop.classList.remove('open');
-    btn.classList.remove('open');
-  } else {
-    drop.classList.add('open');
-    btn.classList.add('open');
-  }
+// ===== HERO WIDGET TABS =====
+function switchHWTab(btn, id) {
+  document.querySelectorAll('.hw-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.hw-pane').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('hw-' + id).classList.add('active');
 }
-function closeMscQuickMenu() {
-  document.getElementById('mscQbDropdown')?.classList.remove('open');
-  document.getElementById('mscQbToggle')?.classList.remove('open');
-}
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-  const bar = document.getElementById('mscQuickbar');
-  if (bar && !bar.contains(e.target)) closeMscQuickMenu();
-});
 </script>
 </body>
 </html>
