@@ -1,3 +1,85 @@
+/* ===== TRANSPORT GALLERY STRIP ===== */
+.transport-gallery {
+  background: #0f2340;
+  padding: 20px 0 0;
+  overflow: hidden;
+}
+.gallery-tagline {
+  text-align: center;
+  color: rgba(255,255,255,.55);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 0 24px 16px;
+}
+.gallery-track {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 0;
+}
+.gallery-track::-webkit-scrollbar { display: none; }
+.gallery-card {
+  position: relative;
+  flex: 0 0 300px;
+  height: 200px;
+  overflow: hidden;
+  scroll-snap-align: start;
+  cursor: pointer;
+}
+.gallery-card:first-child { border-radius: 0; }
+.gallery-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .5s ease;
+  filter: brightness(.75) saturate(.9);
+}
+.gallery-card:hover img {
+  transform: scale(1.06);
+  filter: brightness(.9) saturate(1.1);
+}
+.gallery-label {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 20px 14px 12px;
+  letter-spacing: .5px;
+}
+@media (max-width: 768px) {
+  .gallery-card { flex: 0 0 240px; height: 160px; }
+}
+
+/* ===== SERVICE CARD PHOTO ===== */
+.service-card-photo {
+  width: calc(100% + 48px);
+  margin: -24px -24px 20px;
+  height: 180px;
+  overflow: hidden;
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.service-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .4s ease;
+  filter: brightness(.85) saturate(.95);
+}
+.service-card:hover .service-card-photo img {
+  transform: scale(1.05);
+  filter: brightness(.95) saturate(1.05);
+}
+@media (max-width: 768px) {
+  .service-card-photo { height: 150px; }
+}
+
 /* ===== RESET & BASE ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
