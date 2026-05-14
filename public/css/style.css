@@ -993,14 +993,22 @@ img { max-width: 100%; }
 
 /* Share Buttons */
 .product-card-cover-wrap { position: relative; }
-.btn-share-overlay { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.92); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.15); transition: all .2s; color: #1e3a5f; backdrop-filter: blur(4px); z-index: 2; }
-.btn-share-overlay:hover { background: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.2); transform: scale(1.1); }
+.btn-share-overlay { position: absolute; top: 10px; right: 10px; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,.92); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,.18); transition: all .2s; color: #1e3a5f; backdrop-filter: blur(4px); z-index: 5; }
+.btn-share-overlay:hover { background: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.22); transform: scale(1.1); }
 .btn-product-share { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .2s; width: 100%; justify-content: center; }
 .btn-product-share:hover { background: #e8f0fb; color: var(--primary); border-color: var(--primary); }
 .btn-product-share svg { flex-shrink: 0; }
 .btn-product-share--modal { padding: 11px 20px; font-size: 14px; border-radius: 12px; background: #f8fafc; border: 1.5px solid #e2e8f0; margin-top: 10px; }
 .btn-product-share--modal:hover { background: #e8f0fb; color: var(--primary); border-color: var(--primary); }
 .product-modal-actions { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
+/* Share Menu Popup */
+.share-menu { position: absolute; top: calc(100% + 6px); right: 0; background: #fff; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,.18); border: 1px solid #e2e8f0; z-index: 999; min-width: 160px; overflow: hidden; animation: shareMenuIn .15s ease; }
+@keyframes shareMenuIn { from { opacity:0; transform:translateY(-6px) scale(.97); } to { opacity:1; transform:translateY(0) scale(1); } }
+.share-menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; width: 100%; text-align: left; border: none; background: none; color: #1e293b; text-decoration: none; font-family: inherit; }
+.share-menu-item:hover { background: #f8fafc; }
+.share-line { color: #06C755; }
+.share-line:hover { background: #f0fdf4; }
+.share-copy { color: #1e3a5f; }
 
 /* Forms */
 .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }

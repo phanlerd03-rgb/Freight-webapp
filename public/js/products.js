@@ -13,24 +13,54 @@ const CATEGORY_EMOJI = {
 
 function categoryEmoji(cat) { return CATEGORY_EMOJI[cat] || '📦'; }
 
-// ===== SHARE PRODUCT (ใช้ data-id แทน inline params เพื่อหลีกเลี่ยงปัญหา special chars) =====
+// ===== SHARE PRODUCT =====
 const _productCache = {};
 
 function shareProductById(e, id) {
   e.stopPropagation();
   const p = _productCache[id];
   if (!p) return;
+
+  // ปิด menu เดิมก่อน (ถ้ามี)
+  const existing = document.getElementById('share-menu-' + id);
+  if (existing) { existing.remove(); return; }
+  document.querySelectorAll('.share-menu').forEach(m => m.remove());
+
   const url = 'https://pitfreight.com/#products';
-  const title = `${p.nameTH}${p.nameEN ? ' / ' + p.nameEN : ''} — Thai Export | PIT Freight`;
-  const desc = (p.descriptionTH || p.descriptionEN || '').substring(0, 100);
-  const text = `🇹🇭 ${p.nameTH}${p.nameEN ? ' (' + p.nameEN + ')' : ''}\n${desc ? desc + '...' : ''}\n\nสินค้าไทยคุณภาพพร้อมส่งออกทั่วโลก ผ่าน PIT Freight\n${url}`;
-  if (navigator.share) {
-    navigator.share({ title, text, url }).catch(() => {});
+  const desc = (p.descriptionTH || p.descriptionEN || '').substring(0, 80);
+  const lineText = encodeURIComponent(`🇹🇭 ${p.nameTH}${p.nameEN ? ' (' + p.nameEN + ')' : ''}\n${desc ? desc + '...' : ''}\n\nสินค้าไทยคุณภาพพร้อมส่งออกทั่วโลก ผ่าน PIT Freight\n${url}`);
+  const lineUrl = `https://line.me/R/msg/text/?${lineText}`;
+  const copyText = `🇹🇭 ${p.nameTH}${p.nameEN ? ' / ' + p.nameEN : ''} — Thai Export | PIT Freight\n${url}`;
+
+  const menu = document.createElement('div');
+  menu.className = 'share-menu';
+  menu.id = 'share-menu-' + id;
+  menu.innerHTML = `
+    <a class="share-menu-item share-line" href="${lineUrl}" target="_blank" rel="noopener" onclick="document.getElementById('share-menu-${id}')?.remove()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#06C755"><path d="M12 2C6.48 2 2 6.03 2 11c0 3.16 1.67 5.97 4.25 7.72L5.5 22l3.43-1.8C9.57 20.39 10.76 20.5 12 20.5c5.52 0 10-4.03 10-9S17.52 2 12 2z"/><path fill="#fff" d="M17.5 12.5h-2v-1h2v1zm-3 0h-2v-1h2v1zm-3 0H9.5v-1h2v1zm5-2.5c0-.28-.22-.5-.5-.5h-7c-.28 0-.5.22-.5.5v4c0 .28.22.5.5.5h7c.28 0 .5-.22.5-.5v-4z"/></svg>
+      แชร์ LINE
+    </a>
+    <button class="share-menu-item share-copy" onclick="(function(){navigator.clipboard?navigator.clipboard.writeText('${copyText.replace(/'/g,"\\'")}').then(()=>showProductToast('📋 คัดลอกแล้ว!')):showProductToast('🔗 pitfreight.com');document.getElementById('share-menu-${id}')?.remove()})()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      คัดลอกลิงก์
+    </button>`;
+
+  // วาง menu ใกล้ปุ่มที่กด
+  const btn = e.currentTarget || e.target.closest('.btn-share-overlay, .btn-product-share--modal');
+  if (btn) {
+    btn.parentElement.style.position = 'relative';
+    btn.parentElement.appendChild(menu);
   } else {
-    navigator.clipboard
-      ? navigator.clipboard.writeText(`${title}\n\n${text}`).then(() => showProductToast('📋 คัดลอกลิงก์แล้ว! / Link copied!'))
-      : showProductToast('🔗 ' + url);
+    document.body.appendChild(menu);
   }
+
+  // ปิด menu เมื่อคลิกที่อื่น
+  setTimeout(() => {
+    document.addEventListener('click', function handler() {
+      menu.remove();
+      document.removeEventListener('click', handler);
+    });
+  }, 100);
 }
 
 // ===== RENDER PRODUCT CARD =====
