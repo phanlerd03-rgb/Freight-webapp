@@ -8,21 +8,21 @@ img { max-width: 100%; }
 
 /* ===== VARIABLES ===== */
 :root {
-  --primary: #1a3a5c;
-  --accent: #2980b9;
-  --accent2: #1abc9c;
+  --primary: #002B5C;
+  --accent: #F5821F;
+  --accent2: #004080;
   --success: #27ae60;
   --warning: #f39c12;
   --danger: #e74c3c;
-  --gray-50: #f8fafc;
-  --gray-100: #f1f5f9;
-  --gray-200: #e2e8f0;
-  --gray-400: #94a3b8;
-  --gray-600: #64748b;
-  --gray-800: #1e293b;
-  --radius: 12px;
-  --shadow: 0 4px 24px rgba(0,0,0,.08);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,.12);
+  --gray-50: #F4F6F8;
+  --gray-100: #EEF1F5;
+  --gray-200: #E0E4EA;
+  --gray-400: #9AAABF;
+  --gray-600: #5A6472;
+  --gray-800: #1A2332;
+  --radius: 8px;
+  --shadow: 0 2px 12px rgba(0,0,0,.10);
+  --shadow-lg: 0 6px 32px rgba(0,0,0,.14);
 }
 
 /* ===== UTILITIES ===== */
