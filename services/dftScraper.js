@@ -13,8 +13,6 @@ const cheerio = require('cheerio');
 const { pickImage } = require('./newsImagePicker');
 const { Client } = require('@notionhq/client');
 const Anthropic = require('@anthropic-ai/sdk');
-const path = require('path');
-const fs = require('fs');
 
 function getNotion() { return new Client({ auth: process.env.NOTION_TOKEN }); }
 function getClaude() { return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }); }
@@ -32,23 +30,23 @@ const RELEVANT_KEYWORDS = [
   'ขนส่ง', 'โลจิสติกส์', 'ตลาด', 'บาท', 'สินค้า', 'ธุรกิจ', 'ผู้ประกอบการ',
 ];
 
-const IMPORTED_IDS_FILE = path.join(__dirname, '../data/dft_imported.json');
-
-function loadImportedIds() {
+// ===== Notion-based deduplication (Railway-safe — no local file) =====
+// ตรวจสอบว่า DFT articleId นี้มีอยู่ใน Notion แล้วหรือยัง
+async function isAlreadyImported(articleId) {
   try {
-    if (!fs.existsSync(IMPORTED_IDS_FILE)) {
-      fs.mkdirSync(path.dirname(IMPORTED_IDS_FILE), { recursive: true });
-      fs.writeFileSync(IMPORTED_IDS_FILE, JSON.stringify([]));
-      return new Set();
-    }
-    return new Set(JSON.parse(fs.readFileSync(IMPORTED_IDS_FILE, 'utf8')));
-  } catch { return new Set(); }
-}
-
-function saveImportedId(id) {
-  const ids = loadImportedIds();
-  ids.add(id);
-  fs.writeFileSync(IMPORTED_IDS_FILE, JSON.stringify([...ids]));
+    const res = await getNotion().databases.query({
+      database_id: getBlogDb(),
+      filter: {
+        property: 'Slug',
+        rich_text: { starts_with: `dft-${articleId}-` },
+      },
+      page_size: 1,
+    });
+    return res.results.length > 0;
+  } catch (e) {
+    console.log(`  ⚠️  ตรวจสอบ Notion dedup ไม่ได้: ${e.message}`);
+    return false; // allow import if check fails
+  }
 }
 
 // Check if news is relevant to importers/exporters
@@ -246,7 +244,6 @@ async function runDftScraper() {
     return { imported: 0, skipped: 0 };
   }
 
-  const importedIds = loadImportedIds();
   let imported = 0;
   let skipped = 0;
 
@@ -257,7 +254,7 @@ async function runDftScraper() {
       fetchNewsList(HOT_NEWS_URL, 5),
     ]);
 
-    // Combine and deduplicate
+    // Combine and deduplicate within fetch
     const allItems = [...newsItems];
     for (const item of hotItems) {
       if (!allItems.some(x => x.articleId === item.articleId)) allItems.push(item);
@@ -266,13 +263,13 @@ async function runDftScraper() {
     console.log(`📋 พบข่าวทั้งหมด ${allItems.length} รายการ`);
 
     for (const item of allItems) {
-      // Skip already imported
-      if (importedIds.has(item.articleId)) { skipped++; continue; }
+      // Skip already imported — ตรวจสอบจาก Notion โดยตรง (Railway-safe)
+      const alreadyImported = await isAlreadyImported(item.articleId);
+      if (alreadyImported) { skipped++; continue; }
 
       // Filter: only relevant news for importers/exporters
       if (!isRelevant(item.title)) {
         console.log(`  ⏭️  ข้ามข่าวไม่เกี่ยวข้อง: ${item.title.substring(0, 50)}...`);
-        saveImportedId(item.articleId); // mark to avoid rechecking
         skipped++;
         continue;
       }
@@ -296,7 +293,6 @@ async function runDftScraper() {
         const isoDate = parseDate(dateText);
 
         await createNotionPost(item.title, cleanSummary, aiContent, item.articleId, isoDate, item.url);
-        saveImportedId(item.articleId);
         imported++;
 
         console.log(`  ✅ นำเข้าสำเร็จ (${isoDate})`);

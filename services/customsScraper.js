@@ -12,9 +12,6 @@ const cheerio = require('cheerio');
 const { pickImage } = require('./newsImagePicker');
 const { Client } = require('@notionhq/client');
 const Anthropic = require('@anthropic-ai/sdk');
-const path = require('path');
-const fs = require('fs');
-
 // Initialize clients lazily so env vars are read at call-time
 function getNotion() { return new Client({ auth: process.env.NOTION_TOKEN }); }
 function getClaude() { return new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }); }
@@ -23,27 +20,22 @@ function getBlogDb() { return process.env.NOTION_BLOG_DB; }
 const BASE_URL = 'https://www.customs.go.th';
 const NEWS_LIST_URL = `${BASE_URL}/list_strc_simple_with_date.php?ini_content=customs_news&ini_menu=menu_public_relations_160421_04&order_by=date&sort_type=0`;
 
-// Track imported article IDs to avoid duplicates
-const IMPORTED_IDS_FILE = path.join(__dirname, '../data/customs_imported.json');
-
-function loadImportedIds() {
+// ===== Notion-based deduplication (Railway-safe — no local file) =====
+async function isAlreadyImported(articleId) {
   try {
-    if (!fs.existsSync(IMPORTED_IDS_FILE)) {
-      fs.mkdirSync(path.dirname(IMPORTED_IDS_FILE), { recursive: true });
-      fs.writeFileSync(IMPORTED_IDS_FILE, JSON.stringify([]));
-      return new Set();
-    }
-    const data = JSON.parse(fs.readFileSync(IMPORTED_IDS_FILE, 'utf8'));
-    return new Set(data);
-  } catch {
-    return new Set();
+    const res = await getNotion().databases.query({
+      database_id: getBlogDb(),
+      filter: {
+        property: 'Slug',
+        rich_text: { contains: `customs-${articleId.slice(-8)}` },
+      },
+      page_size: 1,
+    });
+    return res.results.length > 0;
+  } catch (e) {
+    console.log(`  ⚠️  ตรวจสอบ Notion dedup ไม่ได้: ${e.message}`);
+    return false;
   }
-}
-
-function saveImportedId(id) {
-  const ids = loadImportedIds();
-  ids.add(id);
-  fs.writeFileSync(IMPORTED_IDS_FILE, JSON.stringify([...ids]));
 }
 
 // Fetch list of latest news from customs.go.th
@@ -228,7 +220,6 @@ async function runCustomsScraper() {
     return { imported: 0, skipped: 0 };
   }
 
-  const importedIds = loadImportedIds();
   let imported = 0;
   let skipped = 0;
 
@@ -237,8 +228,9 @@ async function runCustomsScraper() {
     console.log(`📋 พบข่าวทั้งหมด ${newsList.length} รายการ`);
 
     for (const item of newsList) {
-      // Skip if already imported
-      if (importedIds.has(item.articleId)) {
+      // Skip if already imported — ตรวจสอบจาก Notion โดยตรง (Railway-safe)
+      const alreadyImported = await isAlreadyImported(item.articleId);
+      if (alreadyImported) {
         skipped++;
         continue;
       }
@@ -266,9 +258,6 @@ async function runCustomsScraper() {
 
         // Create Notion post
         await createNotionPost(item.title, cleanSummary, aiContent, item.articleId, isoDate);
-
-        // Mark as imported
-        saveImportedId(item.articleId);
         imported++;
 
         console.log(`  ✅ นำเข้าสำเร็จ (${isoDate})`);
