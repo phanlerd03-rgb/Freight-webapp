@@ -1138,7 +1138,31 @@ img { max-width: 100%; }
 }
 
 /* ============================================================
-   SMART FREIGHT INTELLIGENCE TOOLS
+   SEARATES EMBED SECTION
+   ============================================================ */
+
+.searates-tab-bar { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px; }
+.searates-tab-btn { padding: 10px 22px; border-radius: 24px; border: 2px solid #e2e8f0; background: #fff; color: #64748b; font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap; }
+.searates-tab-btn:hover { border-color: #1e3a5f; color: #1e3a5f; }
+.searates-tab-btn.active { background: linear-gradient(135deg,#1e3a5f,#2d5a8e); border-color: transparent; color: #fff; box-shadow: 0 4px 14px rgba(30,58,95,.3); }
+
+.searates-pane { display: none; }
+.searates-pane.active { display: block; animation: fadeIn .25s ease; }
+
+.searates-frame-wrap { border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,.1); background: #fff; border: 1px solid #e2e8f0; }
+.searates-frame { width: 100%; height: 680px; border: none; display: block; }
+
+.searates-open-btn-wrap { text-align: center; margin-top: 16px; }
+.btn-searates-open { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 2px solid #1e3a5f; color: #1e3a5f; padding: 11px 28px; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all .2s; }
+.btn-searates-open:hover { background: #1e3a5f; color: #fff; }
+
+@media (max-width: 700px) {
+  .searates-tab-btn { padding: 8px 14px; font-size: 13px; }
+  .searates-frame { height: 520px; }
+}
+
+/* ============================================================
+   SMART FREIGHT INTELLIGENCE TOOLS (legacy — unused)
    ============================================================ */
 
 /* Tab Bar */
