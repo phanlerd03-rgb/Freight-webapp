@@ -59,6 +59,7 @@ img { max-width: 100%; }
 .logo-icon { font-size: 28px; }
 .logo-name { font-weight: 800; font-size: 16px; color: var(--primary); line-height: 1.2; }
 .logo-sub { font-size: 11px; color: var(--gray-400); letter-spacing: .5px; }
+.logo-img { height: 48px; width: auto; display: block; object-fit: contain; }
 .nav-links { display: flex; gap: 8px; margin-left: auto; }
 .nav-links a {
   padding: 8px 14px; border-radius: 8px; font-size: 14px; font-weight: 500;
