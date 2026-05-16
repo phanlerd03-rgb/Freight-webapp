@@ -64,4 +64,27 @@ async function statusUpdateAlert(data) {
   });
 }
 
-module.exports = { newBookingAlert, newQuoteAlert, statusUpdateAlert };
+async function postBlog({ title, summary, slug, category, cover }) {
+  const siteUrl = process.env.SITE_URL || 'https://pitfreight.com';
+  const blogUrl = `${siteUrl}/blog/${slug}`;
+  const emojiMap = { 'คู่มือ': '📋', 'ข่าวสาร': '📰', 'กฎระเบียบ': '⚖️', 'ราคา & โปรโมชัน': '🏷️', 'เคล็ดลับ': '💡' };
+  const colorMap = { 'คู่มือ': '#1a3a5c', 'ข่าวสาร': '#0071e3', 'กฎระเบียบ': '#7c3aed', 'ราคา & โปรโมชัน': '#e05c19', 'เคล็ดลับ': '#27ae60' };
+  const emoji = emojiMap[category] || '📄';
+  const color = colorMap[category] || '#1a3a5c';
+
+  return notify({
+    text: `${emoji} *บทความใหม่จาก PIT Freight Blog*`,
+    attachments: [{
+      color,
+      title,
+      title_link: blogUrl,
+      text: summary,
+      image_url: cover || undefined,
+      footer: `PIT Freight Blog · ${category || 'บทความ'}`,
+      ts: Math.floor(Date.now() / 1000),
+      actions: [{ type: 'button', text: 'อ่านบทความ →', url: blogUrl, style: 'primary' }],
+    }],
+  });
+}
+
+module.exports = { newBookingAlert, newQuoteAlert, statusUpdateAlert, postBlog };

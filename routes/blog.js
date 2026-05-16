@@ -141,11 +141,12 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
-// POST /api/blog/broadcast — broadcast บทความไปยัง LINE OA
-// Body: { slug, adminPassword }
+// POST /api/blog/broadcast — broadcast บทความไปยังทุกช่องทาง
+// Body: { slug, adminPassword, channels? }
+// channels: ["slack","facebook","line"] (default: slack + facebook ถ้ามี token)
 router.post('/broadcast', async (req, res) => {
   try {
-    const { slug, adminPassword } = req.body;
+    const { slug, adminPassword, channels } = req.body;
     if (adminPassword !== process.env.ADMIN_PASSWORD) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -168,21 +169,48 @@ router.post('/broadcast', async (req, res) => {
 
     const page = response.results[0];
     const p = page.properties;
-    const title   = richText(p.Title?.title) || 'PIT Freight Blog';
-    const summary = richText(p.Summary?.rich_text) || '';
+    const title    = richText(p.Title?.title) || 'PIT Freight Blog';
+    const summary  = richText(p.Summary?.rich_text) || '';
     const category = p.Category?.select?.name || '';
+    const cover    = p['Cover Image']?.url || null;
 
     const emojiMap = { 'คู่มือ': '📋', 'ข่าวสาร': '📰', 'กฎระเบียบ': '⚖️', 'ราคา & โปรโมชัน': '🏷️', 'เคล็ดลับ': '💡' };
     const colorMap = { 'คู่มือ': '#1a3a5c', 'ข่าวสาร': '#0071e3', 'กฎระเบียบ': '#7c3aed', 'ราคา & โปรโมชัน': '#e05c19', 'เคล็ดลับ': '#27ae60' };
 
-    const lineService = require('../services/lineoa');
-    await lineService.broadcastBlog({
-      title, summary, slug,
-      emoji: emojiMap[category] || '📄',
-      color: colorMap[category] || '#1a3a5c',
-    });
+    const results = {};
 
-    res.json({ success: true, message: `Broadcast "${title}" สำเร็จ` });
+    // ===== Slack =====
+    try {
+      const slackService = require('../services/slack');
+      await slackService.postBlog({ title, summary, slug, category, cover });
+      results.slack = '✅ ส่งสำเร็จ';
+    } catch (e) { results.slack = '❌ ' + e.message; }
+
+    // ===== Facebook Page (ถ้ามี token) =====
+    if (process.env.FB_PAGE_ID && process.env.FB_PAGE_ACCESS_TOKEN) {
+      try {
+        const fbService = require('../services/facebook');
+        const fbResult = await fbService.postBlogToFacebook({ title, summary, slug, category, cover });
+        results.facebook = `✅ โพสต์สำเร็จ — ${fbResult.url}`;
+      } catch (e) { results.facebook = '❌ ' + e.message; }
+    } else {
+      results.facebook = '⚠️ ข้ามเพราะยังไม่ได้ตั้งค่า FB_PAGE_ID / FB_PAGE_ACCESS_TOKEN';
+    }
+
+    // ===== LINE OA (optional — เปิดใช้ถ้า channels รวม "line") =====
+    if (Array.isArray(channels) && channels.includes('line')) {
+      try {
+        const lineService = require('../services/lineoa');
+        await lineService.broadcastBlog({
+          title, summary, slug,
+          emoji: emojiMap[category] || '📄',
+          color: colorMap[category] || '#1a3a5c',
+        });
+        results.line = '✅ ส่งสำเร็จ';
+      } catch (e) { results.line = '❌ ' + e.message; }
+    }
+
+    res.json({ success: true, title, results });
   } catch (err) {
     console.error('Blog broadcast error:', err.message);
     res.status(500).json({ error: err.message });
