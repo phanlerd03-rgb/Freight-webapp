@@ -165,7 +165,7 @@ function adminFlex({ emoji, title, color, rows, link, shareUrl }) {
         backgroundColor: color || '#1a3a5c',
         contents: [
           { type: 'text', text: `${emoji}  ${title}`, weight: 'bold', color: '#ffffff', size: 'md', wrap: true },
-          { type: 'text', text: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }), size: 'xs', color: 'rgba(255,255,255,.7)', margin: 'xs' },
+          { type: 'text', text: new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' }), size: 'xs', color: '#aaccff', margin: 'xs' },
         ],
       },
       body: {
@@ -275,7 +275,7 @@ async function broadcastBlog({ title, summary, slug, color, emoji, coverText }) 
         type: 'box', layout: 'vertical',
         backgroundColor: color || '#1a3a5c', paddingAll: '16px',
         contents: [
-          { type: 'text', text: `${emoji || '📄'}  บทความใหม่จาก PIT Freight`, color: 'rgba(255,255,255,.7)', size: 'xs', weight: 'bold' },
+          { type: 'text', text: `${emoji || '📄'}  บทความใหม่จาก PIT Freight`, color: '#ccddff', size: 'xs', weight: 'bold' },
           { type: 'text', text: title, color: '#ffffff', size: 'md', weight: 'bold', wrap: true, margin: 'sm' },
         ],
       },
