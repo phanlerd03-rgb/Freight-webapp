@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const rateLimit = require('express-rate-limit');
+const { getFallbackBlogPost } = require('./data/fallbackBlogPosts');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -54,6 +55,64 @@ app.use('/api/alibaba', alibabaRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/tools', toolsRoutes);
+
+function escapeHtml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function sendBlogPreviewPage(res, { title, summary, cover, slug, siteUrl }) {
+  const pageUrl = `${siteUrl}/blog/${slug}`;
+  const image = cover || `${siteUrl}/images/og-default.jpg`;
+
+  res.send(`<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${escapeHtml(title)} — PIT Freight</title>
+
+  <!-- Open Graph (Facebook) -->
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="${escapeHtml(pageUrl)}">
+  <meta property="og:title" content="${escapeHtml(title)}">
+  <meta property="og:description" content="${escapeHtml(summary)}">
+  <meta property="og:image" content="${escapeHtml(image)}">
+  <meta property="og:image:width" content="800">
+  <meta property="og:image:height" content="420">
+  <meta property="og:site_name" content="PIT Freight">
+  <meta property="og:locale" content="th_TH">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${escapeHtml(title)}">
+  <meta name="twitter:description" content="${escapeHtml(summary)}">
+  <meta name="twitter:image" content="${escapeHtml(image)}">
+
+  <!-- SEO -->
+  <meta name="description" content="${escapeHtml(summary)}">
+
+  <!-- Redirect to main app (delay so Facebook scraper can read OG tags) -->
+  <script>
+    // Only redirect real browsers, not scrapers
+    if (!/facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|WhatsApp/i.test(navigator.userAgent)) {
+      window.location.replace('/#blog-${slug}');
+    }
+  </script>
+</head>
+<body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f8fafc">
+  <div style="text-align:center;padding:40px">
+    <img src="/images/logo.png" alt="PIT Freight" style="height:60px;margin-bottom:20px" onerror="this.style.display='none'">
+    <h2 style="color:#1e3a5f;margin-bottom:8px">${escapeHtml(title)}</h2>
+    <p style="color:#64748b;margin-bottom:24px">${escapeHtml(summary)}</p>
+    <a href="/#blog-${slug}" style="background:#e64d2e;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600">อ่านบทความ →</a>
+  </div>
+</body>
+</html>`);
+}
 
 // ===== Admin Panel Page =====
 app.get('/admin', (req, res) => {
@@ -112,6 +171,19 @@ app.get('/blog/:slug', async (req, res) => {
   const { slug } = req.params;
   const siteUrl = process.env.SITE_URL || 'https://pitfreight.com';
 
+  const fallbackPost = getFallbackBlogPost(slug);
+
+  if (!process.env.NOTION_TOKEN || !process.env.NOTION_BLOG_DB) {
+    if (!fallbackPost) return res.redirect('/#blog');
+    return sendBlogPreviewPage(res, {
+      title: fallbackPost.title || 'PIT Freight Blog',
+      summary: fallbackPost.summary || 'บทความจาก PIT Freight',
+      cover: fallbackPost.cover,
+      slug: fallbackPost.slug,
+      siteUrl,
+    });
+  }
+
   try {
     const { Client } = require('@notionhq/client');
     const notion = new Client({ auth: process.env.NOTION_TOKEN });
@@ -136,54 +208,7 @@ app.get('/blog/:slug', async (req, res) => {
     const title = p.Title?.title?.map(t => t.plain_text).join('') || 'PIT Freight Blog';
     const summary = p.Summary?.rich_text?.map(t => t.plain_text).join('') || 'บทความจาก PIT Freight';
     const cover = p['Cover Image']?.url || `${siteUrl}/images/og-default.jpg`;
-    const pageUrl = `${siteUrl}/blog/${slug}`;
-
-    const esc = s => s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-
-    res.send(`<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${esc(title)} — PIT Freight</title>
-
-  <!-- Open Graph (Facebook) -->
-  <meta property="og:type" content="article">
-  <meta property="og:url" content="${esc(pageUrl)}">
-  <meta property="og:title" content="${esc(title)}">
-  <meta property="og:description" content="${esc(summary)}">
-  <meta property="og:image" content="${esc(cover)}">
-  <meta property="og:image:width" content="800">
-  <meta property="og:image:height" content="420">
-  <meta property="og:site_name" content="PIT Freight">
-  <meta property="og:locale" content="th_TH">
-
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${esc(title)}">
-  <meta name="twitter:description" content="${esc(summary)}">
-  <meta name="twitter:image" content="${esc(cover)}">
-
-  <!-- SEO -->
-  <meta name="description" content="${esc(summary)}">
-
-  <!-- Redirect to main app (delay so Facebook scraper can read OG tags) -->
-  <script>
-    // Only redirect real browsers, not scrapers
-    if (!/facebookexternalhit|Facebot|Twitterbot|LinkedInBot|Slackbot|WhatsApp/i.test(navigator.userAgent)) {
-      window.location.replace('/#blog-${slug}');
-    }
-  </script>
-</head>
-<body style="font-family:sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;background:#f8fafc">
-  <div style="text-align:center;padding:40px">
-    <img src="/images/logo.png" alt="PIT Freight" style="height:60px;margin-bottom:20px" onerror="this.style.display='none'">
-    <h2 style="color:#1e3a5f;margin-bottom:8px">${esc(title)}</h2>
-    <p style="color:#64748b;margin-bottom:24px">${esc(summary)}</p>
-    <a href="/#blog-${slug}" style="background:#e64d2e;color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600">อ่านบทความ →</a>
-  </div>
-</body>
-</html>`);
+    sendBlogPreviewPage(res, { title, summary, cover, slug, siteUrl });
   } catch (err) {
     console.error('OG route error:', err.message);
     res.redirect('/#blog');

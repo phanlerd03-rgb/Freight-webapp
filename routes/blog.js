@@ -2,8 +2,14 @@ const express = require('express');
 const router = express.Router();
 const { Client } = require('@notionhq/client');
 
-const notion = new Client({ auth: process.env.NOTION_TOKEN });
+const { getFallbackBlogPosts, getFallbackBlogPost } = require('../data/fallbackBlogPosts');
+
+const notion = process.env.NOTION_TOKEN ? new Client({ auth: process.env.NOTION_TOKEN }) : null;
 const BLOG_DB = process.env.NOTION_BLOG_DB;
+
+function isNotionConfigured() {
+  return Boolean(notion && BLOG_DB);
+}
 
 // Helper: parse Notion rich text to plain string
 function richText(arr) {
@@ -54,6 +60,10 @@ router.get('/', async (req, res) => {
   try {
     const { category, tag, lang, search, limit = 10, page = 1 } = req.query;
 
+    if (!isNotionConfigured()) {
+      return res.json(getFallbackBlogPosts({ category, tag, lang, search, limit, page }));
+    }
+
     const filters = [{ property: 'Published', checkbox: { equals: true } }];
     if (category) filters.push({ property: 'Category', select: { equals: category } });
     if (tag) filters.push({ property: 'Tags', multi_select: { contains: tag } });
@@ -86,7 +96,7 @@ router.get('/', async (req, res) => {
     res.json({ posts, hasMore: response.has_more });
   } catch (err) {
     console.error('Blog list error:', err.message);
-    res.status(500).json({ error: 'Failed to load blog posts' });
+    res.json(getFallbackBlogPosts(req.query));
   }
 });
 
@@ -94,6 +104,12 @@ router.get('/', async (req, res) => {
 router.get('/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
+
+    if (!isNotionConfigured()) {
+      const fallbackPost = getFallbackBlogPost(slug);
+      if (!fallbackPost) return res.status(404).json({ error: 'Post not found' });
+      return res.json(fallbackPost);
+    }
 
     // Find post by slug (or id)
     const response = await notion.databases.query({
@@ -137,6 +153,8 @@ router.get('/:slug', async (req, res) => {
     });
   } catch (err) {
     console.error('Blog post error:', err.message);
+    const fallbackPost = getFallbackBlogPost(req.params.slug);
+    if (fallbackPost) return res.json(fallbackPost);
     res.status(500).json({ error: 'Failed to load post' });
   }
 });
@@ -148,6 +166,10 @@ router.post('/broadcast', async (req, res) => {
     const { slug, adminPassword } = req.body;
     if (adminPassword !== process.env.ADMIN_PASSWORD) {
       return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    if (!isNotionConfigured()) {
+      return res.status(503).json({ error: 'Blog database is not configured' });
     }
 
     // ดึงบทความจาก Notion
