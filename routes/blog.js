@@ -96,13 +96,15 @@ router.get('/debug-fb', async (req, res) => {
   const pageId = process.env.FB_PAGE_ID;
 
   try {
-    const params = new URLSearchParams({
-      message: 'debug test from server',
-      access_token: t1,
+    // ตรวจสอบ token โดย debug API ก่อน
+    const checkRes = await fetch(`https://graph.facebook.com/v19.0/me?access_token=${t1}`);
+    const checkData = await checkRes.json();
+    res.json({
+      token_length: t1.length,
+      token_start: t1.substring(0, 30),
+      token_end: t1.substring(t1.length - 10),
+      fb_check: checkData,
     });
-    const r = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, { method: 'POST', body: params });
-    const data = await r.json();
-    res.json({ status: r.status, data, token_prefix: t1.substring(0, 20) });
   } catch (e) {
     res.json({ error: e.message });
   }
