@@ -15,17 +15,16 @@ function getPages() {
 }
 
 async function postToSinglePage({ pageId, accessToken, message, blogUrl }) {
-  try {
-    const response = await axios.post(
-      `https://graph.facebook.com/v19.0/${pageId}/feed`,
-      { message, link: blogUrl, access_token: accessToken },
-      { headers: { 'Content-Type': 'application/json' } }
-    );
-    return { success: true, pageId, postId: response.data.id, url: `https://www.facebook.com/${response.data.id}` };
-  } catch (err) {
-    const fbError = err.response?.data?.error?.message || err.message;
-    throw new Error(`Page ${pageId}: ${fbError}`);
-  }
+  const params = new URLSearchParams({ message, access_token: accessToken });
+  if (blogUrl) params.append('link', blogUrl);
+
+  const res = await fetch(
+    `https://graph.facebook.com/v19.0/${pageId}/feed`,
+    { method: 'POST', body: params }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Page ${pageId}: ${data?.error?.message || res.status}`);
+  return { success: true, pageId, postId: data.id, url: `https://www.facebook.com/${data.id}` };
 }
 
 async function postBlogToFacebook({ title, summary, slug, category, cover }) {
