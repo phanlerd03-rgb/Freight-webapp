@@ -191,7 +191,8 @@ router.post('/broadcast', async (req, res) => {
       try {
         const fbService = require('../services/facebook');
         const fbResult = await fbService.postBlogToFacebook({ title, summary, slug, category, cover });
-        results.facebook = `✅ โพสต์สำเร็จ — ${fbResult.url}`;
+        const urls = fbResult.pages?.map(p => p.url).join(', ') || fbResult.url || '';
+        results.facebook = `✅ โพสต์สำเร็จ ${fbResult.pages?.length || 1} Page — ${urls}`;
       } catch (e) { results.facebook = '❌ ' + e.message; }
     } else {
       results.facebook = '⚠️ ข้ามเพราะยังไม่ได้ตั้งค่า FB_PAGE_ID / FB_PAGE_ACCESS_TOKEN';
