@@ -17,8 +17,8 @@ function getPages() {
 async function postToSinglePage({ pageId, accessToken, message, blogUrl }) {
   try {
     const response = await axios.post(
-      `https://graph.facebook.com/v19.0/${pageId}/feed?access_token=${encodeURIComponent(accessToken)}`,
-      { message, link: blogUrl },
+      `https://graph.facebook.com/v19.0/${pageId}/feed`,
+      { message, link: blogUrl, access_token: accessToken },
       { headers: { 'Content-Type': 'application/json' } }
     );
     return { success: true, pageId, postId: response.data.id, url: `https://www.facebook.com/${response.data.id}` };
