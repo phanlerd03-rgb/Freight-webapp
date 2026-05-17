@@ -90,26 +90,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/blog/debug-fb — ทดสอบ Facebook API จาก server
-router.get('/debug-fb', async (req, res) => {
-  const t1 = process.env.FB_PAGE_ACCESS_TOKEN || '';
-  const pageId = process.env.FB_PAGE_ID;
-
-  try {
-    // ตรวจสอบ token โดย debug API ก่อน
-    const checkRes = await fetch(`https://graph.facebook.com/v19.0/me?access_token=${t1}`);
-    const checkData = await checkRes.json();
-    res.json({
-      token_length: t1.length,
-      token_start: t1.substring(0, 30),
-      token_end: t1.substring(t1.length - 10),
-      fb_check: checkData,
-    });
-  } catch (e) {
-    res.json({ error: e.message });
-  }
-});
-
 // GET /api/blog/:slug — get single post with full content
 router.get('/:slug', async (req, res) => {
   try {
