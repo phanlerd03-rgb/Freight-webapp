@@ -90,6 +90,18 @@ router.get('/', async (req, res) => {
   }
 });
 
+// GET /api/blog/debug-fb — ตรวจสอบ token ที่ใช้อยู่
+router.get('/debug-fb', (req, res) => {
+  const t1 = process.env.FB_PAGE_ACCESS_TOKEN || '';
+  const t2 = process.env.FB_PAGE2_ACCESS_TOKEN || '';
+  res.json({
+    page1_token_prefix: t1.substring(0, 20) + '...',
+    page2_token_prefix: t2.substring(0, 20) + '...',
+    page1_id: process.env.FB_PAGE_ID,
+    page2_id: process.env.FB_PAGE2_ID,
+  });
+});
+
 // GET /api/blog/:slug — get single post with full content
 router.get('/:slug', async (req, res) => {
   try {
@@ -139,18 +151,6 @@ router.get('/:slug', async (req, res) => {
     console.error('Blog post error:', err.message);
     res.status(500).json({ error: 'Failed to load post' });
   }
-});
-
-// GET /api/blog/debug-fb — ตรวจสอบ token ที่ใช้อยู่
-router.get('/debug-fb', async (req, res) => {
-  const t1 = process.env.FB_PAGE_ACCESS_TOKEN || '';
-  const t2 = process.env.FB_PAGE2_ACCESS_TOKEN || '';
-  res.json({
-    page1_token_prefix: t1.substring(0, 20) + '...',
-    page2_token_prefix: t2.substring(0, 20) + '...',
-    page1_id: process.env.FB_PAGE_ID,
-    page2_id: process.env.FB_PAGE2_ID,
-  });
 });
 
 // POST /api/blog/broadcast — broadcast บทความไปยังทุกช่องทาง
