@@ -126,4 +126,19 @@ router.post('/products/:id/reject', authMiddleware, async (req, res) => {
   }
 });
 
+// ─── POST /api/admin/autopost-now — รัน AutoPost ทันที (ต้องมี adminPassword) ───
+router.post('/autopost-now', async (req, res) => {
+  const { adminPassword } = req.body;
+  if (adminPassword !== process.env.ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  try {
+    const { runAutoPost } = require('../services/autopost');
+    res.json({ success: true, message: 'AutoPost เริ่มทำงานแล้ว ดูผลใน Slack หรือ Facebook' });
+    runAutoPost(); // รันใน background
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
