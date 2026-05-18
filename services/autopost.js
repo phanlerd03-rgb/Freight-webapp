@@ -53,6 +53,7 @@ async function generateContent(term) {
 - ใส่ hashtag ท้าย (ภาษาไทย+อังกฤษ 8-12 อัน)
 - ลงท้ายด้วย: 📞 +66 63-446-7735 | 💬 LINE: lin.ee/6aC3Z5O | 🌐 pitfreight.com
 - ความยาวรวม ~400-500 คำ
+- ห้ามใช้ดอกจัน (*) หรือ markdown formatting ใดๆ ทั้งสิ้น ใช้ emoji และ plain text เท่านั้น
 
 === ส่วนที่ 2: PYTHON_SCRIPT ===
 เขียน Python script สร้าง infographic 1080x1080px ด้วย PIL
@@ -83,8 +84,12 @@ SCRIPT_END`;
   const captionMatch = text.match(/CAPTION_START\n([\s\S]*?)\nCAPTION_END/);
   const scriptMatch  = text.match(/SCRIPT_START\n([\s\S]*?)\nSCRIPT_END/);
 
+  // Strip asterisks used for markdown bold/italic — Facebook แสดงเป็น literal *
+  const rawCaption = captionMatch ? captionMatch[1].trim() : '';
+  const cleanCaption = rawCaption.replace(/\*+/g, '');
+
   return {
-    caption: captionMatch ? captionMatch[1].trim() : '',
+    caption: cleanCaption,
     script:  scriptMatch  ? scriptMatch[1].trim()  : '',
   };
 }
