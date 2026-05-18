@@ -1,9 +1,0 @@
-# nixpacks.toml — ให้ Railway ติดตั้ง Python + Pillow ควบคู่กับ Node.js
-[phases.setup]
-nixPkgs = ["python312", "python312Packages.pillow", "python312Packages.pip", "curl"]
-
-[phases.install]
-cmds = ["npm ci"]
-
-[start]
-cmd = "node server.js"
