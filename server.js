@@ -55,6 +55,10 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/tools', toolsRoutes);
 
+// ===== Auto Post Cron (Incoterms content → Facebook) =====
+const { startAutoPost } = require('./services/autopost');
+startAutoPost();
+
 // ===== Admin Panel Page =====
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
