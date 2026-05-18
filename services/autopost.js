@@ -129,7 +129,13 @@ async function runAutoPost() {
     // 4. รัน Python script สร้างภาพ
     console.log('[AutoPost] รัน Python PIL...');
     const scriptPath = '/tmp/auto_gen.py';
-    fs.writeFileSync(scriptPath, script);
+    // Strip markdown code fences if Claude wrapped the script
+    const cleanScript = script
+      .replace(/^```python\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/, '')
+      .trim();
+    fs.writeFileSync(scriptPath, cleanScript);
     execFileSync('python3', [scriptPath], { timeout: 60000 });
 
     if (!fs.existsSync('/tmp/auto_post.jpg')) throw new Error('ไม่พบไฟล์ภาพ /tmp/auto_post.jpg');
