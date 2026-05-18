@@ -41,29 +41,49 @@ function ensureFonts() {
 
 // สร้าง content + PIL script ผ่าน Claude API
 async function generateContent(term) {
-  const prompt = `คุณคือผู้เชี่ยวชาญด้านการค้าระหว่างประเทศ
+  const prompt = `คุณคือผู้ชำนาญการด้านการค้าระหว่างประเทศและพิธีการศุลกากร มีประสบการณ์จริงในการส่งออก-นำเข้าสินค้าไทย
 
-สร้าง 2 อย่างสำหรับ Incoterm: **${term}**
+สร้าง 2 อย่างสำหรับ Incoterm: ${term}
 
 === ส่วนที่ 1: FACEBOOK_CAPTION ===
-เขียน caption ภาษาไทย+อังกฤษ สำหรับ Facebook Page "Booking Freight Shipper & Consignee"
-- ยกตัวอย่างสินค้าไทย 1 ชนิดที่เหมาะกับ ${term} (เช่น ข้าว, ยางพารา, อิเล็กทรอนิกส์ ฯลฯ)
-- อธิบายความหมาย ${term} แบบเข้าใจง่าย
-- อธิบายขั้นตอนการส่งออกตั้งแต่ต้นจนจบ (5-7 ขั้นตอน)
-- ใส่ hashtag ท้าย (ภาษาไทย+อังกฤษ 8-12 อัน)
-- ลงท้ายด้วย: 📞 +66 63-446-7735 | 💬 LINE: lin.ee/6aC3Z5O | 🌐 pitfreight.com
-- ความยาวรวม ~400-500 คำ
-- ห้ามใช้ดอกจัน (*) หรือ markdown formatting ใดๆ ทั้งสิ้น ใช้ emoji และ plain text เท่านั้น
+เขียน caption ภาษาไทย+อังกฤษ สำหรับ Facebook Page "Booking Freight Shipper & Consignee" ในฐานะผู้ชำนาญการ
+โครงสร้าง caption (เรียงตามลำดับนี้):
+
+1) หัวข้อดึงดูด + ชื่อ Incoterm ${term} และความหมายแบบเข้าใจง่าย
+2) ตัวอย่างสินค้าไทย 1 ชนิดที่เหมาะกับ ${term} พร้อมระบุ:
+   - HS Code ที่ถูกต้อง (6 หลัก) พร้อมคำอธิบาย
+   - ประเทศปลายทางที่เหมาะสม
+3) ขั้นตอนการส่งออกตั้งแต่ต้นจนจบ (5-7 ขั้นตอน) อย่างละเอียด
+4) ใบอนุญาตและเอกสารควบคุมการส่งออก-นำเข้าที่เกี่ยวข้องกับสินค้าตัวอย่าง เช่น:
+   - ใบอนุญาตส่งออก/นำเข้าจากหน่วยงานที่กำกับดูแล
+   - มาตรฐานหรือการรับรองที่จำเป็น (เช่น อย., มอก., GAP, GMP ฯลฯ)
+   - ข้อกำหนดพิเศษของประเทศปลายทาง
+5) หน่วยงานที่เกี่ยวข้องพร้อมลิงก์ติดต่อจริง เช่น:
+   - กรมการค้าต่างประเทศ: https://www.dft.go.th
+   - กรมศุลกากร: https://www.customs.go.th
+   - กรมวิชาการเกษตร: https://www.doa.go.th (ถ้าเกี่ยวข้อง)
+   - สำนักงาน อย.: https://www.fda.moph.go.th (ถ้าเกี่ยวข้อง)
+   - หน่วยงานอื่นๆ ที่เกี่ยวข้องกับสินค้านั้นๆ โดยเฉพาะ
+6) Pro Tips จากผู้ชำนาญการ (2-3 ข้อ) ที่คนส่วนใหญ่มักพลาด
+7) hashtag ท้าย (ภาษาไทย+อังกฤษ 8-12 อัน)
+8) ลงท้ายด้วย: 📞 +66 63-446-7735 | 💬 LINE: lin.ee/6aC3Z5O | 🌐 pitfreight.com
+
+กฎการเขียน:
+- ห้ามใช้ดอกจัน (*) หรือ markdown formatting ใดๆ ทั้งสิ้น
+- ใช้ emoji และ plain text เท่านั้น
+- ความยาวรวม ~600-700 คำ
+- เขียนในโทนผู้เชี่ยวชาญที่เป็นมิตร เข้าใจง่าย และนำไปใช้ได้จริง
 
 === ส่วนที่ 2: PYTHON_SCRIPT ===
 เขียน Python script สร้าง infographic 1080x1080px ด้วย PIL
 กฎสำคัญ:
 - ใช้ font /tmp/Sarabun.ttf (regular) และ /tmp/SarabunB.ttf (bold) เท่านั้น
 - background dark theme สีทันสมัย เหมาะกับ ${term}
-- แสดง: ชื่อ Incoterm, ชื่อสินค้าไทย, 5-6 ขั้นตอนหลัก (2 คอลัมน์), ตาราง responsibility split, footer "Booking Freight Shipper & Consignee"
+- แสดงข้อมูลครบ: ชื่อ Incoterm + ชื่อสินค้าไทย + HS Code + 5-6 ขั้นตอนหลัก (2 คอลัมน์) + ตาราง responsibility split (Seller/Buyer) + หน่วยงานที่ต้องติดต่อ 2-3 แห่ง + footer "Booking Freight Shipper & Consignee"
 - บันทึกที่ /tmp/auto_post.jpg quality=95
 - ห้ามใช้ emoji ในภาพ (PIL render ไม่ได้) ใช้ text แทน
 - script ต้องรันได้ทันทีโดยไม่มี error
+- จัดวางให้สวยงาม ไม่แน่นเกินไป มีช่องว่างพอเหมาะ
 
 format ตอบกลับ:
 CAPTION_START
@@ -75,7 +95,7 @@ SCRIPT_END`;
 
   const msg = await client.messages.create({
     model: 'claude-opus-4-5',
-    max_tokens: 4096,
+    max_tokens: 8192,
     messages: [{ role: 'user', content: prompt }],
   });
 
