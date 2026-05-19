@@ -296,8 +296,17 @@ async function postToNotionBlog(blogData, term, caption, fbUrl) {
       'Tags': {
         multi_select: (blogData.tags || [term, 'Incoterms', 'freight']).map(t => ({ name: t })),
       },
-      'Status': {
-        select: { name: 'Published' },
+      'Published': {
+        checkbox: true,
+      },
+      'Category': {
+        select: { name: 'Incoterms' },
+      },
+      'Language': {
+        select: { name: 'TH' },
+      },
+      'Author': {
+        rich_text: [{ text: { content: 'PIT Freight Expert' } }],
       },
       'Published Date': {
         date: { start: today },
