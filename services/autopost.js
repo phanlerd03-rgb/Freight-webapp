@@ -1,7 +1,7 @@
 /**
  * ===== PIT Freight — Auto Post Service =====
  * รันอัตโนมัติ 08:00 และ 15:00 ทุกวัน
- * สร้าง Incoterms content + infographic → โพสต์ Facebook Page 2
+ * สร้าง Incoterms content + infographic → โพสต์ Facebook Page 2 + Notion Blog
  */
 
 const cron      = require('node-cron');
@@ -39,11 +39,11 @@ function ensureFonts() {
   }
 }
 
-// สร้าง content + PIL script ผ่าน Claude API
+// สร้าง content + PIL script + blog data ผ่าน Claude API
 async function generateContent(term) {
   const prompt = `คุณคือผู้ชำนาญการด้านการค้าระหว่างประเทศและพิธีการศุลกากร มีประสบการณ์จริงในการส่งออก-นำเข้าสินค้าไทย
 
-สร้าง 2 อย่างสำหรับ Incoterm: ${term}
+สร้าง 3 อย่างสำหรับ Incoterm: ${term}
 
 === ส่วนที่ 1: FACEBOOK_CAPTION ===
 เขียน caption ภาษาไทย+อังกฤษ สำหรับ Facebook Page "Booking Freight Shipper & Consignee" ในฐานะผู้ชำนาญการ
@@ -85,13 +85,32 @@ async function generateContent(term) {
 - script ต้องรันได้ทันทีโดยไม่มี error
 - จัดวางให้สวยงาม ไม่แน่นเกินไป มีช่องว่างพอเหมาะ
 
+=== ส่วนที่ 3: BLOG_DATA ===
+สร้าง JSON สำหรับบทความ Blog (ภาษาไทย) ต้องเป็น valid JSON เท่านั้น ห้ามมี comment หรือ trailing comma:
+{
+  "title": "ชื่อบทความภาษาไทย เช่น คู่มือส่งออก [สินค้า] ด้วย ${term}",
+  "slug": "incoterm-${term.toLowerCase()}-[product-name-english-kebab-case]-export-guide",
+  "summary": "สรุปบทความ 2-3 ประโยค ภาษาไทย",
+  "product": "ชื่อสินค้าไทย",
+  "hsCode": "XXXXXX",
+  "hsDescription": "คำอธิบาย HS Code ภาษาไทย",
+  "destination": "ประเทศปลายทาง",
+  "steps": ["ขั้นตอนที่ 1", "ขั้นตอนที่ 2", "ขั้นตอนที่ 3", "ขั้นตอนที่ 4", "ขั้นตอนที่ 5"],
+  "agencies": ["หน่วยงาน 1 — URL", "หน่วยงาน 2 — URL", "หน่วยงาน 3 — URL"],
+  "proTips": ["Pro Tip 1", "Pro Tip 2"],
+  "tags": ["${term}", "Incoterms", "ส่งออก", "freight", "logistics"]
+}
+
 format ตอบกลับ:
 CAPTION_START
 [caption ทั้งหมด]
 CAPTION_END
 SCRIPT_START
 [python script ทั้งหมด]
-SCRIPT_END`;
+SCRIPT_END
+BLOG_DATA_START
+[JSON object]
+BLOG_DATA_END`;
 
   const msg = await client.messages.create({
     model: 'claude-opus-4-5',
@@ -101,16 +120,27 @@ SCRIPT_END`;
 
   const text = msg.content[0].text;
 
-  const captionMatch = text.match(/CAPTION_START\n([\s\S]*?)\nCAPTION_END/);
-  const scriptMatch  = text.match(/SCRIPT_START\n([\s\S]*?)\nSCRIPT_END/);
+  const captionMatch  = text.match(/CAPTION_START\n([\s\S]*?)\nCAPTION_END/);
+  const scriptMatch   = text.match(/SCRIPT_START\n([\s\S]*?)\nSCRIPT_END/);
+  const blogDataMatch = text.match(/BLOG_DATA_START\n([\s\S]*?)\nBLOG_DATA_END/);
 
   // Strip asterisks used for markdown bold/italic — Facebook แสดงเป็น literal *
   const rawCaption = captionMatch ? captionMatch[1].trim() : '';
   const cleanCaption = rawCaption.replace(/\*+/g, '');
 
+  let blogData = null;
+  if (blogDataMatch) {
+    try {
+      blogData = JSON.parse(blogDataMatch[1].trim());
+    } catch (e) {
+      console.error('[AutoPost] ไม่สามารถ parse BLOG_DATA JSON:', e.message);
+    }
+  }
+
   return {
-    caption: cleanCaption,
-    script:  scriptMatch  ? scriptMatch[1].trim()  : '',
+    caption:  cleanCaption,
+    script:   scriptMatch ? scriptMatch[1].trim() : '',
+    blogData,
   };
 }
 
@@ -118,7 +148,6 @@ SCRIPT_END`;
 async function postToFacebook(imagePath, caption) {
   if (!PAGE2_TOKEN) throw new Error('FB_PAGE2_ACCESS_TOKEN not set');
 
-  const params = new URLSearchParams({ caption, access_token: PAGE2_TOKEN });
   const formData = new FormData();
   formData.append('caption', caption);
   formData.append('access_token', PAGE2_TOKEN);
@@ -129,6 +158,165 @@ async function postToFacebook(imagePath, caption) {
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data?.error?.message || res.status);
+  return data;
+}
+
+// สร้างบทความใน Notion Blog DB
+async function postToNotionBlog(blogData, term, caption, fbUrl) {
+  const notionToken = process.env.NOTION_TOKEN;
+  const blogDb      = process.env.NOTION_BLOG_DB;
+  if (!notionToken || !blogDb) throw new Error('NOTION_TOKEN หรือ NOTION_BLOG_DB ไม่ได้ตั้งค่า');
+
+  // สร้าง rich text blocks จาก caption สำหรับ body ของบทความ
+  const bodyBlocks = [];
+
+  // Summary paragraph
+  if (blogData.summary) {
+    bodyBlocks.push({
+      object: 'block',
+      type: 'paragraph',
+      paragraph: {
+        rich_text: [{ type: 'text', text: { content: blogData.summary } }],
+      },
+    });
+  }
+
+  // HS Code section
+  if (blogData.hsCode) {
+    bodyBlocks.push({
+      object: 'block',
+      type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '📦 สินค้าและ HS Code' } }] },
+    });
+    bodyBlocks.push({
+      object: 'block',
+      type: 'paragraph',
+      paragraph: {
+        rich_text: [{ type: 'text', text: { content: `สินค้า: ${blogData.product || '-'}\nHS Code: ${blogData.hsCode} — ${blogData.hsDescription || ''}\nประเทศปลายทาง: ${blogData.destination || '-'}` } }],
+      },
+    });
+  }
+
+  // Steps section
+  if (blogData.steps && blogData.steps.length > 0) {
+    bodyBlocks.push({
+      object: 'block',
+      type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '🔢 ขั้นตอนการส่งออก' } }] },
+    });
+    for (const step of blogData.steps) {
+      bodyBlocks.push({
+        object: 'block',
+        type: 'numbered_list_item',
+        numbered_list_item: { rich_text: [{ type: 'text', text: { content: step } }] },
+      });
+    }
+  }
+
+  // Pro Tips section
+  if (blogData.proTips && blogData.proTips.length > 0) {
+    bodyBlocks.push({
+      object: 'block',
+      type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '💡 Pro Tips จากผู้เชี่ยวชาญ' } }] },
+    });
+    for (const tip of blogData.proTips) {
+      bodyBlocks.push({
+        object: 'block',
+        type: 'bulleted_list_item',
+        bulleted_list_item: { rich_text: [{ type: 'text', text: { content: tip } }] },
+      });
+    }
+  }
+
+  // Agencies section
+  if (blogData.agencies && blogData.agencies.length > 0) {
+    bodyBlocks.push({
+      object: 'block',
+      type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '🏢 หน่วยงานที่เกี่ยวข้อง' } }] },
+    });
+    for (const agency of blogData.agencies) {
+      bodyBlocks.push({
+        object: 'block',
+        type: 'bulleted_list_item',
+        bulleted_list_item: { rich_text: [{ type: 'text', text: { content: agency } }] },
+      });
+    }
+  }
+
+  // Facebook link
+  if (fbUrl) {
+    bodyBlocks.push({
+      object: 'block',
+      type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '📱 ดูโพสต์ Facebook' } }] },
+    });
+    bodyBlocks.push({
+      object: 'block',
+      type: 'paragraph',
+      paragraph: {
+        rich_text: [{ type: 'text', text: { content: fbUrl, link: { url: fbUrl } } }],
+      },
+    });
+  }
+
+  // Full caption as callout
+  bodyBlocks.push({
+    object: 'block',
+    type: 'heading_2',
+    heading_2: { rich_text: [{ type: 'text', text: { content: '📄 เนื้อหา Facebook Post' } }] },
+  });
+  // Split caption into chunks of 2000 chars (Notion limit per rich_text block)
+  const chunkSize = 1900;
+  for (let i = 0; i < caption.length; i += chunkSize) {
+    bodyBlocks.push({
+      object: 'block',
+      type: 'paragraph',
+      paragraph: {
+        rich_text: [{ type: 'text', text: { content: caption.slice(i, i + chunkSize) } }],
+      },
+    });
+  }
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  const payload = {
+    parent: { database_id: blogDb },
+    properties: {
+      'Title': {
+        title: [{ text: { content: blogData.title || `คู่มือ ${term} — ${today}` } }],
+      },
+      'Slug': {
+        rich_text: [{ text: { content: blogData.slug || `${term.toLowerCase()}-${Date.now()}` } }],
+      },
+      'Summary': {
+        rich_text: [{ text: { content: (blogData.summary || '').slice(0, 2000) } }],
+      },
+      'Tags': {
+        multi_select: (blogData.tags || [term, 'Incoterms', 'freight']).map(t => ({ name: t })),
+      },
+      'Status': {
+        select: { name: 'Published' },
+      },
+      'Published Date': {
+        date: { start: today },
+      },
+    },
+    children: bodyBlocks,
+  };
+
+  const res = await fetch('https://api.notion.com/v1/pages', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${notionToken}`,
+      'Content-Type': 'application/json',
+      'Notion-Version': '2022-06-28',
+    },
+    body: JSON.stringify(payload),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.message || JSON.stringify(data));
   return data;
 }
 
@@ -147,7 +335,7 @@ async function runAutoPost() {
 
     // 3. สร้าง content ผ่าน Claude
     console.log('[AutoPost] กำลังสร้าง content ด้วย Claude...');
-    const { caption, script } = await generateContent(term);
+    const { caption, script, blogData } = await generateContent(term);
 
     if (!script) throw new Error('Claude ไม่ได้ส่ง Python script กลับมา');
 
@@ -169,18 +357,36 @@ async function runAutoPost() {
     // 5. โพสต์ Facebook
     console.log('[AutoPost] โพสต์ Facebook...');
     const result = await postToFacebook('/tmp/auto_post.jpg', caption);
-    const url = `https://www.facebook.com/${result.post_id}`;
-    console.log(`[AutoPost] สำเร็จ! Post ID: ${result.post_id}`);
-    console.log(`[AutoPost] URL: ${url}`);
+    const fbUrl = `https://www.facebook.com/${result.post_id}`;
+    console.log(`[AutoPost] Facebook สำเร็จ! Post ID: ${result.post_id}`);
+    console.log(`[AutoPost] Facebook URL: ${fbUrl}`);
 
-    // 6. ส่ง Slack notification (ถ้ามี)
+    // 6. สร้าง Notion Blog post
+    let blogUrl = '';
+    try {
+      console.log('[AutoPost] สร้าง Notion Blog...');
+      if (blogData) {
+        const notionResult = await postToNotionBlog(blogData, term, caption, fbUrl);
+        blogUrl = `https://www.notion.so/${notionResult.id.replace(/-/g, '')}`;
+        console.log(`[AutoPost] Notion Blog สำเร็จ! ID: ${notionResult.id}`);
+      } else {
+        console.log('[AutoPost] ไม่มี blogData — ข้ามการสร้าง Blog');
+      }
+    } catch (blogErr) {
+      console.error(`[AutoPost] Blog ERROR (ไม่หยุด): ${blogErr.message}`);
+    }
+
+    // 7. ส่ง Slack notification (ถ้ามี)
     if (process.env.SLACK_WEBHOOK_URL) {
+      const slackMsg = [
+        `✅ *AutoPost สำเร็จ* — ${term}`,
+        `📘 Facebook: ${fbUrl}`,
+        blogUrl ? `📝 Blog: ${blogUrl}` : '📝 Blog: ข้ามการสร้าง (ไม่มี blogData)',
+      ].join('\n');
       await fetch(process.env.SLACK_WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text: `✅ *AutoPost สำเร็จ* — ${term}\nโพสต์: ${url}`,
-        }),
+        body: JSON.stringify({ text: slackMsg }),
       }).catch(() => {});
     }
 
