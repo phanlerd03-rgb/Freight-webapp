@@ -1,7 +1,7 @@
 /**
  * ===== PIT Freight — Auto Post Service =====
  * รันอัตโนมัติ 08:00 และ 15:00 ทุกวัน
- * สร้าง Incoterms content + infographic → โพสต์ Facebook Page 2 + Notion Blog
+ * DALL-E 3 (พื้นหลัง) + PIL (วางข้อความ) → Facebook Page 2 + Notion Blog
  */
 
 const cron      = require('node-cron');
@@ -39,7 +39,7 @@ function ensureFonts() {
   }
 }
 
-// สร้าง content + PIL script + blog data ผ่าน Claude API
+// ===== ขั้นตอนที่ 1: Claude สร้าง content + DALL-E prompt =====
 async function generateContent(term) {
   const prompt = `คุณคือผู้ชำนาญการด้านการค้าระหว่างประเทศและพิธีการศุลกากร มีประสบการณ์จริงในการส่งออก-นำเข้าสินค้าไทย
 
@@ -48,22 +48,17 @@ async function generateContent(term) {
 === ส่วนที่ 1: FACEBOOK_CAPTION ===
 เขียน caption ภาษาไทย+อังกฤษ สำหรับ Facebook Page "Booking Freight Shipper & Consignee" ในฐานะผู้ชำนาญการ
 โครงสร้าง caption (เรียงตามลำดับนี้):
-
 1) หัวข้อดึงดูด + ชื่อ Incoterm ${term} และความหมายแบบเข้าใจง่าย
 2) ตัวอย่างสินค้าไทย 1 ชนิดที่เหมาะกับ ${term} พร้อมระบุ:
    - HS Code ที่ถูกต้อง (6 หลัก) พร้อมคำอธิบาย
    - ประเทศปลายทางที่เหมาะสม
 3) ขั้นตอนการส่งออกตั้งแต่ต้นจนจบ (5-7 ขั้นตอน) อย่างละเอียด
-4) ใบอนุญาตและเอกสารควบคุมการส่งออก-นำเข้าที่เกี่ยวข้องกับสินค้าตัวอย่าง เช่น:
-   - ใบอนุญาตส่งออก/นำเข้าจากหน่วยงานที่กำกับดูแล
-   - มาตรฐานหรือการรับรองที่จำเป็น (เช่น อย., มอก., GAP, GMP ฯลฯ)
-   - ข้อกำหนดพิเศษของประเทศปลายทาง
+4) ใบอนุญาตและเอกสารควบคุมการส่งออก-นำเข้าที่เกี่ยวข้อง
 5) หน่วยงานที่เกี่ยวข้องพร้อมลิงก์ติดต่อจริง เช่น:
    - กรมการค้าต่างประเทศ: https://www.dft.go.th
    - กรมศุลกากร: https://www.customs.go.th
    - กรมวิชาการเกษตร: https://www.doa.go.th (ถ้าเกี่ยวข้อง)
    - สำนักงาน อย.: https://www.fda.moph.go.th (ถ้าเกี่ยวข้อง)
-   - หน่วยงานอื่นๆ ที่เกี่ยวข้องกับสินค้านั้นๆ โดยเฉพาะ
 6) Pro Tips จากผู้ชำนาญการ (2-3 ข้อ) ที่คนส่วนใหญ่มักพลาด
 7) hashtag ท้าย (ภาษาไทย+อังกฤษ 8-12 อัน)
 8) ลงท้ายด้วย: 📞 +66 63-446-7735 | 💬 LINE: lin.ee/6aC3Z5O | 🌐 pitfreight.com
@@ -72,31 +67,30 @@ async function generateContent(term) {
 - ห้ามใช้ดอกจัน (*) หรือ markdown formatting ใดๆ ทั้งสิ้น
 - ใช้ emoji และ plain text เท่านั้น
 - ความยาวรวม ~600-700 คำ
-- เขียนในโทนผู้เชี่ยวชาญที่เป็นมิตร เข้าใจง่าย และนำไปใช้ได้จริง
 
-=== ส่วนที่ 2: PYTHON_SCRIPT ===
-เขียน Python script สร้าง infographic 1080x1080px ด้วย PIL
-กฎสำคัญ:
-- ใช้ font /tmp/Sarabun.ttf (regular) และ /tmp/SarabunB.ttf (bold) เท่านั้น
-- background dark theme สีทันสมัย เหมาะกับ ${term}
-- แสดงข้อมูลครบ: ชื่อ Incoterm + ชื่อสินค้าไทย + HS Code + 5-6 ขั้นตอนหลัก (2 คอลัมน์) + ตาราง responsibility split (Seller/Buyer) + หน่วยงานที่ต้องติดต่อ 2-3 แห่ง + footer "Booking Freight Shipper & Consignee"
-- บันทึกที่ /tmp/auto_post.jpg quality=95
-- ห้ามใช้ emoji ในภาพ (PIL render ไม่ได้) ใช้ text แทน
-- script ต้องรันได้ทันทีโดยไม่มี error
-- จัดวางให้สวยงาม ไม่แน่นเกินไป มีช่องว่างพอเหมาะ
+=== ส่วนที่ 2: DALLE_PROMPT ===
+เขียน prompt ภาษาอังกฤษสำหรับ DALL-E 3 เพื่อสร้างภาพพื้นหลัง infographic 1:1
+กฎ:
+- ห้ามมีข้อความหรือตัวอักษรใดๆ ในภาพ (NO TEXT, NO WORDS, NO LETTERS)
+- เป็น abstract/conceptual background เท่านั้น
+- สีและธีมสอดคล้องกับ ${term} และสินค้าที่เลือก
+- dark theme สีทันสมัย มี gradient สวยงาม
+- เน้นความรู้สึก: logistics, international trade, shipping, Thailand export
+- ตัวอย่าง element: container ships, cargo, world map, trade routes, Thai elements
+- ต้องดูเป็น professional infographic background
 
 === ส่วนที่ 3: BLOG_DATA ===
-สร้าง JSON สำหรับบทความ Blog (ภาษาไทย) ต้องเป็น valid JSON เท่านั้น ห้ามมี comment หรือ trailing comma:
+สร้าง JSON สำหรับบทความ Blog ต้องเป็น valid JSON เท่านั้น ห้ามมี comment:
 {
-  "title": "ชื่อบทความภาษาไทย เช่น คู่มือส่งออก [สินค้า] ด้วย ${term}",
-  "slug": "incoterm-${term.toLowerCase()}-[product-name-english-kebab-case]-export-guide",
+  "title": "ชื่อบทความภาษาไทย",
+  "slug": "incoterm-${term.toLowerCase()}-[product-english-kebab-case]-export-guide",
   "summary": "สรุปบทความ 2-3 ประโยค ภาษาไทย",
   "product": "ชื่อสินค้าไทย",
   "hsCode": "XXXXXX",
-  "hsDescription": "คำอธิบาย HS Code ภาษาไทย",
+  "hsDescription": "คำอธิบาย HS Code",
   "destination": "ประเทศปลายทาง",
   "steps": ["ขั้นตอนที่ 1", "ขั้นตอนที่ 2", "ขั้นตอนที่ 3", "ขั้นตอนที่ 4", "ขั้นตอนที่ 5"],
-  "agencies": ["หน่วยงาน 1 — URL", "หน่วยงาน 2 — URL", "หน่วยงาน 3 — URL"],
+  "agencies": ["หน่วยงาน 1 — URL", "หน่วยงาน 2 — URL"],
   "proTips": ["Pro Tip 1", "Pro Tip 2"],
   "tags": ["${term}", "Incoterms", "ส่งออก", "freight", "logistics"]
 }
@@ -105,9 +99,9 @@ format ตอบกลับ:
 CAPTION_START
 [caption ทั้งหมด]
 CAPTION_END
-SCRIPT_START
-[python script ทั้งหมด]
-SCRIPT_END
+DALLE_PROMPT_START
+[DALL-E prompt]
+DALLE_PROMPT_END
 BLOG_DATA_START
 [JSON object]
 BLOG_DATA_END`;
@@ -120,12 +114,11 @@ BLOG_DATA_END`;
 
   const text = msg.content[0].text;
 
-  const captionMatch  = text.match(/CAPTION_START\n([\s\S]*?)\nCAPTION_END/);
-  const scriptMatch   = text.match(/SCRIPT_START\n([\s\S]*?)\nSCRIPT_END/);
-  const blogDataMatch = text.match(/BLOG_DATA_START\n([\s\S]*?)\nBLOG_DATA_END/);
+  const captionMatch     = text.match(/CAPTION_START\n([\s\S]*?)\nCAPTION_END/);
+  const dallePromptMatch = text.match(/DALLE_PROMPT_START\n([\s\S]*?)\nDALLE_PROMPT_END/);
+  const blogDataMatch    = text.match(/BLOG_DATA_START\n([\s\S]*?)\nBLOG_DATA_END/);
 
-  // Strip asterisks used for markdown bold/italic — Facebook แสดงเป็น literal *
-  const rawCaption = captionMatch ? captionMatch[1].trim() : '';
+  const rawCaption   = captionMatch ? captionMatch[1].trim() : '';
   const cleanCaption = rawCaption.replace(/\*+/g, '');
 
   let blogData = null;
@@ -138,17 +131,220 @@ BLOG_DATA_END`;
   }
 
   return {
-    caption:  cleanCaption,
-    script:   scriptMatch ? scriptMatch[1].trim() : '',
+    caption:     cleanCaption,
+    dallePrompt: dallePromptMatch ? dallePromptMatch[1].trim() : '',
     blogData,
   };
 }
 
-// โพสต์ภาพ+caption ลง Facebook (ใช้ curl เพื่อความเสถียร)
+// ===== ขั้นตอนที่ 2: DALL-E 3 สร้างพื้นหลัง =====
+async function generateDalleBackground(dallePrompt) {
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (!openaiKey) throw new Error('OPENAI_API_KEY not set');
+
+  const res = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${openaiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model:           'gpt-image-1',
+      prompt:          dallePrompt + ' No text, no words, no letters, no numbers anywhere in the image.',
+      size:            '1024x1024',
+      quality:         'medium',
+      output_format:   'jpeg',
+      n:               1,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error?.message || 'OpenAI Image API error');
+
+  const bgPath = '/tmp/dalle_bg.jpg';
+
+  // gpt-image-1 ส่งกลับเป็น base64
+  if (data.data[0].b64_json) {
+    const b64 = data.data[0].b64_json;
+    fs.writeFileSync(bgPath, Buffer.from(b64, 'base64'));
+  } else if (data.data[0].url) {
+    execSync(`curl -sL "${data.data[0].url}" -o ${bgPath}`);
+  } else {
+    throw new Error('ไม่พบ image data จาก OpenAI');
+  }
+
+  if (!fs.existsSync(bgPath)) throw new Error('ไม่สามารถ save ภาพ OpenAI ได้');
+
+  return bgPath;
+}
+
+// ===== ขั้นตอนที่ 3: PIL วางข้อความบนพื้นหลัง DALL-E =====
+async function createHybridImage(bgPath, blogData, term) {
+  const d = blogData || {};
+  const product     = (d.product     || term).replace(/'/g, "\\'");
+  const hsCode      = (d.hsCode      || '------').replace(/'/g, "\\'");
+  const hsDesc      = (d.hsDescription || '').slice(0, 40).replace(/'/g, "\\'");
+  const destination = (d.destination || '').replace(/'/g, "\\'");
+  const steps       = (d.steps       || []).slice(0, 6);
+  const agencies    = (d.agencies    || []).slice(0, 3);
+
+  // สร้าง Python list strings
+  const stepsStr    = JSON.stringify(steps).replace(/"/g, "'");
+  const agenciesStr = JSON.stringify(agencies.map(a => a.split('—')[0].trim())).replace(/"/g, "'");
+
+  const pilScript = `
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+import textwrap, os
+
+# Load background from DALL-E
+bg = Image.open('${bgPath}').convert('RGBA').resize((1080, 1080))
+
+# Dark overlay for readability
+overlay = Image.new('RGBA', (1080, 1080), (0, 0, 0, 0))
+draw_ov = ImageDraw.Draw(overlay)
+
+# Gradient dark overlay (top lighter, bottom darker)
+for y in range(1080):
+    alpha = int(155 + (y / 1080) * 60)
+    draw_ov.rectangle([(0, y), (1080, y+1)], fill=(10, 15, 35, alpha))
+
+# Colored accent bar at top
+draw_ov.rectangle([(0, 0), (1080, 8)], fill=(0, 200, 255, 220))
+draw_ov.rectangle([(0, 8), (1080, 14)], fill=(255, 165, 0, 180))
+
+bg = Image.alpha_composite(bg, overlay)
+img = bg.convert('RGB')
+draw = ImageDraw.Draw(img)
+
+# Fonts
+try:
+    font_bold_xl  = ImageFont.truetype('/tmp/SarabunB.ttf', 72)
+    font_bold_lg  = ImageFont.truetype('/tmp/SarabunB.ttf', 46)
+    font_bold_md  = ImageFont.truetype('/tmp/SarabunB.ttf', 34)
+    font_bold_sm  = ImageFont.truetype('/tmp/SarabunB.ttf', 28)
+    font_reg_md   = ImageFont.truetype('/tmp/Sarabun.ttf',  30)
+    font_reg_sm   = ImageFont.truetype('/tmp/Sarabun.ttf',  24)
+    font_reg_xs   = ImageFont.truetype('/tmp/Sarabun.ttf',  20)
+except:
+    font_bold_xl = font_bold_lg = font_bold_md = font_bold_sm = ImageFont.load_default()
+    font_reg_md = font_reg_sm = font_reg_xs = ImageFont.load_default()
+
+W = 1080
+
+def center_text(draw, text, y, font, color):
+    bbox = draw.textbbox((0,0), text, font=font)
+    w = bbox[2] - bbox[0]
+    draw.text(((W - w) / 2, y), text, font=font, fill=color)
+
+def draw_card(draw, x, y, w, h, color=(255,255,255,18)):
+    card = Image.new('RGBA', (w, h), color)
+    img.paste(Image.alpha_composite(Image.new('RGBA', (w,h), (0,0,0,0)), card), (x, y))
+
+# ── HEADER ──────────────────────────────────────────────
+# Logo / brand
+center_text(draw, 'Booking Freight', 28, font_reg_sm, (0, 200, 255))
+center_text(draw, 'Shipper & Consignee', 56, font_reg_xs, (180, 220, 255))
+
+# Incoterm big title
+term_text = '${term}'
+bbox = draw.textbbox((0,0), term_text, font=font_bold_xl)
+tw = bbox[2]-bbox[0]
+# Shadow
+draw.text(((W-tw)/2+3, 103), term_text, font=font_bold_xl, fill=(0,0,0,150))
+draw.text(((W-tw)/2, 100), term_text, font=font_bold_xl, fill=(255, 200, 50))
+
+# Product name
+product_text = '${product}'
+center_text(draw, product_text, 180, font_bold_md, (255, 255, 255))
+
+# HS Code badge
+hs_text = 'HS Code: ${hsCode}  |  ${destination}'
+bbox2 = draw.textbbox((0,0), hs_text, font=font_reg_sm)
+bw = bbox2[2]-bbox2[0]+40
+bx = (W-bw)//2
+draw.rounded_rectangle([bx, 222, bx+bw, 258], radius=14, fill=(0,180,230,200))
+center_text(draw, hs_text, 228, font_reg_sm, (255, 255, 255))
+
+# ── STEPS SECTION ───────────────────────────────────────
+steps = ${stepsStr}
+draw.text((54, 278), 'ขั้นตอนการส่งออก', font=font_bold_sm, fill=(0, 220, 255))
+draw.line([(54, 310), (520, 310)], fill=(0,200,255,180), width=2)
+
+colors_step = [(255,180,50), (100,220,100), (100,180,255), (255,130,130), (200,150,255), (255,200,100)]
+col_w = 490
+for i, step in enumerate(steps[:6]):
+    col = i % 2
+    row = i // 2
+    sx = 54 + col * 530
+    sy = 320 + row * 110
+    sc = colors_step[i % len(colors_step)]
+    # Number circle
+    draw.ellipse([sx, sy+2, sx+42, sy+44], fill=sc)
+    draw.text((sx+12, sy+6), str(i+1), font=font_bold_md, fill=(20,20,40))
+    # Step text (wrap)
+    wrapped = textwrap.fill(step, width=28)
+    lines = wrapped.split('\\n')
+    for li, line in enumerate(lines[:2]):
+        draw.text((sx+52, sy+4+li*26), line, font=font_reg_xs, fill=(230,240,255))
+
+# ── RESPONSIBILITY TABLE ─────────────────────────────────
+ty = 660
+draw.text((54, ty), 'ความรับผิดชอบ', font=font_bold_sm, fill=(0,220,255))
+draw.line([(54, ty+32), (520, ty+32)], fill=(0,200,255,180), width=2)
+
+headers = [('ความรับผิดชอบ', 54), ('Seller', 380), ('Buyer', 520)]
+for h, hx in headers:
+    draw.text((hx, ty+40), h, font=font_bold_sm, fill=(255,200,50))
+
+rows_data = [
+    ('ดำเนินพิธีการส่งออก', 'YES', 'NO'),
+    ('ค่าขนส่งหลัก', 'VARIES', 'VARIES'),
+    ('ประกันภัย', 'NO', 'YES'),
+    ('ความเสี่ยงหลังส่งมอบ', 'NO', 'YES'),
+]
+for ri, (label, seller, buyer) in enumerate(rows_data):
+    ry = ty + 76 + ri * 38
+    bg_c = (255,255,255,8) if ri%2==0 else (255,255,255,3)
+    draw.rectangle([54, ry-4, 640, ry+30], fill=bg_c)
+    draw.text((54,  ry), label,  font=font_reg_xs, fill=(200,220,255))
+    sc2 = (100,220,100) if seller=='YES' else (255,120,100) if seller=='NO' else (255,200,80)
+    bc2 = (100,220,100) if buyer=='YES'  else (255,120,100) if buyer=='NO'  else (255,200,80)
+    draw.text((380, ry), seller, font=font_bold_sm, fill=sc2)
+    draw.text((520, ry), buyer,  font=font_bold_sm, fill=bc2)
+
+# ── AGENCIES ────────────────────────────────────────────
+agencies = ${agenciesStr}
+ax = 660
+draw.text((ax, 278), 'หน่วยงานที่ติดต่อ', font=font_bold_sm, fill=(0,220,255))
+draw.line([(ax, 310), (1026, 310)], fill=(0,200,255,180), width=2)
+for ai, ag in enumerate(agencies[:3]):
+    ay = 320 + ai * 80
+    draw.ellipse([ax, ay+4, ax+28, ay+32], fill=(255,165,0,200))
+    draw.text((ax+7, ay+4), str(ai+1), font=font_reg_xs, fill=(20,20,40))
+    short = ag[:30] + ('...' if len(ag)>30 else '')
+    draw.text((ax+38, ay+4), short, font=font_reg_sm, fill=(230,240,255))
+
+# ── FOOTER ──────────────────────────────────────────────
+draw.rectangle([(0, 1010), (1080, 1080)], fill=(0,0,0,200))
+draw.line([(0,1010),(1080,1010)], fill=(0,200,255,150), width=2)
+contact = '+66 63-446-7735  |  LINE: lin.ee/6aC3Z5O  |  pitfreight.com'
+center_text(draw, contact, 1022, font_reg_sm, (180, 220, 255))
+center_text(draw, 'PIT Freight — Booking Freight Shipper & Consignee', 1050, font_reg_xs, (120,160,200))
+
+# Save
+img.save('/tmp/auto_post.jpg', 'JPEG', quality=95)
+print('Image saved: /tmp/auto_post.jpg')
+`;
+
+  const scriptPath = '/tmp/hybrid_gen.py';
+  fs.writeFileSync(scriptPath, pilScript);
+  execFileSync('python3', [scriptPath], { timeout: 60000 });
+}
+
+// ===== โพสต์ภาพ+caption ลง Facebook (curl) =====
 async function postToFacebook(imagePath, caption) {
   if (!PAGE2_TOKEN) throw new Error('FB_PAGE2_ACCESS_TOKEN not set');
 
-  // เขียน caption ลง temp file เพื่อหลีกเลี่ยงปัญหา shell escaping
   const captionFile = '/tmp/fb_caption_post.txt';
   fs.writeFileSync(captionFile, caption);
 
@@ -165,156 +361,75 @@ async function postToFacebook(imagePath, caption) {
   return data;
 }
 
-// สร้างบทความใน Notion Blog DB
+// ===== สร้างบทความใน Notion Blog =====
 async function postToNotionBlog(blogData, term, caption, fbUrl) {
   const notionToken = process.env.NOTION_TOKEN;
   const blogDb      = process.env.NOTION_BLOG_DB;
   if (!notionToken || !blogDb) throw new Error('NOTION_TOKEN หรือ NOTION_BLOG_DB ไม่ได้ตั้งค่า');
 
-  // สร้าง rich text blocks จาก caption สำหรับ body ของบทความ
   const bodyBlocks = [];
 
-  // Summary paragraph
   if (blogData.summary) {
-    bodyBlocks.push({
-      object: 'block',
-      type: 'paragraph',
-      paragraph: {
-        rich_text: [{ type: 'text', text: { content: blogData.summary } }],
-      },
-    });
+    bodyBlocks.push({ object: 'block', type: 'paragraph',
+      paragraph: { rich_text: [{ type: 'text', text: { content: blogData.summary } }] } });
   }
-
-  // HS Code section
   if (blogData.hsCode) {
-    bodyBlocks.push({
-      object: 'block',
-      type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '📦 สินค้าและ HS Code' } }] },
-    });
-    bodyBlocks.push({
-      object: 'block',
-      type: 'paragraph',
-      paragraph: {
-        rich_text: [{ type: 'text', text: { content: `สินค้า: ${blogData.product || '-'}\nHS Code: ${blogData.hsCode} — ${blogData.hsDescription || ''}\nประเทศปลายทาง: ${blogData.destination || '-'}` } }],
-      },
-    });
+    bodyBlocks.push({ object: 'block', type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '📦 สินค้าและ HS Code' } }] } });
+    bodyBlocks.push({ object: 'block', type: 'paragraph',
+      paragraph: { rich_text: [{ type: 'text', text: { content:
+        `สินค้า: ${blogData.product || '-'}\nHS Code: ${blogData.hsCode} — ${blogData.hsDescription || ''}\nประเทศปลายทาง: ${blogData.destination || '-'}` } }] } });
   }
-
-  // Steps section
-  if (blogData.steps && blogData.steps.length > 0) {
-    bodyBlocks.push({
-      object: 'block',
-      type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '🔢 ขั้นตอนการส่งออก' } }] },
-    });
+  if (blogData.steps?.length) {
+    bodyBlocks.push({ object: 'block', type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '🔢 ขั้นตอนการส่งออก' } }] } });
     for (const step of blogData.steps) {
-      bodyBlocks.push({
-        object: 'block',
-        type: 'numbered_list_item',
-        numbered_list_item: { rich_text: [{ type: 'text', text: { content: step } }] },
-      });
+      bodyBlocks.push({ object: 'block', type: 'numbered_list_item',
+        numbered_list_item: { rich_text: [{ type: 'text', text: { content: step } }] } });
     }
   }
-
-  // Pro Tips section
-  if (blogData.proTips && blogData.proTips.length > 0) {
-    bodyBlocks.push({
-      object: 'block',
-      type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '💡 Pro Tips จากผู้เชี่ยวชาญ' } }] },
-    });
+  if (blogData.proTips?.length) {
+    bodyBlocks.push({ object: 'block', type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '💡 Pro Tips จากผู้เชี่ยวชาญ' } }] } });
     for (const tip of blogData.proTips) {
-      bodyBlocks.push({
-        object: 'block',
-        type: 'bulleted_list_item',
-        bulleted_list_item: { rich_text: [{ type: 'text', text: { content: tip } }] },
-      });
+      bodyBlocks.push({ object: 'block', type: 'bulleted_list_item',
+        bulleted_list_item: { rich_text: [{ type: 'text', text: { content: tip } }] } });
     }
   }
-
-  // Agencies section
-  if (blogData.agencies && blogData.agencies.length > 0) {
-    bodyBlocks.push({
-      object: 'block',
-      type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '🏢 หน่วยงานที่เกี่ยวข้อง' } }] },
-    });
-    for (const agency of blogData.agencies) {
-      bodyBlocks.push({
-        object: 'block',
-        type: 'bulleted_list_item',
-        bulleted_list_item: { rich_text: [{ type: 'text', text: { content: agency } }] },
-      });
+  if (blogData.agencies?.length) {
+    bodyBlocks.push({ object: 'block', type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '🏢 หน่วยงานที่เกี่ยวข้อง' } }] } });
+    for (const ag of blogData.agencies) {
+      bodyBlocks.push({ object: 'block', type: 'bulleted_list_item',
+        bulleted_list_item: { rich_text: [{ type: 'text', text: { content: ag } }] } });
     }
   }
-
-  // Facebook link
   if (fbUrl) {
-    bodyBlocks.push({
-      object: 'block',
-      type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '📱 ดูโพสต์ Facebook' } }] },
-    });
-    bodyBlocks.push({
-      object: 'block',
-      type: 'paragraph',
-      paragraph: {
-        rich_text: [{ type: 'text', text: { content: fbUrl, link: { url: fbUrl } } }],
-      },
-    });
+    bodyBlocks.push({ object: 'block', type: 'heading_2',
+      heading_2: { rich_text: [{ type: 'text', text: { content: '📱 ดูโพสต์ Facebook' } }] } });
+    bodyBlocks.push({ object: 'block', type: 'paragraph',
+      paragraph: { rich_text: [{ type: 'text', text: { content: fbUrl, link: { url: fbUrl } } }] } });
   }
-
-  // Full caption as callout
-  bodyBlocks.push({
-    object: 'block',
-    type: 'heading_2',
-    heading_2: { rich_text: [{ type: 'text', text: { content: '📄 เนื้อหา Facebook Post' } }] },
-  });
-  // Split caption into chunks of 2000 chars (Notion limit per rich_text block)
-  const chunkSize = 1900;
-  for (let i = 0; i < caption.length; i += chunkSize) {
-    bodyBlocks.push({
-      object: 'block',
-      type: 'paragraph',
-      paragraph: {
-        rich_text: [{ type: 'text', text: { content: caption.slice(i, i + chunkSize) } }],
-      },
-    });
+  bodyBlocks.push({ object: 'block', type: 'heading_2',
+    heading_2: { rich_text: [{ type: 'text', text: { content: '📄 เนื้อหา Facebook Post' } }] } });
+  for (let i = 0; i < caption.length; i += 1900) {
+    bodyBlocks.push({ object: 'block', type: 'paragraph',
+      paragraph: { rich_text: [{ type: 'text', text: { content: caption.slice(i, i+1900) } }] } });
   }
 
   const today = new Date().toISOString().slice(0, 10);
-
   const payload = {
     parent: { database_id: blogDb },
     properties: {
-      'Title': {
-        title: [{ text: { content: blogData.title || `คู่มือ ${term} — ${today}` } }],
-      },
-      'Slug': {
-        rich_text: [{ text: { content: blogData.slug || `${term.toLowerCase()}-${Date.now()}` } }],
-      },
-      'Summary': {
-        rich_text: [{ text: { content: (blogData.summary || '').slice(0, 2000) } }],
-      },
-      'Tags': {
-        multi_select: (blogData.tags || [term, 'Incoterms', 'freight']).map(t => ({ name: t })),
-      },
-      'Published': {
-        checkbox: true,
-      },
-      'Category': {
-        select: { name: 'Incoterms' },
-      },
-      'Language': {
-        select: { name: 'TH' },
-      },
-      'Author': {
-        rich_text: [{ text: { content: 'PIT Freight Expert' } }],
-      },
-      'Published Date': {
-        date: { start: today },
-      },
+      'Title':          { title: [{ text: { content: blogData.title || `คู่มือ ${term} — ${today}` } }] },
+      'Slug':           { rich_text: [{ text: { content: blogData.slug || `${term.toLowerCase()}-${Date.now()}` } }] },
+      'Summary':        { rich_text: [{ text: { content: (blogData.summary || '').slice(0, 2000) } }] },
+      'Tags':           { multi_select: (blogData.tags || [term, 'Incoterms', 'freight']).map(t => ({ name: t })) },
+      'Published':      { checkbox: true },
+      'Category':       { select: { name: 'Incoterms' } },
+      'Language':       { select: { name: 'TH' } },
+      'Author':         { rich_text: [{ text: { content: 'PIT Freight Expert' } }] },
+      'Published Date': { date: { start: today } },
     },
     children: bodyBlocks,
   };
@@ -323,7 +438,7 @@ async function postToNotionBlog(blogData, term, caption, fbUrl) {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${notionToken}`,
-      'Content-Type': 'application/json',
+      'Content-Type':  'application/json',
       'Notion-Version': '2022-06-28',
     },
     body: JSON.stringify(payload),
@@ -333,79 +448,70 @@ async function postToNotionBlog(blogData, term, caption, fbUrl) {
   return data;
 }
 
-// === Main job function ===
+// ===== Main job =====
 async function runAutoPost() {
-  const now  = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+  const now = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
   console.log(`\n[AutoPost] เริ่มต้น ${now}`);
 
   try {
-    // 1. เตรียม fonts
+    // 1. Fonts
     ensureFonts();
 
     // 2. เลือก Incoterm
     const term = pickTerm();
     console.log(`[AutoPost] Term: ${term}`);
 
-    // 3. สร้าง content ผ่าน Claude
-    console.log('[AutoPost] กำลังสร้าง content ด้วย Claude...');
-    const { caption, script, blogData } = await generateContent(term);
+    // 3. Claude สร้าง content + DALL-E prompt
+    console.log('[AutoPost] Claude กำลังสร้าง content...');
+    const { caption, dallePrompt, blogData } = await generateContent(term);
+    if (!dallePrompt) throw new Error('Claude ไม่ได้ส่ง DALL-E prompt กลับมา');
 
-    if (!script) throw new Error('Claude ไม่ได้ส่ง Python script กลับมา');
+    // 4. DALL-E 3 สร้างพื้นหลัง
+    console.log('[AutoPost] DALL-E 3 กำลังสร้างภาพพื้นหลัง...');
+    const bgPath = await generateDalleBackground(dallePrompt);
+    console.log('[AutoPost] DALL-E สร้างพื้นหลังสำเร็จ');
 
-    // 4. รัน Python script สร้างภาพ
-    console.log('[AutoPost] รัน Python PIL...');
-    const scriptPath = '/tmp/auto_gen.py';
-    // Strip markdown code fences if Claude wrapped the script
-    const cleanScript = script
-      .replace(/^```python\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/\s*```$/, '')
-      .trim();
-    fs.writeFileSync(scriptPath, cleanScript);
-    execFileSync('python3', [scriptPath], { timeout: 60000 });
+    // 5. PIL วางข้อความบนพื้นหลัง
+    console.log('[AutoPost] PIL กำลังวางข้อความบน DALL-E background...');
+    await createHybridImage(bgPath, blogData, term);
+    if (!fs.existsSync('/tmp/auto_post.jpg')) throw new Error('ไม่พบไฟล์ภาพ');
+    console.log('[AutoPost] สร้างภาพ Hybrid สำเร็จ');
 
-    if (!fs.existsSync('/tmp/auto_post.jpg')) throw new Error('ไม่พบไฟล์ภาพ /tmp/auto_post.jpg');
-    console.log('[AutoPost] สร้างภาพสำเร็จ');
-
-    // 5. โพสต์ Facebook
+    // 6. โพสต์ Facebook
     console.log('[AutoPost] โพสต์ Facebook...');
     const result = await postToFacebook('/tmp/auto_post.jpg', caption);
-    const fbUrl = `https://www.facebook.com/${result.post_id}`;
-    console.log(`[AutoPost] Facebook สำเร็จ! Post ID: ${result.post_id}`);
-    console.log(`[AutoPost] Facebook URL: ${fbUrl}`);
+    const fbUrl  = `https://www.facebook.com/${result.post_id}`;
+    console.log(`[AutoPost] Facebook สำเร็จ! URL: ${fbUrl}`);
 
-    // 6. สร้าง Notion Blog post
+    // 7. Notion Blog
     let blogUrl = '';
     try {
       console.log('[AutoPost] สร้าง Notion Blog...');
       if (blogData) {
-        const notionResult = await postToNotionBlog(blogData, term, caption, fbUrl);
-        blogUrl = `https://www.notion.so/${notionResult.id.replace(/-/g, '')}`;
-        console.log(`[AutoPost] Notion Blog สำเร็จ! ID: ${notionResult.id}`);
-      } else {
-        console.log('[AutoPost] ไม่มี blogData — ข้ามการสร้าง Blog');
+        const nr = await postToNotionBlog(blogData, term, caption, fbUrl);
+        blogUrl = `https://www.notion.so/${nr.id.replace(/-/g,'')}`;
+        console.log(`[AutoPost] Notion Blog สำเร็จ! ID: ${nr.id}`);
       }
     } catch (blogErr) {
       console.error(`[AutoPost] Blog ERROR (ไม่หยุด): ${blogErr.message}`);
     }
 
-    // 7. ส่ง Slack notification (ถ้ามี)
+    // 8. Slack
     if (process.env.SLACK_WEBHOOK_URL) {
-      const slackMsg = [
-        `✅ *AutoPost สำเร็จ* — ${term}`,
+      const msg = [
+        `✅ *AutoPost สำเร็จ* — ${term} (DALL-E 3 + PIL)`,
         `📘 Facebook: ${fbUrl}`,
-        blogUrl ? `📝 Blog: ${blogUrl}` : '📝 Blog: ข้ามการสร้าง (ไม่มี blogData)',
+        blogUrl ? `📝 Blog: ${blogUrl}` : '📝 Blog: ข้ามการสร้าง',
       ].join('\n');
       await fetch(process.env.SLACK_WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: slackMsg }),
+        body: JSON.stringify({ text: msg }),
       }).catch(() => {});
     }
 
   } catch (err) {
     console.error(`[AutoPost] ERROR: ${err.message}`);
-    // แจ้ง Slack ถ้า error
     if (process.env.SLACK_WEBHOOK_URL) {
       await fetch(process.env.SLACK_WEBHOOK_URL, {
         method: 'POST',
@@ -416,14 +522,11 @@ async function runAutoPost() {
   }
 }
 
-// === ลงทะเบียน Cron Jobs ===
+// ===== Cron Jobs =====
 function startAutoPost() {
-  // 08:00 ทุกวัน (Asia/Bangkok)
-  cron.schedule('0 8 * * *', runAutoPost, { timezone: 'Asia/Bangkok' });
-  // 15:00 ทุกวัน (Asia/Bangkok)
+  cron.schedule('0 8 * * *',  runAutoPost, { timezone: 'Asia/Bangkok' });
   cron.schedule('0 15 * * *', runAutoPost, { timezone: 'Asia/Bangkok' });
-
-  console.log('[AutoPost] Cron jobs registered: 08:00 & 15:00 Asia/Bangkok');
+  console.log('[AutoPost] Cron jobs registered: 08:00 & 15:00 Asia/Bangkok (DALL-E 3 Mode)');
 }
 
 module.exports = { startAutoPost, runAutoPost };
