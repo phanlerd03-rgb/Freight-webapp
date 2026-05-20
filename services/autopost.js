@@ -144,20 +144,24 @@ BLOG_DATA_END`;
   };
 }
 
-// โพสต์ภาพ+caption ลง Facebook
+// โพสต์ภาพ+caption ลง Facebook (ใช้ curl เพื่อความเสถียร)
 async function postToFacebook(imagePath, caption) {
   if (!PAGE2_TOKEN) throw new Error('FB_PAGE2_ACCESS_TOKEN not set');
 
-  const formData = new FormData();
-  formData.append('caption', caption);
-  formData.append('access_token', PAGE2_TOKEN);
-  formData.append('source', new Blob([fs.readFileSync(imagePath)], { type: 'image/jpeg' }), 'post.jpg');
+  // เขียน caption ลง temp file เพื่อหลีกเลี่ยงปัญหา shell escaping
+  const captionFile = '/tmp/fb_caption_post.txt';
+  fs.writeFileSync(captionFile, caption);
 
-  const res  = await fetch(`https://graph.facebook.com/v19.0/${PAGE2_ID}/photos`, {
-    method: 'POST', body: formData,
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data?.error?.message || res.status);
+  const result = execFileSync('bash', ['-c',
+    `curl -s -X POST \
+      "https://graph.facebook.com/v19.0/${PAGE2_ID}/photos" \
+      -F "source=@${imagePath}" \
+      -F "caption=<${captionFile}" \
+      -F "access_token=${PAGE2_TOKEN}"`
+  ], { timeout: 60000 });
+
+  const data = JSON.parse(result.toString());
+  if (data.error) throw new Error(data.error.message);
   return data;
 }
 
