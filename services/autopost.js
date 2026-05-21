@@ -178,162 +178,230 @@ async function generateDalleBackground(dallePrompt) {
   return bgPath;
 }
 
-// ===== ขั้นตอนที่ 3: PIL วางข้อความบนพื้นหลัง DALL-E =====
+// ===== ขั้นตอนที่ 3: PIL วางข้อความบนพื้นหลัง DALL-E (Modern Design) =====
 async function createHybridImage(bgPath, blogData, term) {
   const d = blogData || {};
   const product     = (d.product     || term).replace(/'/g, "\\'");
   const hsCode      = (d.hsCode      || '------').replace(/'/g, "\\'");
-  const hsDesc      = (d.hsDescription || '').slice(0, 40).replace(/'/g, "\\'");
   const destination = (d.destination || '').replace(/'/g, "\\'");
   const steps       = (d.steps       || []).slice(0, 6);
   const agencies    = (d.agencies    || []).slice(0, 3);
 
-  // สร้าง Python list strings
-  const stepsStr    = JSON.stringify(steps).replace(/"/g, "'");
-  const agenciesStr = JSON.stringify(agencies.map(a => a.split('—')[0].trim())).replace(/"/g, "'");
+  const stepsStr    = JSON.stringify(steps);
+  const agenciesStr = JSON.stringify(agencies.map(a => a.split('—')[0].trim()));
 
   const pilScript = `
-from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
-import textwrap, os
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
+import textwrap, json
 
-# Load background from DALL-E
-bg = Image.open('${bgPath}').convert('RGBA').resize((1080, 1080))
+W, H = 1080, 1080
 
-# Dark overlay for readability
-overlay = Image.new('RGBA', (1080, 1080), (0, 0, 0, 0))
-draw_ov = ImageDraw.Draw(overlay)
+# ── โหลด DALL-E background ──────────────────────────────
+bg_orig = Image.open("""${bgPath}""").convert("RGB").resize((W, H))
 
-# Gradient dark overlay (top lighter, bottom darker)
-for y in range(1080):
-    alpha = int(155 + (y / 1080) * 60)
-    draw_ov.rectangle([(0, y), (1080, y+1)], fill=(10, 15, 35, alpha))
+# Blur background เล็กน้อยให้ข้อความอ่านง่ายขึ้น
+bg_blur = bg_orig.filter(ImageFilter.GaussianBlur(radius=3))
 
-# Colored accent bar at top
-draw_ov.rectangle([(0, 0), (1080, 8)], fill=(0, 200, 255, 220))
-draw_ov.rectangle([(0, 8), (1080, 14)], fill=(255, 165, 0, 180))
+# Composite: top 30% ใช้ original, ล่างลงมา blend กับ blur
+bg = Image.blend(bg_orig, bg_blur, alpha=0.55)
 
-bg = Image.alpha_composite(bg, overlay)
-img = bg.convert('RGB')
+# ── Overlay gradient เบาๆ ให้ contrast พอดี ──────────────
+ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+ov_d = ImageDraw.Draw(ov)
+# top strip เข้มนิดหน่อย
+for y in range(200):
+    a = int(80 * (1 - y / 200))
+    ov_d.line([(0, y), (W, y)], fill=(0, 0, 0, a))
+# bottom 40% เข้มขึ้นเพื่อ footer
+for y in range(int(H * 0.62), H):
+    a = int(140 * ((y - H * 0.62) / (H * 0.38)))
+    ov_d.line([(0, y), (W, y)], fill=(0, 0, 20, min(a, 170)))
+
+base = bg.convert("RGBA")
+base = Image.alpha_composite(base, ov)
+img  = base.convert("RGB")
 draw = ImageDraw.Draw(img)
 
-# Fonts
-try:
-    font_bold_xl  = ImageFont.truetype('/tmp/SarabunB.ttf', 72)
-    font_bold_lg  = ImageFont.truetype('/tmp/SarabunB.ttf', 46)
-    font_bold_md  = ImageFont.truetype('/tmp/SarabunB.ttf', 34)
-    font_bold_sm  = ImageFont.truetype('/tmp/SarabunB.ttf', 28)
-    font_reg_md   = ImageFont.truetype('/tmp/Sarabun.ttf',  30)
-    font_reg_sm   = ImageFont.truetype('/tmp/Sarabun.ttf',  24)
-    font_reg_xs   = ImageFont.truetype('/tmp/Sarabun.ttf',  20)
-except:
-    font_bold_xl = font_bold_lg = font_bold_md = font_bold_sm = ImageFont.load_default()
-    font_reg_md = font_reg_sm = font_reg_xs = ImageFont.load_default()
+# ── Fonts ────────────────────────────────────────────────
+def font(bold, size):
+    path = "/tmp/SarabunB.ttf" if bold else "/tmp/Sarabun.ttf"
+    try:    return ImageFont.truetype(path, size)
+    except: return ImageFont.load_default()
 
-W = 1080
+fTerm    = font(True,  110)
+fBrand   = font(False,  26)
+fProd    = font(True,   42)
+fHs      = font(False,  26)
+fSecHead = font(True,   30)
+fStep    = font(False,  24)
+fStepNum = font(True,   22)
+fTable   = font(False,  22)
+fTableB  = font(True,   22)
+fFoot    = font(False,  24)
+fFootSm  = font(False,  20)
 
-def center_text(draw, text, y, font, color):
-    bbox = draw.textbbox((0,0), text, font=font)
-    w = bbox[2] - bbox[0]
-    draw.text(((W - w) / 2, y), text, font=font, fill=color)
+# ── Helper: centered text ────────────────────────────────
+def cx(text, y, f, color, shadow=False):
+    bb = draw.textbbox((0, 0), text, font=f)
+    tw = bb[2] - bb[0]
+    x  = (W - tw) // 2
+    if shadow:
+        draw.text((x+2, y+2), text, font=f, fill=(0, 0, 0, 120))
+    draw.text((x, y), text, font=f, fill=color)
 
-def draw_card(draw, x, y, w, h, color=(255,255,255,18)):
-    card = Image.new('RGBA', (w, h), color)
-    img.paste(Image.alpha_composite(Image.new('RGBA', (w,h), (0,0,0,0)), card), (x, y))
+# ── Helper: frosted glass card ────────────────────────────
+def glass_card(x, y, w, h, accent_color=None, radius=22):
+    card = Image.new("RGBA", (w, h), (10, 10, 30, 175))
+    card_d = ImageDraw.Draw(card)
+    card_d.rounded_rectangle([0, 0, w-1, h-1], radius=radius,
+                               outline=(255, 255, 255, 40), width=1)
+    if accent_color:
+        card_d.rounded_rectangle([0, 0, w-1, 4], radius=radius,
+                                  fill=accent_color + (230,))
+    img_rgba = img.convert("RGBA")
+    img_rgba.paste(Image.alpha_composite(img_rgba.crop((x, y, x+w, y+h)), card), (x, y))
+    img.paste(img_rgba.convert("RGB").crop((x, y, x+w, y+h)), (x, y))
 
-# ── HEADER ──────────────────────────────────────────────
-# Logo / brand
-center_text(draw, 'Booking Freight', 28, font_reg_sm, (0, 200, 255))
-center_text(draw, 'Shipper & Consignee', 56, font_reg_xs, (180, 220, 255))
+# ════════════════════════════════════════════════════════
+# ZONE 1 — HEADER (0..240)  — ไม่มี card, เห็น bg เต็ม
+# ════════════════════════════════════════════════════════
 
-# Incoterm big title
-term_text = '${term}'
-bbox = draw.textbbox((0,0), term_text, font=font_bold_xl)
-tw = bbox[2]-bbox[0]
-# Shadow
-draw.text(((W-tw)/2+3, 103), term_text, font=font_bold_xl, fill=(0,0,0,150))
-draw.text(((W-tw)/2, 100), term_text, font=font_bold_xl, fill=(255, 200, 50))
+# accent top line
+draw.rectangle([(0, 0), (W, 6)], fill=(0, 210, 255))
+draw.rectangle([(0, 6), (W, 10)], fill=(255, 180, 0))
 
-# Product name
-product_text = '${product}'
-center_text(draw, product_text, 180, font_bold_md, (255, 255, 255))
+# brand name
+cx("Booking Freight Shipper & Consignee", 18, fBrand, (200, 230, 255))
 
-# HS Code badge
-hs_text = 'HS Code: ${hsCode}  |  ${destination}'
-bbox2 = draw.textbbox((0,0), hs_text, font=font_reg_sm)
-bw = bbox2[2]-bbox2[0]+40
-bx = (W-bw)//2
-draw.rounded_rectangle([bx, 222, bx+bw, 258], radius=14, fill=(0,180,230,200))
-center_text(draw, hs_text, 228, font_reg_sm, (255, 255, 255))
+# BIG Incoterm — drop shadow + bright yellow
+term_text = "${term}"
+bb = draw.textbbox((0, 0), term_text, font=fTerm)
+tw = bb[2] - bb[0]
+tx = (W - tw) // 2
+draw.text((tx + 4, 54), term_text, font=fTerm, fill=(0, 0, 0, 160))
+draw.text((tx,     50), term_text, font=fTerm, fill=(255, 215, 0))
 
-# ── STEPS SECTION ───────────────────────────────────────
-steps = ${stepsStr}
-draw.text((54, 278), 'ขั้นตอนการส่งออก', font=font_bold_sm, fill=(0, 220, 255))
-draw.line([(54, 310), (520, 310)], fill=(0,200,255,180), width=2)
+# product pill
+prod_text  = "${product}"
+bb2 = draw.textbbox((0, 0), prod_text, font=fProd)
+pw  = bb2[2] - bb2[0]
+px  = (W - pw) // 2
+draw.text((px + 2, 172), prod_text, font=fProd, fill=(0, 0, 0, 130))
+draw.text((px,     170), prod_text, font=fProd, fill=(255, 255, 255))
 
-colors_step = [(255,180,50), (100,220,100), (100,180,255), (255,130,130), (200,150,255), (255,200,100)]
-col_w = 490
+# HS badge + destination
+hs_text = "HS Code : ${hsCode}   |   ${destination}"
+bb3  = draw.textbbox((0, 0), hs_text, font=fHs)
+hw   = bb3[2] - bb3[0] + 48
+hx   = (W - hw) // 2
+draw.rounded_rectangle([hx, 220, hx+hw, 254], radius=16, fill=(0, 150, 210, 210))
+cx(hs_text, 226, fHs, (255, 255, 255))
+
+# ════════════════════════════════════════════════════════
+# ZONE 2 — STEPS CARD (272..640)
+# ════════════════════════════════════════════════════════
+glass_card(28, 272, W - 56, 368, accent_color=(0, 200, 255))
+
+steps = json.loads("""${stepsStr}""")
+draw.text((56, 284), "ขั้นตอนการส่งออก", font=fSecHead, fill=(0, 220, 255))
+
+COLS      = 2
+PAD_L     = 56
+COL_W     = (W - 56 - PAD_L) // COLS
+ROW_H     = 108
+START_Y   = 322
+DOT_COLORS = [(255, 100, 100), (255, 165, 0), (80, 210, 120),
+              (80, 180, 255), (200, 130, 255), (255, 220, 80)]
+
 for i, step in enumerate(steps[:6]):
-    col = i % 2
-    row = i // 2
-    sx = 54 + col * 530
-    sy = 320 + row * 110
-    sc = colors_step[i % len(colors_step)]
-    # Number circle
-    draw.ellipse([sx, sy+2, sx+42, sy+44], fill=sc)
-    draw.text((sx+12, sy+6), str(i+1), font=font_bold_md, fill=(20,20,40))
-    # Step text (wrap)
-    wrapped = textwrap.fill(step, width=28)
-    lines = wrapped.split('\\n')
-    for li, line in enumerate(lines[:2]):
-        draw.text((sx+52, sy+4+li*26), line, font=font_reg_xs, fill=(230,240,255))
+    col   = i % COLS
+    row   = i // COLS
+    sx    = PAD_L + col * COL_W
+    sy    = START_Y + row * ROW_H
+    dc    = DOT_COLORS[i % len(DOT_COLORS)]
 
-# ── RESPONSIBILITY TABLE ─────────────────────────────────
-ty = 660
-draw.text((54, ty), 'ความรับผิดชอบ', font=font_bold_sm, fill=(0,220,255))
-draw.line([(54, ty+32), (520, ty+32)], fill=(0,200,255,180), width=2)
+    # circle
+    draw.ellipse([sx, sy + 2, sx + 36, sy + 38], fill=dc)
+    nb = draw.textbbox((0, 0), str(i + 1), font=fStepNum)
+    nw = nb[2] - nb[0]
+    draw.text((sx + (36 - nw) // 2, sy + 6), str(i + 1), font=fStepNum, fill=(15, 15, 30))
 
-headers = [('ความรับผิดชอบ', 54), ('Seller', 380), ('Buyer', 520)]
-for h, hx in headers:
-    draw.text((hx, ty+40), h, font=font_bold_sm, fill=(255,200,50))
+    # step text
+    wrapped = textwrap.fill(step, width=30)
+    for li, line in enumerate(wrapped.split("\\n")[:2]):
+        draw.text((sx + 46, sy + 4 + li * 26), line, font=fStep, fill=(230, 240, 255))
+
+# ════════════════════════════════════════════════════════
+# ZONE 3 — BOTTOM ROW: Responsibility | Agencies (656..910)
+# ════════════════════════════════════════════════════════
+HALF = (W - 56 - 16) // 2   # 500
+
+# ── Responsibility card (left) ──
+glass_card(28, 656, HALF, 254, accent_color=(255, 160, 0))
+draw.text((56, 668), "ความรับผิดชอบ", font=fSecHead, fill=(255, 180, 0))
+
+col_x = [56, 320, 430]
+draw.text((col_x[0], 702), "หัวข้อ",   font=fTableB, fill=(180, 200, 255))
+draw.text((col_x[1], 702), "Seller",   font=fTableB, fill=(180, 200, 255))
+draw.text((col_x[2], 702), "Buyer",    font=fTableB, fill=(180, 200, 255))
+draw.line([(56, 726), (56 + HALF - 28, 726)], fill=(255, 255, 255, 50), width=1)
 
 rows_data = [
-    ('ดำเนินพิธีการส่งออก', 'YES', 'NO'),
-    ('ค่าขนส่งหลัก', 'VARIES', 'VARIES'),
-    ('ประกันภัย', 'NO', 'YES'),
-    ('ความเสี่ยงหลังส่งมอบ', 'NO', 'YES'),
+    ("พิธีการส่งออก", "YES", "NO"),
+    ("ค่าขนส่งหลัก",  "VARIES", "VARIES"),
+    ("ประกันภัย",     "NO",  "YES"),
+    ("ความเสี่ยง",    "NO",  "YES"),
 ]
-for ri, (label, seller, buyer) in enumerate(rows_data):
-    ry = ty + 76 + ri * 38
-    bg_c = (255,255,255,8) if ri%2==0 else (255,255,255,3)
-    draw.rectangle([54, ry-4, 640, ry+30], fill=bg_c)
-    draw.text((54,  ry), label,  font=font_reg_xs, fill=(200,220,255))
-    sc2 = (100,220,100) if seller=='YES' else (255,120,100) if seller=='NO' else (255,200,80)
-    bc2 = (100,220,100) if buyer=='YES'  else (255,120,100) if buyer=='NO'  else (255,200,80)
-    draw.text((380, ry), seller, font=font_bold_sm, fill=sc2)
-    draw.text((520, ry), buyer,  font=font_bold_sm, fill=bc2)
+YES_C = (100, 230, 120); NO_C = (255, 100, 100); VAR_C = (255, 200, 70)
+for ri, (lbl, sel, buy) in enumerate(rows_data):
+    ry = 732 + ri * 44
+    if ri % 2 == 0:
+        draw.rectangle([56, ry - 2, 56 + HALF - 28, ry + 38], fill=(255, 255, 255, 12))
+    draw.text((col_x[0], ry + 6), lbl, font=fTable,  fill=(210, 225, 255))
+    sc = YES_C if sel=="YES" else NO_C if sel=="NO" else VAR_C
+    bc = YES_C if buy=="YES" else NO_C if buy=="NO" else VAR_C
+    draw.text((col_x[1], ry + 6), sel, font=fTableB, fill=sc)
+    draw.text((col_x[2], ry + 6), buy, font=fTableB, fill=bc)
 
-# ── AGENCIES ────────────────────────────────────────────
-agencies = ${agenciesStr}
-ax = 660
-draw.text((ax, 278), 'หน่วยงานที่ติดต่อ', font=font_bold_sm, fill=(0,220,255))
-draw.line([(ax, 310), (1026, 310)], fill=(0,200,255,180), width=2)
+# ── Agencies card (right) ──
+ax = 28 + HALF + 16
+glass_card(ax, 656, HALF, 254, accent_color=(100, 230, 120))
+draw.text((ax + 20, 668), "หน่วยงานที่เกี่ยวข้อง", font=fSecHead, fill=(100, 230, 120))
+
+agencies = json.loads("""${agenciesStr}""")
+ag_colors = [(255, 165, 0), (80, 200, 255), (200, 130, 255)]
 for ai, ag in enumerate(agencies[:3]):
-    ay = 320 + ai * 80
-    draw.ellipse([ax, ay+4, ax+28, ay+32], fill=(255,165,0,200))
-    draw.text((ax+7, ay+4), str(ai+1), font=font_reg_xs, fill=(20,20,40))
-    short = ag[:30] + ('...' if len(ag)>30 else '')
-    draw.text((ax+38, ay+4), short, font=font_reg_sm, fill=(230,240,255))
+    ay   = 710 + ai * 64
+    aclr = ag_colors[ai % len(ag_colors)]
+    draw.ellipse([ax + 20, ay + 4, ax + 42, ay + 26], fill=aclr)
+    draw.text((ax + 24, ay + 4), str(ai + 1), font=fStepNum, fill=(15, 15, 30))
+    short = ag[:32] + ("..." if len(ag) > 32 else "")
+    draw.text((ax + 52, ay + 6), short, font=fStep, fill=(225, 240, 255))
 
-# ── FOOTER ──────────────────────────────────────────────
-draw.rectangle([(0, 1010), (1080, 1080)], fill=(0,0,0,200))
-draw.line([(0,1010),(1080,1010)], fill=(0,200,255,150), width=2)
-contact = '+66 63-446-7735  |  LINE: lin.ee/6aC3Z5O  |  pitfreight.com'
-center_text(draw, contact, 1022, font_reg_sm, (180, 220, 255))
-center_text(draw, 'PIT Freight — Booking Freight Shipper & Consignee', 1050, font_reg_xs, (120,160,200))
+# ════════════════════════════════════════════════════════
+# ZONE 4 — FOOTER (920..1080)
+# ════════════════════════════════════════════════════════
+foot_ov = Image.new("RGBA", (W, 160), (5, 8, 25, 220))
+img_rgba2 = img.convert("RGBA")
+img_rgba2.paste(Image.alpha_composite(img_rgba2.crop((0, 920, W, H)), foot_ov), (0, 920))
+img.paste(img_rgba2.convert("RGB").crop((0, 920, W, H)), (0, 920))
 
-# Save
-img.save('/tmp/auto_post.jpg', 'JPEG', quality=95)
-print('Image saved: /tmp/auto_post.jpg')
+draw.line([(0, 920), (W, 920)], fill=(0, 210, 255, 200), width=3)
+draw.rectangle([(0, 920), (W, 923)], fill=(255, 180, 0))
+
+cx("+66 63-446-7735  |  LINE: lin.ee/6aC3Z5O  |  pitfreight.com",
+   936, fFoot, (200, 230, 255))
+cx("PIT Freight  —  Booking Freight Shipper & Consignee",
+   972, fFootSm, (130, 160, 200))
+
+# watermark line ด้านขวา
+wm = "pitfreight.com"
+bb_wm = draw.textbbox((0, 0), wm, font=fFootSm)
+draw.text((W - (bb_wm[2] - bb_wm[0]) - 24, 1044),
+          wm, font=fFootSm, fill=(80, 110, 160))
+
+img.save("/tmp/auto_post.jpg", "JPEG", quality=95, optimize=True)
+print("Saved /tmp/auto_post.jpg")
 `;
 
   const scriptPath = '/tmp/hybrid_gen.py';
