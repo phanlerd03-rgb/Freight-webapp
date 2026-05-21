@@ -1,7 +1,7 @@
 /**
  * ===== PIT Freight — Auto Post Service =====
  * รันอัตโนมัติ 08:00 และ 15:00 ทุกวัน
- * DALL-E 3 (พื้นหลัง) + PIL (วางข้อความ) → Facebook Page 2 + Notion Blog
+ * gpt-image-1 (product photo) + PIL (structured 3-col infographic) → FB + Notion Blog
  */
 
 const cron      = require('node-cron');
@@ -15,7 +15,6 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const PAGE2_ID    = process.env.FB_PAGE2_ID    || '1129725983562125';
 const PAGE2_TOKEN = process.env.FB_PAGE2_ACCESS_TOKEN;
 
-// ติดตาม Term ที่ใช้แล้ว (หมุนเวียนใน memory)
 const ALL_TERMS = ['FOB','CIF','EXW','DDP','DAP','FCA','CPT','CFR','CIP','DPU'];
 let usedTerms   = [];
 
@@ -27,83 +26,105 @@ function pickTerm() {
   return term;
 }
 
-// ดาวน์โหลด font Sarabun (ถ้ายังไม่มี)
 function ensureFonts() {
   const reg  = '/tmp/Sarabun.ttf';
   const bold = '/tmp/SarabunB.ttf';
-  if (!fs.existsSync(reg)) {
+  if (!fs.existsSync(reg))
     execSync('curl -sL https://github.com/google/fonts/raw/main/ofl/sarabun/Sarabun-Regular.ttf -o /tmp/Sarabun.ttf');
-  }
-  if (!fs.existsSync(bold)) {
+  if (!fs.existsSync(bold))
     execSync('curl -sL https://github.com/google/fonts/raw/main/ofl/sarabun/Sarabun-Bold.ttf -o /tmp/SarabunB.ttf');
-  }
 }
 
-// ===== ขั้นตอนที่ 1: Claude สร้าง content + DALL-E prompt =====
+// ── TERM full names map ──────────────────────────────────
+const TERM_FULL = {
+  FOB: 'Free On Board',       CIF: 'Cost Insurance Freight',
+  EXW: 'Ex Works',            DDP: 'Delivered Duty Paid',
+  DAP: 'Delivered at Place',  FCA: 'Free Carrier',
+  CPT: 'Carriage Paid To',    CFR: 'Cost and Freight',
+  CIP: 'Carriage Insurance Paid', DPU: 'Delivered at Place Unloaded',
+};
+
+// ── TERM accent colors [bg, accent, text] ───────────────
+const TERM_COLORS = {
+  FOB: ['#0D2137','#F5A623','#E8F4FD'],  CIF: ['#0A1628','#00C2CB','#E8F8F5'],
+  EXW: ['#1A0D2B','#9B59B6','#F5EEF8'],  DDP: ['#0D2B1A','#27AE60','#E8F8F0'],
+  DAP: ['#2B1A0D','#E67E22','#FEF9E7'],  FCA: ['#0D1A2B','#2980B9','#EBF5FB'],
+  CPT: ['#1A2B0D','#1ABC9C','#E8F8F5'],  CFR: ['#2B0D1A','#E74C3C','#FDEDEC'],
+  CIP: ['#0D2B2B','#16A085','#E8F8F5'],  DPU: ['#1A1A0D','#F39C12','#FEF9E7'],
+};
+
+// ===== 1. Claude: content + detailed data =====
 async function generateContent(term) {
-  const prompt = `คุณคือผู้ชำนาญการด้านการค้าระหว่างประเทศและพิธีการศุลกากร มีประสบการณ์จริงในการส่งออก-นำเข้าสินค้าไทย
+  const prompt = `คุณคือผู้ชำนาญการด้านการค้าระหว่างประเทศและพิธีการศุลกากร
 
-สร้าง 3 อย่างสำหรับ Incoterm: ${term}
+สร้างข้อมูลครบถ้วนสำหรับ Incoterm: ${term}
 
-=== ส่วนที่ 1: FACEBOOK_CAPTION ===
-เขียน caption ภาษาไทย+อังกฤษ สำหรับ Facebook Page "Booking Freight Shipper & Consignee" ในฐานะผู้ชำนาญการ
-โครงสร้าง caption (เรียงตามลำดับนี้):
-1) หัวข้อดึงดูด + ชื่อ Incoterm ${term} และความหมายแบบเข้าใจง่าย
-2) ตัวอย่างสินค้าไทย 1 ชนิดที่เหมาะกับ ${term} พร้อมระบุ:
-   - HS Code ที่ถูกต้อง (6 หลัก) พร้อมคำอธิบาย
-   - ประเทศปลายทางที่เหมาะสม
-3) ขั้นตอนการส่งออกตั้งแต่ต้นจนจบ (5-7 ขั้นตอน) อย่างละเอียด
-4) ใบอนุญาตและเอกสารควบคุมการส่งออก-นำเข้าที่เกี่ยวข้อง
-5) หน่วยงานที่เกี่ยวข้องพร้อมลิงก์ติดต่อจริง เช่น:
-   - กรมการค้าต่างประเทศ: https://www.dft.go.th
-   - กรมศุลกากร: https://www.customs.go.th
-   - กรมวิชาการเกษตร: https://www.doa.go.th (ถ้าเกี่ยวข้อง)
-   - สำนักงาน อย.: https://www.fda.moph.go.th (ถ้าเกี่ยวข้อง)
-6) Pro Tips จากผู้ชำนาญการ (2-3 ข้อ) ที่คนส่วนใหญ่มักพลาด
-7) hashtag ท้าย (ภาษาไทย+อังกฤษ 8-12 อัน)
-8) ลงท้ายด้วย: 📞 +66 63-446-7735 | 💬 LINE: lin.ee/6aC3Z5O | 🌐 pitfreight.com
+=== FACEBOOK_CAPTION ===
+เขียน caption ภาษาไทย+อังกฤษ ~600 คำ สำหรับ Facebook Page "Booking Freight Shipper & Consignee"
+- หัวข้อดึงดูด + ความหมาย ${term}
+- สินค้าไทยตัวอย่าง + HS Code (6 หลัก) + ประเทศปลายทาง
+- ขั้นตอนส่งออก 5-7 ขั้น
+- ใบอนุญาตและเอกสารที่เกี่ยวข้อง
+- หน่วยงานพร้อมลิงก์จริง
+- Pro Tips 2-3 ข้อ
+- hashtag 8-12 อัน
+- ลงท้าย: 📞 +66 63-446-7735 | 💬 LINE: lin.ee/6aC3Z5O | 🌐 pitfreight.com
+- ห้ามใช้ดอกจัน (*) หรือ markdown
 
-กฎการเขียน:
-- ห้ามใช้ดอกจัน (*) หรือ markdown formatting ใดๆ ทั้งสิ้น
-- ใช้ emoji และ plain text เท่านั้น
-- ความยาวรวม ~600-700 คำ
+=== PRODUCT_IMAGE_PROMPT ===
+เขียน prompt ภาษาอังกฤษสำหรับ gpt-image-1 สร้างภาพสินค้าแบบ professional product photo
+- ภาพ close-up ของสินค้าไทยที่เลือก บน clean dark navy background
+- Professional studio lighting, high quality, photorealistic
+- ห้ามมีข้อความใดๆ ในภาพ
+- เน้นตัวสินค้าชัดเจน
 
-=== ส่วนที่ 2: DALLE_PROMPT ===
-เขียน prompt ภาษาอังกฤษสำหรับ DALL-E 3 เพื่อสร้างภาพพื้นหลัง infographic 1:1
-กฎ:
-- ห้ามมีข้อความหรือตัวอักษรใดๆ ในภาพ (NO TEXT, NO WORDS, NO LETTERS)
-- เป็น abstract/conceptual background เท่านั้น
-- สีและธีมสอดคล้องกับ ${term} และสินค้าที่เลือก
-- dark theme สีทันสมัย มี gradient สวยงาม
-- เน้นความรู้สึก: logistics, international trade, shipping, Thailand export
-- ตัวอย่าง element: container ships, cargo, world map, trade routes, Thai elements
-- ต้องดูเป็น professional infographic background
-
-=== ส่วนที่ 3: BLOG_DATA ===
-สร้าง JSON สำหรับบทความ Blog ต้องเป็น valid JSON เท่านั้น ห้ามมี comment:
+=== BLOG_DATA ===
+valid JSON เท่านั้น:
 {
-  "title": "ชื่อบทความภาษาไทย",
-  "slug": "incoterm-${term.toLowerCase()}-[product-english-kebab-case]-export-guide",
-  "summary": "สรุปบทความ 2-3 ประโยค ภาษาไทย",
-  "product": "ชื่อสินค้าไทย",
+  "title": "ชื่อบทความ",
+  "slug": "${term.toLowerCase()}-export-guide",
+  "summary": "สรุป 2-3 ประโยค",
+  "termFullName": "ชื่อเต็ม ${term}",
+  "termMeaning": "ความหมาย ${term} ใน 2 ประโยค",
+  "termKeyPoint": "ประโยคสั้นๆ จุดเด่นสำคัญ เช่น ผู้ขายรับผิดชอบจนถึงปลายทาง",
+  "product": "ชื่อสินค้า",
   "hsCode": "XXXXXX",
   "hsDescription": "คำอธิบาย HS Code",
   "destination": "ประเทศปลายทาง",
-  "steps": ["ขั้นตอนที่ 1", "ขั้นตอนที่ 2", "ขั้นตอนที่ 3", "ขั้นตอนที่ 4", "ขั้นตอนที่ 5"],
-  "agencies": ["หน่วยงาน 1 — URL", "หน่วยงาน 2 — URL"],
-  "proTips": ["Pro Tip 1", "Pro Tip 2"],
-  "tags": ["${term}", "Incoterms", "ส่งออก", "freight", "logistics"]
+  "destinationEN": "Country name in English",
+  "steps": [
+    {"title":"ชื่อขั้นตอน","detail":"รายละเอียด 1 ประโยค"},
+    {"title":"ชื่อขั้นตอน","detail":"รายละเอียด 1 ประโยค"},
+    {"title":"ชื่อขั้นตอน","detail":"รายละเอียด 1 ประโยค"},
+    {"title":"ชื่อขั้นตอน","detail":"รายละเอียด 1 ประโยค"},
+    {"title":"ชื่อขั้นตอน","detail":"รายละเอียด 1 ประโยค"},
+    {"title":"ชื่อขั้นตอน","detail":"รายละเอียด 1 ประโยค"}
+  ],
+  "documents": ["เอกสาร/ใบอนุญาต 1","เอกสาร/ใบอนุญาต 2","เอกสาร/ใบอนุญาต 3","เอกสาร/ใบอนุญาต 4"],
+  "agencies": [
+    {"name":"ชื่อหน่วยงาน","role":"บทบาทสั้นๆ","url":"https://..."},
+    {"name":"ชื่อหน่วยงาน","role":"บทบาทสั้นๆ","url":"https://..."},
+    {"name":"ชื่อหน่วยงาน","role":"บทบาทสั้นๆ","url":"https://..."}
+  ],
+  "proTips": [
+    {"title":"หัวข้อ Tip 1","detail":"รายละเอียด 2 ประโยค"},
+    {"title":"หัวข้อ Tip 2","detail":"รายละเอียด 2 ประโยค"},
+    {"title":"หัวข้อ Tip 3","detail":"รายละเอียด 2 ประโยค"}
+  ],
+  "sellerResp": ["รายการ Seller รับผิดชอบ 1","รายการ 2","รายการ 3"],
+  "buyerResp":  ["รายการ Buyer รับผิดชอบ 1","รายการ 2","รายการ 3"],
+  "tags": ["${term}","Incoterms","ส่งออก","freight","logistics"]
 }
 
-format ตอบกลับ:
+format:
 CAPTION_START
-[caption ทั้งหมด]
+[caption]
 CAPTION_END
-DALLE_PROMPT_START
-[DALL-E prompt]
-DALLE_PROMPT_END
+PRODUCT_IMAGE_PROMPT_START
+[prompt]
+PRODUCT_IMAGE_PROMPT_END
 BLOG_DATA_START
-[JSON object]
+[JSON]
 BLOG_DATA_END`;
 
   const msg = await client.messages.create({
@@ -111,490 +132,500 @@ BLOG_DATA_END`;
     max_tokens: 8192,
     messages: [{ role: 'user', content: prompt }],
   });
-
   const text = msg.content[0].text;
 
-  const captionMatch     = text.match(/CAPTION_START\n([\s\S]*?)\nCAPTION_END/);
-  const dallePromptMatch = text.match(/DALLE_PROMPT_START\n([\s\S]*?)\nDALLE_PROMPT_END/);
-  const blogDataMatch    = text.match(/BLOG_DATA_START\n([\s\S]*?)\nBLOG_DATA_END/);
+  const captionMatch  = text.match(/CAPTION_START\n([\s\S]*?)\nCAPTION_END/);
+  const imgPromptMatch= text.match(/PRODUCT_IMAGE_PROMPT_START\n([\s\S]*?)\nPRODUCT_IMAGE_PROMPT_END/);
+  const blogMatch     = text.match(/BLOG_DATA_START\n([\s\S]*?)\nBLOG_DATA_END/);
 
-  const rawCaption   = captionMatch ? captionMatch[1].trim() : '';
-  const cleanCaption = rawCaption.replace(/\*+/g, '');
-
+  const cleanCaption = (captionMatch?.[1] || '').trim().replace(/\*+/g, '');
   let blogData = null;
-  if (blogDataMatch) {
-    try {
-      blogData = JSON.parse(blogDataMatch[1].trim());
-    } catch (e) {
-      console.error('[AutoPost] ไม่สามารถ parse BLOG_DATA JSON:', e.message);
-    }
+  if (blogMatch) {
+    try { blogData = JSON.parse(blogMatch[1].trim()); }
+    catch(e) { console.error('[AutoPost] Blog JSON parse error:', e.message); }
   }
 
   return {
-    caption:     cleanCaption,
-    dallePrompt: dallePromptMatch ? dallePromptMatch[1].trim() : '',
+    caption:      cleanCaption,
+    imgPrompt:    (imgPromptMatch?.[1] || '').trim(),
     blogData,
   };
 }
 
-// ===== ขั้นตอนที่ 2: DALL-E 3 สร้างพื้นหลัง =====
-async function generateDalleBackground(dallePrompt) {
-  const openaiKey = process.env.OPENAI_API_KEY;
-  if (!openaiKey) throw new Error('OPENAI_API_KEY not set');
+// ===== 2. gpt-image-1: product photo =====
+async function generateProductImage(imgPrompt) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) throw new Error('OPENAI_API_KEY not set');
 
   const res = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${openaiKey}`,
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model:           'gpt-image-1',
-      prompt:          dallePrompt + ' No text, no words, no letters, no numbers anywhere in the image.',
-      size:            '1024x1024',
-      quality:         'medium',
-      output_format:   'jpeg',
-      n:               1,
+      model: 'gpt-image-1', prompt: imgPrompt + ' No text, no words, no letters.',
+      size: '1024x1024', quality: 'medium', output_format: 'jpeg', n: 1,
     }),
   });
-
   const data = await res.json();
-  if (!res.ok || data.error) throw new Error(data.error?.message || 'OpenAI Image API error');
+  if (!res.ok || data.error) throw new Error(data.error?.message || 'OpenAI error');
 
-  const bgPath = '/tmp/dalle_bg.jpg';
-
-  // gpt-image-1 ส่งกลับเป็น base64
+  const imgPath = '/tmp/product_img.jpg';
   if (data.data[0].b64_json) {
-    const b64 = data.data[0].b64_json;
-    fs.writeFileSync(bgPath, Buffer.from(b64, 'base64'));
-  } else if (data.data[0].url) {
-    execSync(`curl -sL "${data.data[0].url}" -o ${bgPath}`);
+    fs.writeFileSync(imgPath, Buffer.from(data.data[0].b64_json, 'base64'));
   } else {
-    throw new Error('ไม่พบ image data จาก OpenAI');
+    execSync(`curl -sL "${data.data[0].url}" -o ${imgPath}`);
   }
-
-  if (!fs.existsSync(bgPath)) throw new Error('ไม่สามารถ save ภาพ OpenAI ได้');
-
-  return bgPath;
+  return imgPath;
 }
 
-// ===== ขั้นตอนที่ 3: PIL วางข้อความบนพื้นหลัง DALL-E (Modern Design) =====
-async function createHybridImage(bgPath, blogData, term) {
-  const d = blogData || {};
-  const product     = (d.product     || term).replace(/'/g, "\\'");
-  const hsCode      = (d.hsCode      || '------').replace(/'/g, "\\'");
-  const destination = (d.destination || '').replace(/'/g, "\\'");
-  const steps       = (d.steps       || []).slice(0, 6);
-  const agencies    = (d.agencies    || []).slice(0, 3);
+// ===== 3. PIL: structured 3-column infographic =====
+async function createInfographic(productImgPath, blogData, term) {
+  const d         = blogData || {};
+  const colors    = TERM_COLORS[term] || TERM_COLORS.FOB;
+  const termFull  = TERM_FULL[term] || term;
+  const bgHex     = colors[0];
+  const accentHex = colors[1];
 
-  const stepsStr    = JSON.stringify(steps);
-  const agenciesStr = JSON.stringify(agencies.map(a => a.split('—')[0].trim()));
+  // helper: hex → (r,g,b)
+  const hex2rgb = h => {
+    const x = h.replace('#','');
+    return [parseInt(x.slice(0,2),16), parseInt(x.slice(2,4),16), parseInt(x.slice(4,6),16)];
+  };
+  const [bgR,bgG,bgB]       = hex2rgb(bgHex);
+  const [acR,acG,acB]       = hex2rgb(accentHex);
+
+  const steps      = JSON.stringify(d.steps     || []);
+  const documents  = JSON.stringify(d.documents || []);
+  const agencies   = JSON.stringify(d.agencies  || []);
+  const proTips    = JSON.stringify(d.proTips   || []);
+  const sellerResp = JSON.stringify(d.sellerResp|| []);
+  const buyerResp  = JSON.stringify(d.buyerResp || []);
 
   const pilScript = `
+import json, textwrap
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import textwrap, json
 
 W, H = 1080, 1080
 
-# ── โหลด DALL-E background ──────────────────────────────
-bg_orig = Image.open("""${bgPath}""").convert("RGB").resize((W, H))
+# ── colors ──────────────────────────────────────────────
+BG      = (${bgR}, ${bgG}, ${bgB})
+ACCENT  = (${acR}, ${acG}, ${acB})
+WHITE   = (255, 255, 255)
+LGRAY   = (200, 215, 230)
+MGRAY   = (140, 160, 185)
+DGRAY   = (30, 40, 60)
+CARD    = (20, 30, 55)
+CARD2   = (15, 22, 42)
+GREEN   = (39, 174, 96)
+RED     = (231, 76, 60)
+ORANGE  = (230, 126, 34)
+YELLOW  = (241, 196, 15)
 
-# Blur background เล็กน้อยให้ข้อความอ่านง่ายขึ้น
-bg_blur = bg_orig.filter(ImageFilter.GaussianBlur(radius=3))
-
-# Composite: top 30% ใช้ original, ล่างลงมา blend กับ blur
-bg = Image.blend(bg_orig, bg_blur, alpha=0.55)
-
-# ── Overlay gradient เบาๆ ให้ contrast พอดี ──────────────
-ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-ov_d = ImageDraw.Draw(ov)
-# top strip เข้มนิดหน่อย
-for y in range(200):
-    a = int(80 * (1 - y / 200))
-    ov_d.line([(0, y), (W, y)], fill=(0, 0, 0, a))
-# bottom 40% เข้มขึ้นเพื่อ footer
-for y in range(int(H * 0.62), H):
-    a = int(140 * ((y - H * 0.62) / (H * 0.38)))
-    ov_d.line([(0, y), (W, y)], fill=(0, 0, 20, min(a, 170)))
-
-base = bg.convert("RGBA")
-base = Image.alpha_composite(base, ov)
-img  = base.convert("RGB")
-draw = ImageDraw.Draw(img)
-
-# ── Fonts ────────────────────────────────────────────────
-def font(bold, size):
-    path = "/tmp/SarabunB.ttf" if bold else "/tmp/Sarabun.ttf"
-    try:    return ImageFont.truetype(path, size)
+# ── fonts ────────────────────────────────────────────────
+def f(bold, size):
+    try: return ImageFont.truetype('/tmp/SarabunB.ttf' if bold else '/tmp/Sarabun.ttf', size)
     except: return ImageFont.load_default()
 
-fTerm    = font(True,  110)
-fBrand   = font(False,  26)
-fProd    = font(True,   42)
-fHs      = font(False,  26)
-fSecHead = font(True,   30)
-fStep    = font(False,  24)
-fStepNum = font(True,   22)
-fTable   = font(False,  22)
-fTableB  = font(True,   22)
-fFoot    = font(False,  24)
-fFootSm  = font(False,  20)
+fH1  = f(True,  88)
+fH2  = f(True,  32)
+fH3  = f(True,  26)
+fH4  = f(True,  22)
+fB   = f(False, 22)
+fSm  = f(False, 19)
+fXs  = f(False, 17)
+fTag = f(True,  20)
 
-# ── Helper: centered text ────────────────────────────────
-def cx(text, y, f, color, shadow=False):
-    bb = draw.textbbox((0, 0), text, font=f)
-    tw = bb[2] - bb[0]
-    x  = (W - tw) // 2
-    if shadow:
-        draw.text((x+2, y+2), text, font=f, fill=(0, 0, 0, 120))
-    draw.text((x, y), text, font=f, fill=color)
+# ── canvas ───────────────────────────────────────────────
+img  = Image.new('RGB', (W, H), BG)
+draw = ImageDraw.Draw(img)
 
-# ── Helper: frosted glass card ────────────────────────────
-def glass_card(x, y, w, h, accent_color=None, radius=22):
-    card = Image.new("RGBA", (w, h), (10, 10, 30, 175))
-    card_d = ImageDraw.Draw(card)
-    card_d.rounded_rectangle([0, 0, w-1, h-1], radius=radius,
-                               outline=(255, 255, 255, 40), width=1)
-    if accent_color:
-        card_d.rounded_rectangle([0, 0, w-1, 4], radius=radius,
-                                  fill=accent_color + (230,))
-    img_rgba = img.convert("RGBA")
-    img_rgba.paste(Image.alpha_composite(img_rgba.crop((x, y, x+w, y+h)), card), (x, y))
-    img.paste(img_rgba.convert("RGB").crop((x, y, x+w, y+h)), (x, y))
+def tw(text, font):
+    bb = draw.textbbox((0,0), text, font=font)
+    return bb[2]-bb[0], bb[3]-bb[1]
+
+def cx(text, y, font, color):
+    w,_ = tw(text, font)
+    draw.text(((W-w)//2, y), text, font=font, fill=color)
+
+def draw_card(x, y, w, h, color=CARD, radius=12, border=None):
+    draw.rounded_rectangle([x, y, x+w, y+h], radius=radius, fill=color,
+                            outline=border or color, width=1 if border else 0)
+
+def accent_bar(x, y, w, h=4):
+    draw.rounded_rectangle([x, y, x+w, y+h], radius=2, fill=ACCENT)
 
 # ════════════════════════════════════════════════════════
-# ZONE 1 — HEADER (0..240)  — ไม่มี card, เห็น bg เต็ม
+# HEADER  0..130
 # ════════════════════════════════════════════════════════
+draw.rectangle([0, 0, W, 130], fill=CARD2)
+# top accent line
+draw.rectangle([0, 0, W, 6], fill=ACCENT)
+draw.rectangle([0, 6, W, 10], fill=ORANGE)
 
-# accent top line
-draw.rectangle([(0, 0), (W, 6)], fill=(0, 210, 255))
-draw.rectangle([(0, 6), (W, 10)], fill=(255, 180, 0))
+# BIG term
+term_txt = "${term}"
+wt, _ = tw(term_txt, fH1)
+sx = (W - wt) // 2
+draw.text((sx+3, 18), term_txt, font=fH1, fill=(0,0,0,120))
+draw.text((sx,   15), term_txt, font=fH1, fill=ACCENT)
 
-# brand name
-cx("Booking Freight Shipper & Consignee", 18, fBrand, (200, 230, 255))
+# full name right-aligned
+full_name = "${termFull}"
+wf, _ = tw(full_name, fH3)
+draw.text((W - wf - 24, 20), full_name, font=fH3, fill=LGRAY)
 
-# BIG Incoterm — drop shadow + bright yellow
-term_text = "${term}"
-bb = draw.textbbox((0, 0), term_text, font=fTerm)
-tw = bb[2] - bb[0]
-tx = (W - tw) // 2
-draw.text((tx + 4, 54), term_text, font=fTerm, fill=(0, 0, 0, 160))
-draw.text((tx,     50), term_text, font=fTerm, fill=(255, 215, 0))
+# key point sub-line
+key_pt = """${(d.termKeyPoint || '').replace(/"/g, '\\"').slice(0,60)}"""
+wk, _ = tw(key_pt, fH4)
+draw.text(((W-wk)//2, 98), key_pt, font=fH4, fill=WHITE)
 
-# product pill
-prod_text  = "${product}"
-bb2 = draw.textbbox((0, 0), prod_text, font=fProd)
-pw  = bb2[2] - bb2[0]
-px  = (W - pw) // 2
-draw.text((px + 2, 172), prod_text, font=fProd, fill=(0, 0, 0, 130))
-draw.text((px,     170), prod_text, font=fProd, fill=(255, 255, 255))
-
-# HS badge + destination
-hs_text = "HS Code : ${hsCode}   |   ${destination}"
-bb3  = draw.textbbox((0, 0), hs_text, font=fHs)
-hw   = bb3[2] - bb3[0] + 48
-hx   = (W - hw) // 2
-draw.rounded_rectangle([hx, 220, hx+hw, 254], radius=16, fill=(0, 150, 210, 210))
-cx(hs_text, 226, fHs, (255, 255, 255))
+# HS badge
+hs_txt = "HS Code: ${d.hsCode || '------'}   |   ${(d.destination || '').replace(/"/g, '\\"')}"
+wh, _ = tw(hs_txt, fSm)
+bx = (W-wh)//2 - 20
+draw.rounded_rectangle([bx, 120, bx+wh+40, 148], radius=10, fill=ACCENT)
+cx(hs_txt, 125, fSm, WHITE)
 
 # ════════════════════════════════════════════════════════
-# ZONE 2 — STEPS CARD (272..640)
+# HERO STRIPE  148..195
 # ════════════════════════════════════════════════════════
-glass_card(28, 272, W - 56, 368, accent_color=(0, 200, 255))
-
-steps = json.loads("""${stepsStr}""")
-draw.text((56, 284), "ขั้นตอนการส่งออก", font=fSecHead, fill=(0, 220, 255))
-
-COLS      = 2
-PAD_L     = 56
-COL_W     = (W - 56 - PAD_L) // COLS
-ROW_H     = 108
-START_Y   = 322
-DOT_COLORS = [(255, 100, 100), (255, 165, 0), (80, 210, 120),
-              (80, 180, 255), (200, 130, 255), (255, 220, 80)]
-
-for i, step in enumerate(steps[:6]):
-    col   = i % COLS
-    row   = i // COLS
-    sx    = PAD_L + col * COL_W
-    sy    = START_Y + row * ROW_H
-    dc    = DOT_COLORS[i % len(DOT_COLORS)]
-
-    # circle
-    draw.ellipse([sx, sy + 2, sx + 36, sy + 38], fill=dc)
-    nb = draw.textbbox((0, 0), str(i + 1), font=fStepNum)
-    nw = nb[2] - nb[0]
-    draw.text((sx + (36 - nw) // 2, sy + 6), str(i + 1), font=fStepNum, fill=(15, 15, 30))
-
-    # step text
-    wrapped = textwrap.fill(step, width=30)
-    for li, line in enumerate(wrapped.split("\\n")[:2]):
-        draw.text((sx + 46, sy + 4 + li * 26), line, font=fStep, fill=(230, 240, 255))
+draw.rectangle([0, 148, W, 195], fill=ORANGE)
+hero = """${(d.termMeaning || '').replace(/"/g, '\\"').slice(0,72)}"""
+cx(hero, 158, fH4, WHITE)
 
 # ════════════════════════════════════════════════════════
-# ZONE 3 — BOTTOM ROW: Responsibility | Agencies (656..910)
+# MAIN CONTENT  200..730   (3 columns)
+# col1: 20..330  (310px) — product photo + term info
+# col2: 340..730 (390px) — steps
+# col3: 740..1060(320px) — docs + agencies
 # ════════════════════════════════════════════════════════
-HALF = (W - 56 - 16) // 2   # 500
+TOP = 205
+BOT = 730
 
-# ── Responsibility card (left) ──
-glass_card(28, 656, HALF, 254, accent_color=(255, 160, 0))
-draw.text((56, 668), "ความรับผิดชอบ", font=fSecHead, fill=(255, 180, 0))
+# ── COL 1 ──────────────────────────────────────────────
+CX1, CW1 = 20, 310
+draw_card(CX1, TOP, CW1, BOT-TOP, CARD, radius=14)
+accent_bar(CX1, TOP, CW1)
 
-col_x = [56, 320, 430]
-draw.text((col_x[0], 702), "หัวข้อ",   font=fTableB, fill=(180, 200, 255))
-draw.text((col_x[1], 702), "Seller",   font=fTableB, fill=(180, 200, 255))
-draw.text((col_x[2], 702), "Buyer",    font=fTableB, fill=(180, 200, 255))
-draw.line([(56, 726), (56 + HALF - 28, 726)], fill=(255, 255, 255, 50), width=1)
+# product image (from gpt-image-1)
+try:
+    prod_img = Image.open("""${productImgPath}""").convert('RGB')
+    prod_img = prod_img.resize((CW1-4, 190))
+    # rounded mask
+    mask = Image.new('L', prod_img.size, 0)
+    from PIL import ImageDraw as ID2
+    md = ID2.Draw(mask)
+    md.rounded_rectangle([0,0,prod_img.width-1, prod_img.height-1], radius=10, fill=255)
+    prod_out = Image.new('RGB', prod_img.size, CARD)
+    prod_out.paste(prod_img, mask=mask)
+    img.paste(prod_out, (CX1+2, TOP+8))
+except Exception as e:
+    draw.rounded_rectangle([CX1+2, TOP+8, CX1+CW1-2, TOP+200], radius=10, fill=(30,45,75))
+    cx("[ Product Image ]", TOP+90, fB, MGRAY)
 
-rows_data = [
-    ("พิธีการส่งออก", "YES", "NO"),
-    ("ค่าขนส่งหลัก",  "VARIES", "VARIES"),
-    ("ประกันภัย",     "NO",  "YES"),
-    ("ความเสี่ยง",    "NO",  "YES"),
-]
-YES_C = (100, 230, 120); NO_C = (255, 100, 100); VAR_C = (255, 200, 70)
-for ri, (lbl, sel, buy) in enumerate(rows_data):
-    ry = 732 + ri * 44
-    if ri % 2 == 0:
-        draw.rectangle([56, ry - 2, 56 + HALF - 28, ry + 38], fill=(255, 255, 255, 12))
-    draw.text((col_x[0], ry + 6), lbl, font=fTable,  fill=(210, 225, 255))
-    sc = YES_C if sel=="YES" else NO_C if sel=="NO" else VAR_C
-    bc = YES_C if buy=="YES" else NO_C if buy=="NO" else VAR_C
-    draw.text((col_x[1], ry + 6), sel, font=fTableB, fill=sc)
-    draw.text((col_x[2], ry + 6), buy, font=fTableB, fill=bc)
+img_bot = TOP + 202
 
-# ── Agencies card (right) ──
-ax = 28 + HALF + 16
-glass_card(ax, 656, HALF, 254, accent_color=(100, 230, 120))
-draw.text((ax + 20, 668), "หน่วยงานที่เกี่ยวข้อง", font=fSecHead, fill=(100, 230, 120))
+# product name
+prod_name = """${(d.product || '').replace(/"/g, '\\"')}"""
+for li, line in enumerate(textwrap.wrap(prod_name, 22)):
+    draw.text((CX1+12, img_bot+6+li*28), line, font=fH3, fill=WHITE)
 
-agencies = json.loads("""${agenciesStr}""")
-ag_colors = [(255, 165, 0), (80, 200, 255), (200, 130, 255)]
+# HS + destination
+draw.text((CX1+12, img_bot+68), f"HS: ${d.hsCode||'------'}", font=fTag, fill=ACCENT)
+dest_short = """${(d.destination||'').replace(/"/g,'\\"').slice(0,20)}"""
+draw.text((CX1+12, img_bot+94), dest_short, font=fSm, fill=LGRAY)
+
+# separator
+draw.line([(CX1+12, img_bot+122),(CX1+CW1-12, img_bot+122)], fill=ACCENT, width=1)
+
+# seller/buyer responsibility summary
+sell = json.loads("""${sellerResp.replace(/"/g, '\\"').replace(/\\/g,'\\\\').replace(/\\\\"/g,'\\"')}""") if """${sellerResp}""" != '[]' else []
+buy  = json.loads("""${buyerResp.replace(/"/g, '\\"').replace(/\\/g,'\\\\').replace(/\\\\"/g,'\\"')}""") if """${buyerResp}"""  != '[]' else []
+
+draw.text((CX1+12, img_bot+130), "Seller รับผิดชอบ:", font=fH4, fill=GREEN)
+for i,s in enumerate(sell[:3]):
+    draw.text((CX1+16, img_bot+156+i*26), "• "+s[:28], font=fXs, fill=LGRAY)
+by_y = img_bot+240
+draw.text((CX1+12, by_y), "Buyer รับผิดชอบ:", font=fH4, fill=RED)
+for i,b in enumerate(buy[:3]):
+    draw.text((CX1+16, by_y+26+i*26), "• "+b[:28], font=fXs, fill=LGRAY)
+
+# ── COL 2 — STEPS ───────────────────────────────────────
+CX2, CW2 = 340, 390
+draw_card(CX2, TOP, CW2, BOT-TOP, CARD, radius=14)
+accent_bar(CX2, TOP, CW2)
+
+draw.text((CX2+14, TOP+10), "ขั้นตอนการส่งออก", font=fH2, fill=ACCENT)
+
+steps = json.loads("""${steps}""")
+STEP_COLORS = [(241,196,15),(231,76,60),(46,204,113),(52,152,219),(155,89,182),(230,126,34)]
+sy = TOP + 50
+for i, st in enumerate(steps[:6]):
+    sc = STEP_COLORS[i % len(STEP_COLORS)]
+    sh = 73
+    # row bg
+    if i % 2 == 0:
+        draw.rounded_rectangle([CX2+8, sy, CX2+CW2-8, sy+sh], radius=8, fill=(25,38,65))
+    # number circle
+    draw.ellipse([CX2+14, sy+6, CX2+44, sy+36], fill=sc)
+    nw,_ = tw(str(i+1), fH4)
+    draw.text((CX2+14+(30-nw)//2, sy+8), str(i+1), font=fH4, fill=DGRAY)
+    # title + detail
+    title  = st.get('title','') if isinstance(st,dict) else str(st)
+    detail = st.get('detail','') if isinstance(st,dict) else ''
+    draw.text((CX2+54, sy+4),  title[:34],  font=fH4, fill=WHITE)
+    for di, dl in enumerate(textwrap.wrap(detail, 42)[:2]):
+        draw.text((CX2+54, sy+28+di*19), dl, font=fXs, fill=LGRAY)
+    sy += sh + 5
+
+# ── COL 3 — DOCS + AGENCIES ──────────────────────────────
+CX3, CW3 = 740, 320
+draw_card(CX3, TOP, CW3, BOT-TOP, CARD, radius=14)
+accent_bar(CX3, TOP, CW3)
+
+draw.text((CX3+12, TOP+10), "เอกสาร/ใบอนุญาต", font=fH2, fill=ACCENT)
+
+docs = json.loads("""${documents}""")
+for di, doc in enumerate(docs[:4]):
+    dy = TOP + 50 + di*44
+    draw.rounded_rectangle([CX3+10, dy, CX3+CW3-10, dy+36], radius=8, fill=(25,38,65))
+    draw.rounded_rectangle([CX3+10, dy, CX3+16, dy+36], radius=4, fill=GREEN)
+    for li, line in enumerate(textwrap.wrap(str(doc), 26)[:2]):
+        draw.text((CX3+24, dy+4+li*18), line, font=fXs, fill=WHITE)
+
+# agencies
+ag_y = TOP + 240
+draw.line([(CX3+12, ag_y),(CX3+CW3-12, ag_y)], fill=ACCENT, width=1)
+draw.text((CX3+12, ag_y+8), "หน่วยงานที่ติดต่อ", font=fH2, fill=ACCENT)
+
+agencies = json.loads("""${agencies}""")
+ag_dot_c = [(52,152,219),(46,204,113),(230,126,34)]
 for ai, ag in enumerate(agencies[:3]):
-    ay   = 710 + ai * 64
-    aclr = ag_colors[ai % len(ag_colors)]
-    draw.ellipse([ax + 20, ay + 4, ax + 42, ay + 26], fill=aclr)
-    draw.text((ax + 24, ay + 4), str(ai + 1), font=fStepNum, fill=(15, 15, 30))
-    short = ag[:32] + ("..." if len(ag) > 32 else "")
-    draw.text((ax + 52, ay + 6), short, font=fStep, fill=(225, 240, 255))
+    ay = ag_y + 48 + ai*68
+    dc = ag_dot_c[ai % len(ag_dot_c)]
+    draw.ellipse([CX3+12, ay+2, CX3+36, ay+26], fill=dc)
+    draw.text((CX3+14, ay+3), str(ai+1), font=fH4, fill=DGRAY)
+    name = ag.get('name','') if isinstance(ag,dict) else str(ag)
+    role = ag.get('role','') if isinstance(ag,dict) else ''
+    url  = ag.get('url','')  if isinstance(ag,dict) else ''
+    for li, line in enumerate(textwrap.wrap(name[:30], 22)[:1]):
+        draw.text((CX3+44, ay+2+li*22), line, font=fH4, fill=WHITE)
+    if role:
+        draw.text((CX3+44, ay+26), role[:30], font=fXs, fill=MGRAY)
+    if url:
+        short_url = url.replace('https://','').replace('www.','')[:28]
+        draw.text((CX3+44, ay+44), short_url, font=fXs, fill=ACCENT)
 
 # ════════════════════════════════════════════════════════
-# ZONE 4 — FOOTER (920..1080)
+# PRO TIPS  738..888
 # ════════════════════════════════════════════════════════
-foot_ov = Image.new("RGBA", (W, 160), (5, 8, 25, 220))
-img_rgba2 = img.convert("RGBA")
-img_rgba2.paste(Image.alpha_composite(img_rgba2.crop((0, 920, W, H)), foot_ov), (0, 920))
-img.paste(img_rgba2.convert("RGB").crop((0, 920, W, H)), (0, 920))
+PT_TOP = 738
+draw.rectangle([0, PT_TOP, W, 888], fill=(12, 20, 40))
+draw.rectangle([0, PT_TOP, W, PT_TOP+4], fill=YELLOW)
+draw.text((20, PT_TOP+8), "Pro Tips จากผู้ชำนาญการ", font=fH2, fill=YELLOW)
 
-draw.line([(0, 920), (W, 920)], fill=(0, 210, 255, 200), width=3)
-draw.rectangle([(0, 920), (W, 923)], fill=(255, 180, 0))
+tips = json.loads("""${proTips}""")
+tip_w = (W - 60) // 3
+for ti, tip in enumerate(tips[:3]):
+    tx = 20 + ti*(tip_w+20)
+    draw_card(tx, PT_TOP+42, tip_w, 98, (20,32,62), radius=10, border=YELLOW)
+    draw.rounded_rectangle([tx, PT_TOP+42, tx+tip_w, PT_TOP+46], radius=10, fill=YELLOW)
+    title  = tip.get('title','') if isinstance(tip,dict) else str(tip)
+    detail = tip.get('detail','') if isinstance(tip,dict) else ''
+    draw.text((tx+10, PT_TOP+50), f"Tip {ti+1}: "+title[:24], font=fTag, fill=YELLOW)
+    for di, dl in enumerate(textwrap.wrap(detail, 34)[:2]):
+        draw.text((tx+10, PT_TOP+74+di*20), dl, font=fXs, fill=LGRAY)
 
-cx("+66 63-446-7735  |  LINE: lin.ee/6aC3Z5O  |  pitfreight.com",
-   936, fFoot, (200, 230, 255))
-cx("PIT Freight  —  Booking Freight Shipper & Consignee",
-   972, fFootSm, (130, 160, 200))
+# ════════════════════════════════════════════════════════
+# FOOTER  896..1080
+# ════════════════════════════════════════════════════════
+draw.rectangle([0, 896, W, 1080], fill=(5, 10, 25))
+draw.rectangle([0, 896, W, 902], fill=ACCENT)
+draw.rectangle([0, 902, W, 906], fill=ORANGE)
 
-# watermark line ด้านขวา
-wm = "pitfreight.com"
-bb_wm = draw.textbbox((0, 0), wm, font=fFootSm)
-draw.text((W - (bb_wm[2] - bb_wm[0]) - 24, 1044),
-          wm, font=fFootSm, fill=(80, 110, 160))
+# PIT Freight logo area
+draw_card(20, 916, 200, 70, (18,28,52), radius=10)
+draw.text((35, 924), "PIT", font=f(True, 38), fill=ACCENT)
+draw.text((90, 930), "FREIGHT", font=f(True, 22), fill=WHITE)
+draw.text((35, 964), "ONE STOP LOGISTICS", font=fXs, fill=MGRAY)
 
-img.save("/tmp/auto_post.jpg", "JPEG", quality=95, optimize=True)
-print("Saved /tmp/auto_post.jpg")
+# divider
+draw.line([(232, 920),(232, 986)], fill=(50,65,90), width=1)
+
+# contact info
+draw.text((250, 920), "+66 63-446-7735", font=fH3, fill=WHITE)
+draw.text((250, 950), "LINE: lin.ee/6aC3Z5O", font=fB, fill=LGRAY)
+draw.text((250, 978), "pitfreight.com", font=fB, fill=ACCENT)
+
+# tag line right
+tag = "Booking Freight Shipper & Consignee"
+wt2,_ = tw(tag, fSm)
+draw.text((W-wt2-20, 920), tag, font=fSm, fill=MGRAY)
+draw.text((W-200, 948), "Incoterms 2020", font=fTag, fill=ACCENT)
+
+# product name watermark bottom
+prod_wm = """${(d.product||'').replace(/"/g,'\\"').slice(0,30)}"""
+ww,_ = tw(prod_wm, fXs)
+draw.text((W-ww-20, 1056), prod_wm, font=fXs, fill=(50,65,90))
+
+img.save('/tmp/auto_post.jpg', 'JPEG', quality=95, optimize=True)
+print('Saved /tmp/auto_post.jpg')
 `;
 
-  const scriptPath = '/tmp/hybrid_gen.py';
+  const scriptPath = '/tmp/infographic_gen.py';
   fs.writeFileSync(scriptPath, pilScript);
   execFileSync('python3', [scriptPath], { timeout: 60000 });
 }
 
-// ===== โพสต์ภาพ+caption ลง Facebook (curl) =====
+// ===== 4. Facebook =====
 async function postToFacebook(imagePath, caption) {
   if (!PAGE2_TOKEN) throw new Error('FB_PAGE2_ACCESS_TOKEN not set');
-
-  const captionFile = '/tmp/fb_caption_post.txt';
+  const captionFile = '/tmp/fb_caption.txt';
   fs.writeFileSync(captionFile, caption);
-
   const result = execFileSync('bash', ['-c',
-    `curl -s -X POST \
-      "https://graph.facebook.com/v19.0/${PAGE2_ID}/photos" \
-      -F "source=@${imagePath}" \
-      -F "caption=<${captionFile}" \
-      -F "access_token=${PAGE2_TOKEN}"`
+    `curl -s -X POST "https://graph.facebook.com/v19.0/${PAGE2_ID}/photos" \
+     -F "source=@${imagePath}" -F "caption=<${captionFile}" -F "access_token=${PAGE2_TOKEN}"`
   ], { timeout: 60000 });
-
   const data = JSON.parse(result.toString());
   if (data.error) throw new Error(data.error.message);
   return data;
 }
 
-// ===== สร้างบทความใน Notion Blog =====
+// ===== 5. Notion Blog =====
 async function postToNotionBlog(blogData, term, caption, fbUrl) {
   const notionToken = process.env.NOTION_TOKEN;
   const blogDb      = process.env.NOTION_BLOG_DB;
-  if (!notionToken || !blogDb) throw new Error('NOTION_TOKEN หรือ NOTION_BLOG_DB ไม่ได้ตั้งค่า');
+  if (!notionToken || !blogDb) throw new Error('NOTION credentials missing');
 
-  const bodyBlocks = [];
+  const d = blogData || {};
+  const blocks = [];
 
-  if (blogData.summary) {
-    bodyBlocks.push({ object: 'block', type: 'paragraph',
-      paragraph: { rich_text: [{ type: 'text', text: { content: blogData.summary } }] } });
+  const push = (type, obj) => blocks.push({ object:'block', type, [type]: obj });
+  const rt   = (text, bold=false) => [{ type:'text', text:{content:text}, annotations:{bold} }];
+
+  if (d.summary)  push('paragraph', { rich_text: rt(d.summary) });
+  if (d.termMeaning) {
+    push('heading_2', { rich_text: rt('📌 '+term+' คืออะไร?') });
+    push('paragraph', { rich_text: rt(d.termMeaning) });
   }
-  if (blogData.hsCode) {
-    bodyBlocks.push({ object: 'block', type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '📦 สินค้าและ HS Code' } }] } });
-    bodyBlocks.push({ object: 'block', type: 'paragraph',
-      paragraph: { rich_text: [{ type: 'text', text: { content:
-        `สินค้า: ${blogData.product || '-'}\nHS Code: ${blogData.hsCode} — ${blogData.hsDescription || ''}\nประเทศปลายทาง: ${blogData.destination || '-'}` } }] } });
+  if (d.hsCode) {
+    push('heading_2', { rich_text: rt('📦 สินค้าและ HS Code') });
+    push('paragraph', { rich_text: rt(`สินค้า: ${d.product||'-'} | HS Code: ${d.hsCode} | ปลายทาง: ${d.destination||'-'}`) });
   }
-  if (blogData.steps?.length) {
-    bodyBlocks.push({ object: 'block', type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '🔢 ขั้นตอนการส่งออก' } }] } });
-    for (const step of blogData.steps) {
-      bodyBlocks.push({ object: 'block', type: 'numbered_list_item',
-        numbered_list_item: { rich_text: [{ type: 'text', text: { content: step } }] } });
-    }
+  if (d.steps?.length) {
+    push('heading_2', { rich_text: rt('🔢 ขั้นตอนการส่งออก') });
+    for (const s of d.steps)
+      push('numbered_list_item', { rich_text: rt((typeof s==='object'?`${s.title}: ${s.detail}`:s)) });
   }
-  if (blogData.proTips?.length) {
-    bodyBlocks.push({ object: 'block', type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '💡 Pro Tips จากผู้เชี่ยวชาญ' } }] } });
-    for (const tip of blogData.proTips) {
-      bodyBlocks.push({ object: 'block', type: 'bulleted_list_item',
-        bulleted_list_item: { rich_text: [{ type: 'text', text: { content: tip } }] } });
-    }
+  if (d.documents?.length) {
+    push('heading_2', { rich_text: rt('📋 เอกสารที่ต้องใช้') });
+    for (const doc of d.documents)
+      push('bulleted_list_item', { rich_text: rt(doc) });
   }
-  if (blogData.agencies?.length) {
-    bodyBlocks.push({ object: 'block', type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '🏢 หน่วยงานที่เกี่ยวข้อง' } }] } });
-    for (const ag of blogData.agencies) {
-      bodyBlocks.push({ object: 'block', type: 'bulleted_list_item',
-        bulleted_list_item: { rich_text: [{ type: 'text', text: { content: ag } }] } });
-    }
+  if (d.proTips?.length) {
+    push('heading_2', { rich_text: rt('💡 Pro Tips') });
+    for (const t of d.proTips)
+      push('bulleted_list_item', { rich_text: rt(typeof t==='object'?`${t.title}: ${t.detail}`:t) });
+  }
+  if (d.agencies?.length) {
+    push('heading_2', { rich_text: rt('🏢 หน่วยงานที่เกี่ยวข้อง') });
+    for (const ag of d.agencies)
+      push('bulleted_list_item', { rich_text: rt(typeof ag==='object'?`${ag.name} — ${ag.url}`:ag) });
   }
   if (fbUrl) {
-    bodyBlocks.push({ object: 'block', type: 'heading_2',
-      heading_2: { rich_text: [{ type: 'text', text: { content: '📱 ดูโพสต์ Facebook' } }] } });
-    bodyBlocks.push({ object: 'block', type: 'paragraph',
-      paragraph: { rich_text: [{ type: 'text', text: { content: fbUrl, link: { url: fbUrl } } }] } });
+    push('heading_2', { rich_text: rt('📱 Facebook Post') });
+    push('paragraph', { rich_text: [{ type:'text', text:{content:fbUrl, link:{url:fbUrl}} }] });
   }
-  bodyBlocks.push({ object: 'block', type: 'heading_2',
-    heading_2: { rich_text: [{ type: 'text', text: { content: '📄 เนื้อหา Facebook Post' } }] } });
-  for (let i = 0; i < caption.length; i += 1900) {
-    bodyBlocks.push({ object: 'block', type: 'paragraph',
-      paragraph: { rich_text: [{ type: 'text', text: { content: caption.slice(i, i+1900) } }] } });
-  }
+  push('heading_2', { rich_text: rt('📄 เนื้อหาเต็ม') });
+  for (let i=0; i<caption.length; i+=1900)
+    push('paragraph', { rich_text: rt(caption.slice(i,i+1900)) });
 
-  const today = new Date().toISOString().slice(0, 10);
-  const payload = {
-    parent: { database_id: blogDb },
-    properties: {
-      'Title':          { title: [{ text: { content: blogData.title || `คู่มือ ${term} — ${today}` } }] },
-      'Slug':           { rich_text: [{ text: { content: blogData.slug || `${term.toLowerCase()}-${Date.now()}` } }] },
-      'Summary':        { rich_text: [{ text: { content: (blogData.summary || '').slice(0, 2000) } }] },
-      'Tags':           { multi_select: (blogData.tags || [term, 'Incoterms', 'freight']).map(t => ({ name: t })) },
-      'Published':      { checkbox: true },
-      'Category':       { select: { name: 'Incoterms' } },
-      'Language':       { select: { name: 'TH' } },
-      'Author':         { rich_text: [{ text: { content: 'PIT Freight Expert' } }] },
-      'Published Date': { date: { start: today } },
-    },
-    children: bodyBlocks,
-  };
-
+  const today = new Date().toISOString().slice(0,10);
   const res = await fetch('https://api.notion.com/v1/pages', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${notionToken}`,
-      'Content-Type':  'application/json',
-      'Notion-Version': '2022-06-28',
-    },
-    body: JSON.stringify(payload),
+    method:'POST',
+    headers:{ 'Authorization':`Bearer ${notionToken}`, 'Content-Type':'application/json', 'Notion-Version':'2022-06-28' },
+    body: JSON.stringify({
+      parent: { database_id: blogDb },
+      properties: {
+        'Title':          { title:[{ text:{content: d.title||`${term} Guide`} }] },
+        'Slug':           { rich_text:[{ text:{content: d.slug||`${term.toLowerCase()}-${Date.now()}`} }] },
+        'Summary':        { rich_text:[{ text:{content:(d.summary||'').slice(0,2000)} }] },
+        'Tags':           { multi_select:(d.tags||[term,'Incoterms']).map(t=>({name:t})) },
+        'Published':      { checkbox: true },
+        'Category':       { select:{name:'Incoterms'} },
+        'Language':       { select:{name:'TH'} },
+        'Author':         { rich_text:[{ text:{content:'PIT Freight Expert'} }] },
+        'Published Date': { date:{start:today} },
+      },
+      children: blocks,
+    }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data?.message || JSON.stringify(data));
   return data;
 }
 
-// ===== Main job =====
+// ===== MAIN =====
 async function runAutoPost() {
-  const now = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+  const now = new Date().toLocaleString('th-TH', { timeZone:'Asia/Bangkok' });
   console.log(`\n[AutoPost] เริ่มต้น ${now}`);
-
   try {
-    // 1. Fonts
     ensureFonts();
-
-    // 2. เลือก Incoterm
     const term = pickTerm();
     console.log(`[AutoPost] Term: ${term}`);
 
-    // 3. Claude สร้าง content + DALL-E prompt
     console.log('[AutoPost] Claude กำลังสร้าง content...');
-    const { caption, dallePrompt, blogData } = await generateContent(term);
-    if (!dallePrompt) throw new Error('Claude ไม่ได้ส่ง DALL-E prompt กลับมา');
+    const { caption, imgPrompt, blogData } = await generateContent(term);
 
-    // 4. DALL-E 3 สร้างพื้นหลัง
-    console.log('[AutoPost] DALL-E 3 กำลังสร้างภาพพื้นหลัง...');
-    const bgPath = await generateDalleBackground(dallePrompt);
-    console.log('[AutoPost] DALL-E สร้างพื้นหลังสำเร็จ');
+    console.log('[AutoPost] gpt-image-1 สร้างภาพสินค้า...');
+    const productImgPath = await generateProductImage(
+      imgPrompt || `Professional product photo of ${blogData?.product||'Thai export product'} on dark navy background, studio lighting, no text`
+    );
+    console.log('[AutoPost] Product image สำเร็จ');
 
-    // 5. PIL วางข้อความบนพื้นหลัง
-    console.log('[AutoPost] PIL กำลังวางข้อความบน DALL-E background...');
-    await createHybridImage(bgPath, blogData, term);
+    console.log('[AutoPost] PIL สร้าง infographic...');
+    await createInfographic(productImgPath, blogData, term);
     if (!fs.existsSync('/tmp/auto_post.jpg')) throw new Error('ไม่พบไฟล์ภาพ');
-    console.log('[AutoPost] สร้างภาพ Hybrid สำเร็จ');
+    console.log('[AutoPost] Infographic สำเร็จ');
 
-    // 6. โพสต์ Facebook
     console.log('[AutoPost] โพสต์ Facebook...');
     const result = await postToFacebook('/tmp/auto_post.jpg', caption);
     const fbUrl  = `https://www.facebook.com/${result.post_id}`;
     console.log(`[AutoPost] Facebook สำเร็จ! URL: ${fbUrl}`);
 
-    // 7. Notion Blog
     let blogUrl = '';
     try {
-      console.log('[AutoPost] สร้าง Notion Blog...');
       if (blogData) {
         const nr = await postToNotionBlog(blogData, term, caption, fbUrl);
         blogUrl = `https://www.notion.so/${nr.id.replace(/-/g,'')}`;
-        console.log(`[AutoPost] Notion Blog สำเร็จ! ID: ${nr.id}`);
+        console.log(`[AutoPost] Notion Blog สำเร็จ! ${blogUrl}`);
       }
-    } catch (blogErr) {
-      console.error(`[AutoPost] Blog ERROR (ไม่หยุด): ${blogErr.message}`);
-    }
+    } catch(e) { console.error('[AutoPost] Blog error (ไม่หยุด):', e.message); }
 
-    // 8. Slack
     if (process.env.SLACK_WEBHOOK_URL) {
-      const msg = [
-        `✅ *AutoPost สำเร็จ* — ${term} (DALL-E 3 + PIL)`,
-        `📘 Facebook: ${fbUrl}`,
-        blogUrl ? `📝 Blog: ${blogUrl}` : '📝 Blog: ข้ามการสร้าง',
-      ].join('\n');
       await fetch(process.env.SLACK_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: msg }),
-      }).catch(() => {});
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ text:[
+          `✅ *AutoPost สำเร็จ* — ${term} (${TERM_FULL[term]})`,
+          `📘 FB: ${fbUrl}`,
+          blogUrl ? `📝 Blog: ${blogUrl}` : '',
+        ].filter(Boolean).join('\n') }),
+      }).catch(()=>{});
     }
-
-  } catch (err) {
+  } catch(err) {
     console.error(`[AutoPost] ERROR: ${err.message}`);
     if (process.env.SLACK_WEBHOOK_URL) {
       await fetch(process.env.SLACK_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: `❌ *AutoPost ล้มเหลว*: ${err.message}` }),
-      }).catch(() => {});
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ text:`❌ *AutoPost ล้มเหลว*: ${err.message}` }),
+      }).catch(()=>{});
     }
   }
 }
 
-// ===== Cron Jobs =====
 function startAutoPost() {
-  cron.schedule('0 8 * * *',  runAutoPost, { timezone: 'Asia/Bangkok' });
-  cron.schedule('0 15 * * *', runAutoPost, { timezone: 'Asia/Bangkok' });
-  console.log('[AutoPost] Cron jobs registered: 08:00 & 15:00 Asia/Bangkok (DALL-E 3 Mode)');
+  cron.schedule('0 8 * * *',  runAutoPost, { timezone:'Asia/Bangkok' });
+  cron.schedule('0 15 * * *', runAutoPost, { timezone:'Asia/Bangkok' });
+  console.log('[AutoPost] Cron jobs: 08:00 & 15:00 Asia/Bangkok');
 }
 
 module.exports = { startAutoPost, runAutoPost };
