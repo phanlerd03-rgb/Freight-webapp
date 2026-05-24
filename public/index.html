@@ -28,11 +28,12 @@
       <li><a href="#tracking" data-i18n="nav.tracking">ติดตามสินค้า</a></li>
       <li><a href="#alibaba">🛒 Alibaba</a></li>
       <li><a href="#products">🇹🇭 สินค้าส่งออก</a></li>
-      <li><a href="#tools">🚢 Sea Rates</a></li>
+      <li><a href="#tools">🧾 Import Tax</a></li>
       <li><a href="#blog" data-i18n="nav.blog">บทความ</a></li>
       <li><a href="#contact" data-i18n="nav.contact">ติดต่อเรา</a></li>
     </ul>
     <button class="btn-lang" id="langToggle" onclick="toggleLang()">🇬🇧 EN</button>
+    <button class="btn-nav-register" onclick="openRegisterModal()">👤 สมัครสมาชิก</button>
     <button class="btn-nav-cta" onclick="scrollToSection('quote')" data-i18n="nav.cta">ขอราคาฟรี</button>
     <button class="hamburger" id="hamburger">☰</button>
   </div>
@@ -829,19 +830,20 @@
   <div class="container">
     <div class="section-header">
       <span class="section-badge">🚢 Freight Tools</span>
-      <h2 class="section-title">Sea Rates & Freight Calculator</h2>
-      <p class="section-subtitle">ค้นหาอัตราค่าขนส่ง เปรียบเทียบเส้นทาง และคำนวณระยะเวลา powered by SeaRates</p>
+      <h2 class="section-title">Import Tax & Freight Calculator</h2>
+      <p class="section-subtitle">คำนวณภาษีนำเข้าเบื้องต้น ค้นหาอัตราค่าขนส่ง และเปรียบเทียบระยะเวลา powered by PIT Freight</p>
     </div>
 
     <!-- SEARATES TABS -->
     <div class="searates-tab-bar">
-      <button class="searates-tab-btn active" onclick="switchSeaTab('rates', this)">🚢 Freight Rates</button>
+      <button class="searates-tab-btn" onclick="switchSeaTab('rates', this)">🚢 Freight Rates</button>
       <button class="searates-tab-btn" onclick="switchSeaTab('distance', this)">📍 Distance & Time</button>
       <button class="searates-tab-btn" onclick="switchSeaTab('ports', this)">⚓ Port Map</button>
       <button class="searates-tab-btn" onclick="switchSeaTab('container', this)">📦 Container Calculator</button>
+      <button class="searates-tab-btn active" onclick="switchSeaTab('import-tax', this)">🧾 Import Tax</button>
     </div>
 
-    <div class="searates-pane active" id="sea-rates">
+    <div class="searates-pane" id="sea-rates">
       <div class="searates-frame-wrap">
         <iframe src="https://www.searates.com/reference/calculator/" class="searates-frame" loading="lazy" title="SeaRates Freight Calculator" allowfullscreen></iframe>
       </div>
@@ -862,6 +864,146 @@
     <div class="searates-pane" id="sea-container">
       <div class="searates-frame-wrap">
         <iframe src="https://www.searates.com/reference/equipment/" class="searates-frame" loading="lazy" title="SeaRates Container Guide" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="searates-pane active" id="sea-import-tax">
+      <div class="import-tax-calculator">
+        <div class="import-tax-head">
+          <div class="import-tax-hero-copy">
+            <span class="import-tax-kicker">Thailand Import Estimate</span>
+            <h3>Thailand Import Tax Calculator</h3>
+            <p>วางแผนต้นทุนนำเข้าแบบมืออาชีพจาก CIF, อากรขาเข้า, FTA, VAT และค่าใช้จ่ายปลายทาง</p>
+          </div>
+          <div class="customs-flow" aria-label="Thailand customs workflow">
+            <div class="customs-step"><span>01</span><strong>HS Code</strong><small>Classify goods</small></div>
+            <div class="customs-step"><span>02</span><strong>CIF Value</strong><small>Invoice + freight</small></div>
+            <div class="customs-step"><span>03</span><strong>Duty / FTA</strong><small>Preference check</small></div>
+            <div class="customs-step"><span>04</span><strong>VAT</strong><small>Tax base review</small></div>
+            <div class="customs-step"><span>05</span><strong>Clearance</strong><small>Release cargo</small></div>
+          </div>
+        </div>
+
+        <div class="import-tax-body">
+          <div class="import-tax-panel">
+            <div class="import-tax-panel-title">
+              <span>Shipment Valuation</span>
+              <strong>Cost, Insurance & Freight</strong>
+            </div>
+            <form class="import-tax-form" id="importTaxForm">
+              <div class="import-tax-grid">
+                <label class="wide">
+                  <span>สินค้า / Product</span>
+                  <input type="text" name="product" placeholder="เช่น Machine parts, fabric, cosmetics">
+                </label>
+                <label>
+                  <span>HS Code</span>
+                  <input type="text" name="hsCode" placeholder="เช่น 8483.90">
+                </label>
+                <label>
+                  <span>Origin Country</span>
+                  <input type="text" name="originCountry" placeholder="เช่น China, Japan, Vietnam">
+                </label>
+                <label>
+                  <span>Currency</span>
+                  <select name="currency">
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="CNY">CNY - Chinese Yuan</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="JPY">JPY - Japanese Yen</option>
+                    <option value="THB" selected>THB - Thai Baht</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Exchange Rate to THB</span>
+                  <input type="number" name="exchangeRate" min="0.0001" step="0.0001" value="1" required>
+                </label>
+                <label>
+                  <span>Invoice Value</span>
+                  <input type="number" name="invoiceValue" min="0" step="0.01" value="100000" required>
+                </label>
+                <label>
+                  <span>Freight</span>
+                  <input type="number" name="freight" min="0" step="0.01" value="0">
+                </label>
+                <label>
+                  <span>Insurance</span>
+                  <input type="number" name="insurance" min="0" step="0.01" value="0">
+                </label>
+                <label>
+                  <span>Import Duty Rate (%)</span>
+                  <input type="number" name="dutyRate" min="0" step="0.01" value="10" required>
+                </label>
+                <label>
+                  <span>FTA Preference</span>
+                  <select name="ftaScheme">
+                    <option value="none" data-reduction="0" selected>No FTA / MFN duty</option>
+                    <option value="atiga" data-reduction="100">ATIGA - ASEAN Form D</option>
+                    <option value="acfta" data-reduction="100">ACFTA - ASEAN China</option>
+                    <option value="ajcep" data-reduction="80">AJCEP / JTEPA - Japan</option>
+                    <option value="akfta" data-reduction="80">AKFTA - ASEAN Korea</option>
+                    <option value="aanzfta" data-reduction="80">AANZFTA - Australia NZ</option>
+                    <option value="rcep" data-reduction="50">RCEP - Regional preference</option>
+                    <option value="manual" data-reduction="0">Manual reduction</option>
+                  </select>
+                </label>
+                <label>
+                  <span>FTA / Duty Reduction (%)</span>
+                  <input type="number" name="dutyReduction" min="0" max="100" step="0.01" value="0">
+                </label>
+                <label>
+                  <span>Excise / Other Tax (%)</span>
+                  <input type="number" name="exciseRate" min="0" step="0.01" value="0">
+                </label>
+                <label>
+                  <span>VAT Rate (%)</span>
+                  <input type="number" name="vatRate" min="0" step="0.01" value="7" required>
+                </label>
+                <label>
+                  <span>Customs / Port Fees (THB)</span>
+                  <input type="number" name="otherFees" min="0" step="0.01" value="0">
+                </label>
+              </div>
+
+              <div class="currency-strip" id="currencyStrip">
+                <span>Indicative converter:</span>
+                <strong>1 USD = 36.50 THB</strong>
+                <small>Rates are editable for your shipment date.</small>
+              </div>
+
+              <div class="import-tax-actions">
+                <button type="submit" class="btn-import-primary">Calculate Tax</button>
+                <button type="button" class="btn-import-secondary" id="importTaxPdf">Export PDF</button>
+                <button type="button" class="btn-import-ghost" id="importTaxReset">Reset</button>
+              </div>
+            </form>
+          </div>
+
+          <aside class="import-tax-side">
+            <div class="import-tax-result" id="importTaxResult" aria-live="polite">
+              <div class="import-tax-empty">
+                <strong>Ready to estimate landed cost</strong>
+                <span>Enter shipment value, duty rate and any FTA preference to calculate CIF, import duty, VAT and landed cost.</span>
+              </div>
+            </div>
+
+            <form class="import-lead-form" id="importLeadForm">
+              <div class="lead-form-title">
+                <span>Need customs support?</span>
+                <strong>Request a landed-cost review</strong>
+              </div>
+              <div class="lead-grid">
+                <label><span>Name *</span><input type="text" name="name" required placeholder="Your name"></label>
+                <label><span>Email *</span><input type="email" name="email" required placeholder="email@example.com"></label>
+                <label><span>Phone</span><input type="tel" name="phone" placeholder="+66..."></label>
+                <label><span>Company</span><input type="text" name="company" placeholder="Company name"></label>
+              </div>
+              <textarea name="message" rows="3" placeholder="Tell us about product, HS Code, origin, quantity, target arrival date"></textarea>
+              <button type="submit" class="btn-lead-submit">Send to PIT Freight</button>
+              <div class="lead-status" id="importLeadStatus"></div>
+            </form>
+          </aside>
+        </div>
       </div>
     </div>
 
@@ -1082,6 +1224,7 @@
 <script src="/js/blog.js?v=2"></script>
 <script src="/js/products.js?v=4"></script>
 <script src="/js/alibaba.js?v=2"></script>
+<script src="/js/import-tax.js?v=1"></script>
 <script src="/js/app.js?v=2"></script>
 <script src="/js/apple.js?v=2"></script>
 <script>
@@ -1099,6 +1242,200 @@ function switchHWTab(btn, id) {
   document.querySelectorAll('.hw-pane').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('hw-' + id).classList.add('active');
+}
+</script>
+
+<!-- ══════════ REGISTER MODAL ══════════ -->
+<div id="registerModal" class="reg-overlay" onclick="if(event.target===this)closeRegisterModal()">
+  <div class="reg-modal">
+    <button class="reg-close" onclick="closeRegisterModal()">✕</button>
+    <div class="reg-header">
+      <div class="reg-icon">🚢</div>
+      <h2>สมัครสมาชิก</h2>
+      <p>รับข้อมูลบริการ อัปเดตอัตราค่าระวาง และโปรโมชั่นพิเศษก่อนใคร</p>
+    </div>
+    <form id="registerForm" onsubmit="submitRegister(event)">
+      <div class="reg-row">
+        <div class="reg-field">
+          <label>ชื่อ-นามสกุล <span class="req">*</span></label>
+          <input type="text" id="reg_name" placeholder="กรอกชื่อของคุณ" required>
+        </div>
+        <div class="reg-field">
+          <label>อีเมล <span class="req">*</span></label>
+          <input type="email" id="reg_email" placeholder="example@email.com" required>
+        </div>
+      </div>
+      <div class="reg-row">
+        <div class="reg-field">
+          <label>เบอร์โทรศัพท์</label>
+          <input type="tel" id="reg_phone" placeholder="0XX-XXX-XXXX">
+        </div>
+        <div class="reg-field">
+          <label>บริษัท / ชื่อร้าน</label>
+          <input type="text" id="reg_company" placeholder="ชื่อธุรกิจ (ถ้ามี)">
+        </div>
+      </div>
+      <div class="reg-field">
+        <label>ประเภทธุรกิจ</label>
+        <select id="reg_businessType">
+          <option value="">-- เลือกประเภทธุรกิจ --</option>
+          <option>ผู้ส่งออกสินค้า (Exporter)</option>
+          <option>ผู้นำเข้าสินค้า (Importer)</option>
+          <option>ผู้ผลิต / โรงงาน</option>
+          <option>SME / ธุรกิจขนาดเล็ก</option>
+          <option>E-Commerce / ขายออนไลน์</option>
+          <option>นักศึกษา / ผู้สนใจทั่วไป</option>
+          <option>อื่นๆ</option>
+        </select>
+      </div>
+      <div class="reg-field">
+        <label>ข้อความเพิ่มเติม (ถ้ามี)</label>
+        <textarea id="reg_message" rows="3" placeholder="บอกเราเพิ่มเติมว่าต้องการบริการอะไร..."></textarea>
+      </div>
+      <div id="reg_error" class="reg-error" style="display:none"></div>
+      <button type="submit" class="reg-submit" id="reg_submitBtn">
+        <span id="reg_submitText">✅ สมัครสมาชิก</span>
+        <span id="reg_submitLoader" style="display:none">⏳ กำลังส่ง...</span>
+      </button>
+      <p class="reg-note">🔒 ข้อมูลของคุณปลอดภัย ไม่แชร์กับบุคคลที่สาม</p>
+    </form>
+    <div id="reg_success" class="reg-success" style="display:none">
+      <div class="reg-success-icon">🎉</div>
+      <h3>สมัครสมาชิกสำเร็จ!</h3>
+      <p>ทีมงาน PIT Freight จะติดต่อกลับภายใน 24 ชั่วโมง<br>กรุณาตรวจสอบอีเมลของคุณด้วยครับ/ค่ะ</p>
+      <button class="reg-submit" onclick="closeRegisterModal()" style="margin-top:16px">ปิด</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ── Register Modal ─────────────────────────────── */
+.btn-nav-register {
+  background: transparent;
+  border: 1.5px solid rgba(255,255,255,.45);
+  color: #fff;
+  padding: 7px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+}
+.btn-nav-register:hover {
+  background: rgba(255,255,255,.15);
+  border-color: rgba(255,255,255,.8);
+}
+.reg-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+  z-index: 9999; align-items: center; justify-content: center; padding: 20px;
+}
+.reg-overlay.active { display: flex; }
+.reg-modal {
+  background: #fff; border-radius: 20px; width: 100%; max-width: 560px;
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(0,0,0,.3);
+  position: relative; animation: regSlideIn .25s ease;
+}
+@keyframes regSlideIn {
+  from { opacity:0; transform: translateY(-20px) scale(.97); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+.reg-close {
+  position: absolute; top: 14px; right: 16px;
+  background: rgba(0,0,0,.08); border: none; border-radius: 50%;
+  width: 32px; height: 32px; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s; z-index: 1;
+}
+.reg-close:hover { background: rgba(0,0,0,.15); }
+.reg-header {
+  background: linear-gradient(135deg, #1a3a5c, #2980b9);
+  color: #fff; padding: 32px 32px 24px; text-align: center; border-radius: 20px 20px 0 0;
+}
+.reg-icon { font-size: 36px; margin-bottom: 8px; }
+.reg-header h2 { margin: 0 0 6px; font-size: 22px; }
+.reg-header p  { margin: 0; opacity: .85; font-size: 14px; line-height: 1.5; }
+form#registerForm { padding: 24px 28px 28px; }
+.reg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:480px){ .reg-row { grid-template-columns: 1fr; } }
+.reg-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.reg-field label { font-size: 13px; font-weight: 600; color: #334; }
+.req { color: #e74c3c; }
+.reg-field input, .reg-field select, .reg-field textarea {
+  padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px;
+  font-size: 14px; color: #1a2a3a; outline: none; transition: border .2s;
+  font-family: inherit; resize: vertical;
+}
+.reg-field input:focus, .reg-field select:focus, .reg-field textarea:focus {
+  border-color: #2980b9; box-shadow: 0 0 0 3px rgba(41,128,185,.12);
+}
+.reg-error { background: #fff0f0; color: #c0392b; border-radius: 8px;
+  padding: 10px 14px; font-size: 13px; margin-bottom: 12px; }
+.reg-submit {
+  width: 100%; background: linear-gradient(135deg, #1a3a5c, #2980b9);
+  color: #fff; border: none; border-radius: 12px;
+  padding: 14px; font-size: 16px; font-weight: 700;
+  cursor: pointer; transition: opacity .2s; margin-top: 4px;
+}
+.reg-submit:hover { opacity: .9; }
+.reg-submit:disabled { opacity: .6; cursor: not-allowed; }
+.reg-note { text-align: center; font-size: 12px; color: #94a3b8; margin: 10px 0 0; }
+.reg-success { padding: 40px 28px; text-align: center; }
+.reg-success-icon { font-size: 56px; margin-bottom: 12px; }
+.reg-success h3 { font-size: 20px; color: #1a3a5c; margin: 0 0 10px; }
+.reg-success p  { color: #555; line-height: 1.6; font-size: 14px; }
+</style>
+
+<script>
+function openRegisterModal() {
+  const m = document.getElementById('registerModal');
+  m.classList.add('active');
+  document.body.style.overflow = 'hidden';
+  // Reset form
+  document.getElementById('registerForm').style.display = '';
+  document.getElementById('reg_success').style.display = 'none';
+  document.getElementById('reg_error').style.display = 'none';
+  document.getElementById('registerForm').reset();
+}
+function closeRegisterModal() {
+  document.getElementById('registerModal').classList.remove('active');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if(e.key === 'Escape') closeRegisterModal(); });
+
+async function submitRegister(e) {
+  e.preventDefault();
+  const btn  = document.getElementById('reg_submitBtn');
+  const txt  = document.getElementById('reg_submitText');
+  const ldr  = document.getElementById('reg_submitLoader');
+  const err  = document.getElementById('reg_error');
+  err.style.display = 'none';
+  btn.disabled = true; txt.style.display = 'none'; ldr.style.display = '';
+
+  try {
+    const res = await fetch('/api/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name:         document.getElementById('reg_name').value.trim(),
+        email:        document.getElementById('reg_email').value.trim(),
+        phone:        document.getElementById('reg_phone').value.trim(),
+        company:      document.getElementById('reg_company').value.trim(),
+        businessType: document.getElementById('reg_businessType').value,
+        message:      document.getElementById('reg_message').value.trim(),
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'เกิดข้อผิดพลาด');
+    document.getElementById('registerForm').style.display = 'none';
+    document.getElementById('reg_success').style.display = '';
+  } catch(ex) {
+    err.textContent = '❌ ' + ex.message;
+    err.style.display = '';
+    btn.disabled = false; txt.style.display = ''; ldr.style.display = 'none';
+  }
 }
 </script>
 </body>

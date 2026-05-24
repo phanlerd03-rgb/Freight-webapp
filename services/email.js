@@ -146,4 +146,14 @@ async function sendStatusUpdate(data) {
   });
 }
 
-module.exports = { sendBookingConfirmation, sendQuoteEmail, sendStatusUpdate };
+// Generic raw send — ใช้กับ register, contact, etc.
+async function sendRaw({ to, subject, html, text }) {
+  return transporter.sendMail({
+    from: `"${fromName}" <${fromEmail}>`,
+    to, subject,
+    html: html || '',
+    text: text || '',
+  });
+}
+
+module.exports = { sendBookingConfirmation, sendQuoteEmail, sendStatusUpdate, sendRaw };

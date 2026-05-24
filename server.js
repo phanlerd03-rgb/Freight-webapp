@@ -37,10 +37,11 @@ const chatRoutes = require('./routes/chat');
 const blogRoutes = require('./routes/blog');
 const cronRoutes = require('./routes/cron');
 const productsRoutes = require('./routes/products');
-const alibabaRoutes = require('./routes/alibaba');
-const adminRoutes = require('./routes/admin');
-const contactRoutes = require('./routes/contact');
-const toolsRoutes = require('./routes/tools');
+const alibabaRoutes  = require('./routes/alibaba');
+const adminRoutes    = require('./routes/admin');
+const contactRoutes  = require('./routes/contact');
+const toolsRoutes    = require('./routes/tools');
+const registerRoutes = require('./routes/register');
 
 app.use('/api/quote', quoteRoutes);
 app.use('/api/booking', bookingRoutes);
@@ -54,6 +55,7 @@ app.use('/api/alibaba', alibabaRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/tools', toolsRoutes);
+app.use('/api/register', registerRoutes);
 
 // ===== Auto Post Cron (Incoterms content → Facebook) =====
 const { startAutoPost } = require('./services/autopost');
