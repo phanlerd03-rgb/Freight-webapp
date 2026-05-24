@@ -177,297 +177,240 @@ async function generateProductImage(imgPrompt) {
   return imgPath;
 }
 
-// ===== 3. PIL: structured 3-column infographic =====
+// ===== 3. PIL: premium infographic =====
 async function createInfographic(productImgPath, blogData, term) {
-  const d         = blogData || {};
-  const colors    = TERM_COLORS[term] || TERM_COLORS.FOB;
-  const termFull  = TERM_FULL[term] || term;
-  const bgHex     = colors[0];
-  const accentHex = colors[1];
+  const d        = blogData || {};
+  const colors   = TERM_COLORS[term] || TERM_COLORS.FOB;
+  const termFull = TERM_FULL[term] || term;
 
-  // helper: hex → (r,g,b)
   const hex2rgb = h => {
     const x = h.replace('#','');
     return [parseInt(x.slice(0,2),16), parseInt(x.slice(2,4),16), parseInt(x.slice(4,6),16)];
   };
-  const [bgR,bgG,bgB]       = hex2rgb(bgHex);
-  const [acR,acG,acB]       = hex2rgb(accentHex);
+  const [acR,acG,acB] = hex2rgb(colors[1]);
 
-  const steps      = JSON.stringify(d.steps     || []);
-  const documents  = JSON.stringify(d.documents || []);
-  const agencies   = JSON.stringify(d.agencies  || []);
-  const proTips    = JSON.stringify(d.proTips   || []);
-  const sellerResp = JSON.stringify(d.sellerResp|| []);
-  const buyerResp  = JSON.stringify(d.buyerResp || []);
+  // Escape values safely for Python single-quoted strings
+  const esc = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const product     = esc((d.product||'Thai Export Product').slice(0,30));
+  const destination = esc((d.destination||'ต่างประเทศ').slice(0,22));
+  const hsCode      = esc(d.hsCode||'------');
+  const hsDesc      = esc((d.hsDescription||'').slice(0,38));
+  const tFull       = esc(termFull);
+  const agJson      = JSON.stringify(d.agencies||[]).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 
   const pilScript = `
 import json, textwrap
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
+from PIL import Image, ImageDraw, ImageFont, ImageEnhance
 
 W, H = 1080, 1080
 
-# ── colors ──────────────────────────────────────────────
-BG      = (${bgR}, ${bgG}, ${bgB})
-ACCENT  = (${acR}, ${acG}, ${acB})
-WHITE   = (255, 255, 255)
-LGRAY   = (200, 215, 230)
-MGRAY   = (140, 160, 185)
-DGRAY   = (30, 40, 60)
-CARD    = (20, 30, 55)
-CARD2   = (15, 22, 42)
-GREEN   = (39, 174, 96)
-RED     = (231, 76, 60)
-ORANGE  = (230, 126, 34)
-YELLOW  = (241, 196, 15)
+BG    = (8, 13, 26)
+CARD  = (15, 22, 42)
+CARD2 = (22, 32, 58)
+WHITE = (255, 255, 255)
+LGRAY = (185, 200, 225)
+MGRAY = (100, 120, 155)
+DARK  = (4, 6, 14)
+ACCENT = (${acR}, ${acG}, ${acB})
+TEAL   = (0, 210, 180)
+ORANGE = (255, 160, 30)
 
-# ── fonts ────────────────────────────────────────────────
-def f(bold, size):
-    try: return ImageFont.truetype('/tmp/SarabunB.ttf' if bold else '/tmp/Sarabun.ttf', size)
+def f(bold, sz):
+    try: return ImageFont.truetype('/tmp/SarabunB.ttf' if bold else '/tmp/Sarabun.ttf', sz)
     except: return ImageFont.load_default()
 
-fH1  = f(True,  88)
-fH2  = f(True,  32)
-fH3  = f(True,  26)
-fH4  = f(True,  22)
-fB   = f(False, 22)
-fSm  = f(False, 19)
-fXs  = f(False, 17)
-fTag = f(True,  20)
-
-# ── canvas ───────────────────────────────────────────────
-img  = Image.new('RGB', (W, H), BG)
+img = Image.new('RGB', (W, H), BG)
 draw = ImageDraw.Draw(img)
 
-def tw(text, font):
-    bb = draw.textbbox((0,0), text, font=font)
+def tw(t, fo):
+    bb = draw.textbbox((0,0), t, font=fo)
     return bb[2]-bb[0], bb[3]-bb[1]
 
-def cx(text, y, font, color):
-    w,_ = tw(text, font)
-    draw.text(((W-w)//2, y), text, font=font, fill=color)
+def cx(t, y, fo, c):
+    global draw
+    w,_ = tw(t, fo)
+    draw.text(((W-w)//2, y), t, font=fo, fill=c)
 
-def draw_card(x, y, w, h, color=CARD, radius=12, border=None):
-    draw.rounded_rectangle([x, y, x+w, y+h], radius=radius, fill=color,
-                            outline=border or color, width=1 if border else 0)
-
-def accent_bar(x, y, w, h=4):
-    draw.rounded_rectangle([x, y, x+w, y+h], radius=2, fill=ACCENT)
-
-# ════════════════════════════════════════════════════════
-# HEADER  0..130
-# ════════════════════════════════════════════════════════
-draw.rectangle([0, 0, W, 130], fill=CARD2)
-# top accent line
-draw.rectangle([0, 0, W, 6], fill=ACCENT)
-draw.rectangle([0, 6, W, 10], fill=ORANGE)
-
-# BIG term
-term_txt = "${term}"
-wt, _ = tw(term_txt, fH1)
-sx = (W - wt) // 2
-draw.text((sx+3, 18), term_txt, font=fH1, fill=(0,0,0,120))
-draw.text((sx,   15), term_txt, font=fH1, fill=ACCENT)
-
-# full name right-aligned
-full_name = "${termFull}"
-wf, _ = tw(full_name, fH3)
-draw.text((W - wf - 24, 20), full_name, font=fH3, fill=LGRAY)
-
-# key point sub-line
-key_pt = """${(d.termKeyPoint || '').replace(/"/g, '\\"').slice(0,60)}"""
-wk, _ = tw(key_pt, fH4)
-draw.text(((W-wk)//2, 98), key_pt, font=fH4, fill=WHITE)
-
-# HS badge
-hs_txt = "HS Code: ${d.hsCode || '------'}   |   ${(d.destination || '').replace(/"/g, '\\"')}"
-wh, _ = tw(hs_txt, fSm)
-bx = (W-wh)//2 - 20
-draw.rounded_rectangle([bx, 120, bx+wh+40, 148], radius=10, fill=ACCENT)
-cx(hs_txt, 125, fSm, WHITE)
-
-# ════════════════════════════════════════════════════════
-# HERO STRIPE  148..195
-# ════════════════════════════════════════════════════════
-draw.rectangle([0, 148, W, 195], fill=ORANGE)
-hero = """${(d.termMeaning || '').replace(/"/g, '\\"').slice(0,72)}"""
-cx(hero, 158, fH4, WHITE)
-
-# ════════════════════════════════════════════════════════
-# MAIN CONTENT  200..730   (3 columns)
-# col1: 20..330  (310px) — product photo + term info
-# col2: 340..730 (390px) — steps
-# col3: 740..1060(320px) — docs + agencies
-# ════════════════════════════════════════════════════════
-TOP = 205
-BOT = 730
-
-# ── COL 1 ──────────────────────────────────────────────
-CX1, CW1 = 20, 310
-draw_card(CX1, TOP, CW1, BOT-TOP, CARD, radius=14)
-accent_bar(CX1, TOP, CW1)
-
-# product image (from gpt-image-1)
+# ═══════════════════════════════════════════════
+#  HERO — product photo (0-510)
+# ═══════════════════════════════════════════════
+HERO_H = 510
 try:
-    prod_img = Image.open("""${productImgPath}""").convert('RGB')
-    prod_img = prod_img.resize((CW1-4, 190))
-    # rounded mask
-    mask = Image.new('L', prod_img.size, 0)
-    from PIL import ImageDraw as ID2
-    md = ID2.Draw(mask)
-    md.rounded_rectangle([0,0,prod_img.width-1, prod_img.height-1], radius=10, fill=255)
-    prod_out = Image.new('RGB', prod_img.size, CARD)
-    prod_out.paste(prod_img, mask=mask)
-    img.paste(prod_out, (CX1+2, TOP+8))
-except Exception as e:
-    draw.rounded_rectangle([CX1+2, TOP+8, CX1+CW1-2, TOP+200], radius=10, fill=(30,45,75))
-    cx("[ Product Image ]", TOP+90, fB, MGRAY)
+    hero = Image.open('${productImgPath}').convert('RGB')
+    iw, ih = hero.size
+    side = min(iw, ih)
+    hero = hero.crop(((iw-side)//2, (ih-side)//2, (iw+side)//2, (ih+side)//2))
+    hero = hero.resize((W, HERO_H), Image.LANCZOS)
+    hero = ImageEnhance.Brightness(hero).enhance(1.12)
+    img.paste(hero, (0, 0))
+except:
+    for i in range(HERO_H):
+        t = i/HERO_H
+        draw.line([(0,i),(W,i)], fill=(int(8+32*t), int(13+47*t), int(26+74*t)))
 
-img_bot = TOP + 202
+# vignette: dark header strip + dark bottom fade
+ov = Image.new('RGBA', (W, H), (0,0,0,0))
+od = ImageDraw.Draw(ov)
+# top dark band (logo area)
+for i in range(120):
+    a = int(190 * (1 - i/120))
+    od.line([(0,i),(W,i)], fill=(BG[0],BG[1],BG[2],a))
+# bottom dark fade (text area)
+for i in range(260):
+    a = int(235 * (i/260)**1.4)
+    od.line([(0, HERO_H-260+i),(W, HERO_H-260+i)], fill=(BG[0],BG[1],BG[2],a))
+img = Image.alpha_composite(img.convert('RGBA'), ov).convert('RGB')
+draw = ImageDraw.Draw(img)
 
-# product name
-prod_name = """${(d.product || '').replace(/"/g, '\\"')}"""
-for li, line in enumerate(textwrap.wrap(prod_name, 22)):
-    draw.text((CX1+12, img_bot+6+li*28), line, font=fH3, fill=WHITE)
+# ── top accent bar ──────────────────────────────
+draw.rectangle([0,0,W,5], fill=ACCENT)
 
-# HS + destination
-draw.text((CX1+12, img_bot+68), f"HS: ${d.hsCode||'------'}", font=fTag, fill=ACCENT)
-dest_short = """${(d.destination||'').replace(/"/g,'\\"').slice(0,20)}"""
-draw.text((CX1+12, img_bot+94), dest_short, font=fSm, fill=LGRAY)
+# PIT FREIGHT logo top-left
+draw.text((22, 14), 'PIT FREIGHT', font=f(True, 21), fill=WHITE)
+draw.text((22, 38), 'Booking Freight  •  Shipper & Consignee', font=f(False, 14), fill=LGRAY)
 
-# separator
-draw.line([(CX1+12, img_bot+122),(CX1+CW1-12, img_bot+122)], fill=ACCENT, width=1)
+# INCOTERMS 2020 badge top-right
+badge = 'INCOTERMS 2020'
+bw, bh = tw(badge, f(True, 15))
+bx, by = W-bw-42, 12
+draw.rounded_rectangle([bx-12, by-6, bx+bw+12, by+bh+6], radius=14, fill=ACCENT)
+draw.text((bx, by), badge, font=f(True, 15), fill=DARK)
 
-# seller/buyer responsibility summary
-sell = json.loads("""${sellerResp.replace(/"/g, '\\"').replace(/\\/g,'\\\\').replace(/\\\\"/g,'\\"')}""") if """${sellerResp}""" != '[]' else []
-buy  = json.loads("""${buyerResp.replace(/"/g, '\\"').replace(/\\/g,'\\\\').replace(/\\\\"/g,'\\"')}""") if """${buyerResp}"""  != '[]' else []
+# ── TERM — massive center ───────────────────────
+T_SIZE = 170
+tf = f(True, T_SIZE)
+tw_t, th_t = tw('${term}', tf)
+tx = (W - tw_t) // 2
+ty = HERO_H - 290
+# thick drop shadow
+for off in range(8, 0, -2):
+    draw.text((tx+off, ty+off), '${term}', font=tf, fill=(0,0,0))
+draw.text((tx, ty), '${term}', font=tf, fill=ACCENT)
 
-draw.text((CX1+12, img_bot+130), "Seller รับผิดชอบ:", font=fH4, fill=GREEN)
-for i,s in enumerate(sell[:3]):
-    draw.text((CX1+16, img_bot+156+i*26), "• "+s[:28], font=fXs, fill=LGRAY)
-by_y = img_bot+240
-draw.text((CX1+12, by_y), "Buyer รับผิดชอบ:", font=fH4, fill=RED)
-for i,b in enumerate(buy[:3]):
-    draw.text((CX1+16, by_y+26+i*26), "• "+b[:28], font=fXs, fill=LGRAY)
+# Full name under term
+fn_fo = f(True, 28)
+fnw, _ = tw('${tFull}', fn_fo)
+draw.text(((W-fnw)//2, ty+th_t+2), '${tFull}', font=fn_fo, fill=WHITE)
 
-# ── COL 2 — STEPS ───────────────────────────────────────
-CX2, CW2 = 340, 390
-draw_card(CX2, TOP, CW2, BOT-TOP, CARD, radius=14)
-accent_bar(CX2, TOP, CW2)
+# ── product + HS + destination pills bottom-left ─
+pf = f(True, 20)
+pill_y = HERO_H - 52
+px = 22
+def pill(x, y, txt, fo, fg, bg, rx=16, py_pad=7):
+    pw, ph = tw(txt, fo)
+    draw.rounded_rectangle([x,y,x+pw+rx*2,y+ph+py_pad*2], radius=16, fill=bg)
+    draw.text((x+rx, y+py_pad), txt, font=fo, fill=fg)
+    return pw+rx*2+10
+px += pill(px, pill_y, '${product}', pf, DARK, WHITE)
+px += pill(px, pill_y, 'HS ${hsCode}', pf, WHITE, ACCENT)
+pill(px, pill_y, '${destination}', pf, DARK, ORANGE)
 
-draw.text((CX2+14, TOP+10), "ขั้นตอนการส่งออก", font=fH2, fill=ACCENT)
+# ═══════════════════════════════════════════════
+#  HS CODE BAND (512-640)
+# ═══════════════════════════════════════════════
+draw.rectangle([0, HERO_H+2, W, 640], fill=CARD)
+draw.rectangle([0, HERO_H+2, 6, 640], fill=ACCENT)
 
-steps = json.loads("""${steps}""")
-STEP_COLORS = [(241,196,15),(231,76,60),(46,204,113),(52,152,219),(155,89,182),(230,126,34)]
-sy = TOP + 50
-for i, st in enumerate(steps[:6]):
-    sc = STEP_COLORS[i % len(STEP_COLORS)]
-    sh = 73
-    # row bg
-    if i % 2 == 0:
-        draw.rounded_rectangle([CX2+8, sy, CX2+CW2-8, sy+sh], radius=8, fill=(25,38,65))
-    # number circle
-    draw.ellipse([CX2+14, sy+6, CX2+44, sy+36], fill=sc)
-    nw,_ = tw(str(i+1), fH4)
-    draw.text((CX2+14+(30-nw)//2, sy+8), str(i+1), font=fH4, fill=DGRAY)
-    # title + detail
-    title  = st.get('title','') if isinstance(st,dict) else str(st)
-    detail = st.get('detail','') if isinstance(st,dict) else ''
-    draw.text((CX2+54, sy+4),  title[:34],  font=fH4, fill=WHITE)
-    for di, dl in enumerate(textwrap.wrap(detail, 42)[:2]):
-        draw.text((CX2+54, sy+28+di*19), dl, font=fXs, fill=LGRAY)
-    sy += sh + 5
+lbl_fo = f(True, 16)
+draw.text((28, HERO_H+12), 'HS CODE', font=lbl_fo, fill=MGRAY)
+hs_fo = f(True, 74)
+draw.text((28, HERO_H+28), '${hsCode}', font=hs_fo, fill=WHITE)
+hcw, _ = tw('${hsCode}', hs_fo)
+if '${hsDesc}':
+    draw.text((28+hcw+18, HERO_H+56), '${hsDesc}', font=f(False,17), fill=LGRAY)
 
-# ── COL 3 — DOCS + AGENCIES ──────────────────────────────
-CX3, CW3 = 740, 320
-draw_card(CX3, TOP, CW3, BOT-TOP, CARD, radius=14)
-accent_bar(CX3, TOP, CW3)
+# ── Key point pill right side ───────────────────
+kp_txt = 'สินค้า: ${product}'
+kpw, kph = tw(kp_txt, f(False, 20))
+kpx = W - kpw - 50; kpy = HERO_H + 22
+draw.rounded_rectangle([kpx-14,kpy-8,kpx+kpw+14,kpy+kph+8], radius=16, fill=CARD2)
+draw.text((kpx, kpy), kp_txt, font=f(False, 20), fill=LGRAY)
 
-draw.text((CX3+12, TOP+10), "เอกสาร/ใบอนุญาต", font=fH2, fill=ACCENT)
+dest_txt = '➜  ${destination}'
+dw2, dh2 = tw(dest_txt, f(True, 22))
+dx2 = W - dw2 - 50; dy2 = kpy + kph + 18
+draw.rounded_rectangle([dx2-14,dy2-8,dx2+dw2+14,dy2+dh2+8], radius=16, fill=ACCENT)
+draw.text((dx2, dy2), dest_txt, font=f(True, 22), fill=DARK)
 
-docs = json.loads("""${documents}""")
-for di, doc in enumerate(docs[:4]):
-    dy = TOP + 50 + di*44
-    draw.rounded_rectangle([CX3+10, dy, CX3+CW3-10, dy+36], radius=8, fill=(25,38,65))
-    draw.rounded_rectangle([CX3+10, dy, CX3+16, dy+36], radius=4, fill=GREEN)
-    for li, line in enumerate(textwrap.wrap(str(doc), 26)[:2]):
-        draw.text((CX3+24, dy+4+li*18), line, font=fXs, fill=WHITE)
+# ═══════════════════════════════════════════════
+#  AGENCIES (642-862)
+# ═══════════════════════════════════════════════
+draw.rectangle([0, 642, W, 862], fill=BG)
+draw.rectangle([0, 642, W, 646], fill=ACCENT)
 
-# agencies
-ag_y = TOP + 240
-draw.line([(CX3+12, ag_y),(CX3+CW3-12, ag_y)], fill=ACCENT, width=1)
-draw.text((CX3+12, ag_y+8), "หน่วยงานที่ติดต่อ", font=fH2, fill=ACCENT)
+draw.text((28, 652), 'หน่วยงานที่เกี่ยวข้อง', font=f(True, 26), fill=WHITE)
+# Underline
+uw, _ = tw('หน่วยงานที่เกี่ยวข้อง', f(True, 26))
+draw.rectangle([28, 684, 28+uw, 687], fill=ACCENT)
 
-agencies = json.loads("""${agencies}""")
-ag_dot_c = [(52,152,219),(46,204,113),(230,126,34)]
-for ai, ag in enumerate(agencies[:3]):
-    ay = ag_y + 48 + ai*68
-    dc = ag_dot_c[ai % len(ag_dot_c)]
-    draw.ellipse([CX3+12, ay+2, CX3+36, ay+26], fill=dc)
-    draw.text((CX3+14, ay+3), str(ai+1), font=fH4, fill=DGRAY)
-    name = ag.get('name','') if isinstance(ag,dict) else str(ag)
-    role = ag.get('role','') if isinstance(ag,dict) else ''
-    url  = ag.get('url','')  if isinstance(ag,dict) else ''
-    for li, line in enumerate(textwrap.wrap(name[:30], 22)[:1]):
-        draw.text((CX3+44, ay+2+li*22), line, font=fH4, fill=WHITE)
-    if role:
-        draw.text((CX3+44, ay+26), role[:30], font=fXs, fill=MGRAY)
-    if url:
-        short_url = url.replace('https://','').replace('www.','')[:28]
-        draw.text((CX3+44, ay+44), short_url, font=fXs, fill=ACCENT)
+try:
+    agencies = json.loads('${agJson}')
+except:
+    agencies = []
 
-# ════════════════════════════════════════════════════════
-# PRO TIPS  738..888
-# ════════════════════════════════════════════════════════
-PT_TOP = 738
-draw.rectangle([0, PT_TOP, W, 888], fill=(12, 20, 40))
-draw.rectangle([0, PT_TOP, W, PT_TOP+4], fill=YELLOW)
-draw.text((20, PT_TOP+8), "Pro Tips จากผู้ชำนาญการ", font=fH2, fill=YELLOW)
+ag_palette = [ACCENT, TEAL, ORANGE, (120,170,255)]
+ROW_H = 54
+for i, ag in enumerate(agencies[:3]):
+    ry = 696 + i*(ROW_H + 8)
+    cc = ag_palette[i % len(ag_palette)]
+    # Row card
+    draw.rounded_rectangle([20, ry, W-20, ry+ROW_H], radius=10, fill=CARD2)
+    # Left accent bar
+    draw.rounded_rectangle([20, ry, 26, ry+ROW_H], radius=10, fill=cc)
+    # Circle number
+    draw.ellipse([34, ry+12, 58, ry+42], fill=cc)
+    nw, _ = tw(str(i+1), f(True, 21))
+    draw.text((34+(24-nw)//2, ry+12), str(i+1), font=f(True, 21), fill=DARK)
+    # Name + role
+    ag_name = ag.get('name','')[:32] if isinstance(ag,dict) else str(ag)[:32]
+    ag_role = ag.get('role','')[:48] if isinstance(ag,dict) else ''
+    ag_url  = ag.get('url', '')      if isinstance(ag,dict) else ''
+    draw.text((70, ry+6),  ag_name, font=f(True, 21), fill=WHITE)
+    if ag_role:
+        draw.text((70, ry+30), ag_role, font=f(False, 15), fill=LGRAY)
+    # URL right-aligned
+    if ag_url:
+        u = ag_url.replace('https://','').replace('http://','').replace('www.','')[:34]
+        uw2, _ = tw(u, f(False, 15))
+        draw.text((W-uw2-32, ry+20), u, font=f(False, 15), fill=cc)
 
-tips = json.loads("""${proTips}""")
-tip_w = (W - 60) // 3
-for ti, tip in enumerate(tips[:3]):
-    tx = 20 + ti*(tip_w+20)
-    draw_card(tx, PT_TOP+42, tip_w, 98, (20,32,62), radius=10, border=YELLOW)
-    draw.rounded_rectangle([tx, PT_TOP+42, tx+tip_w, PT_TOP+46], radius=10, fill=YELLOW)
-    title  = tip.get('title','') if isinstance(tip,dict) else str(tip)
-    detail = tip.get('detail','') if isinstance(tip,dict) else ''
-    draw.text((tx+10, PT_TOP+50), f"Tip {ti+1}: "+title[:24], font=fTag, fill=YELLOW)
-    for di, dl in enumerate(textwrap.wrap(detail, 34)[:2]):
-        draw.text((tx+10, PT_TOP+74+di*20), dl, font=fXs, fill=LGRAY)
+# ═══════════════════════════════════════════════
+#  CONTACT FOOTER (864-1080)
+# ═══════════════════════════════════════════════
+draw.rectangle([0, 864, W, 1080], fill=(5, 8, 18))
+draw.rectangle([0, 864, W, 869], fill=ACCENT)
+draw.rectangle([0, 869, W, 873], fill=ORANGE)
 
-# ════════════════════════════════════════════════════════
-# FOOTER  896..1080
-# ════════════════════════════════════════════════════════
-draw.rectangle([0, 896, W, 1080], fill=(5, 10, 25))
-draw.rectangle([0, 896, W, 902], fill=ACCENT)
-draw.rectangle([0, 902, W, 906], fill=ORANGE)
+# CTA text
+cx('ติดต่อขอคำปรึกษาฟรี ไม่มีค่าใช้จ่าย', 880, f(True, 27), WHITE)
 
-# PIT Freight logo area
-draw_card(20, 916, 200, 70, (18,28,52), radius=10)
-draw.text((35, 924), "PIT", font=f(True, 38), fill=ACCENT)
-draw.text((90, 930), "FREIGHT", font=f(True, 22), fill=WHITE)
-draw.text((35, 964), "ONE STOP LOGISTICS", font=fXs, fill=MGRAY)
+# 3 contact cards
+contacts = [
+    ('โทรศัพท์', '+66 63-446-7735', TEAL),
+    ('LINE OA',  'lin.ee/6aC3Z5O',  (80,230,120)),
+    ('เว็บไซต์', 'pitfreight.com',  ACCENT),
+]
+cw = (W-80)//3
+for ci, (label, val, cc) in enumerate(contacts):
+    cpx = 20 + ci*(cw+20); cpy = 924
+    draw.rounded_rectangle([cpx, cpy, cpx+cw, cpy+76], radius=12, fill=CARD)
+    # Colored top line
+    draw.rounded_rectangle([cpx, cpy, cpx+cw, cpy+4], radius=12, fill=cc)
+    lw,_ = tw(label, f(False,18)); draw.text((cpx+(cw-lw)//2, cpy+12), label, font=f(False,18), fill=MGRAY)
+    vw,_ = tw(val, f(True,21));   draw.text((cpx+(cw-vw)//2, cpy+36), val,   font=f(True,21),  fill=WHITE)
+    # Bottom colored bar
+    draw.rounded_rectangle([cpx+(cw-vw-16)//2, cpy+62, cpx+(cw+vw+16)//2, cpy+70], radius=4, fill=cc)
 
-# divider
-draw.line([(232, 920),(232, 986)], fill=(50,65,90), width=1)
+# PIT FREIGHT branding
+draw.text((28, 1018), 'PIT',     font=f(True, 46), fill=ACCENT)
+draw.text((92, 1026), 'FREIGHT', font=f(True, 28), fill=WHITE)
+draw.text((28, 1064), 'One Stop Logistics Solution', font=f(False, 15), fill=MGRAY)
+sw, _ = tw('pitfreight.com', f(True, 21))
+draw.text((W-sw-28, 1026), 'pitfreight.com', font=f(True, 21), fill=ACCENT)
+sw2, _ = tw('Incoterms 2020 Specialist', f(False, 15))
+draw.text((W-sw2-28, 1052), 'Incoterms 2020 Specialist', font=f(False,15), fill=MGRAY)
 
-# contact info
-draw.text((250, 920), "+66 63-446-7735", font=fH3, fill=WHITE)
-draw.text((250, 950), "LINE: lin.ee/6aC3Z5O", font=fB, fill=LGRAY)
-draw.text((250, 978), "pitfreight.com", font=fB, fill=ACCENT)
-
-# tag line right
-tag = "Booking Freight Shipper & Consignee"
-wt2,_ = tw(tag, fSm)
-draw.text((W-wt2-20, 920), tag, font=fSm, fill=MGRAY)
-draw.text((W-200, 948), "Incoterms 2020", font=fTag, fill=ACCENT)
-
-# product name watermark bottom
-prod_wm = """${(d.product||'').replace(/"/g,'\\"').slice(0,30)}"""
-ww,_ = tw(prod_wm, fXs)
-draw.text((W-ww-20, 1056), prod_wm, font=fXs, fill=(50,65,90))
-
-img.save('/tmp/auto_post.jpg', 'JPEG', quality=95, optimize=True)
+img.save('/tmp/auto_post.jpg', 'JPEG', quality=96, optimize=True)
 print('Saved /tmp/auto_post.jpg')
 `;
 
@@ -490,8 +433,38 @@ async function postToFacebook(imagePath, caption) {
   return data;
 }
 
+// ===== 4.5. Upload image to ImgBB → get public URL =====
+async function uploadImageToImgBB(imagePath) {
+  const key = process.env.IMGBB_API_KEY;
+  if (!key) return null; // skip if no key configured
+
+  try {
+    const imageBase64 = fs.readFileSync(imagePath).toString('base64');
+    const form = new URLSearchParams();
+    form.append('key', key);
+    form.append('image', imageBase64);
+    form.append('expiration', '0'); // 0 = no expiry
+
+    const res = await fetch('https://api.imgbb.com/1/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: form.toString(),
+    });
+    const data = await res.json();
+    if (data.success) {
+      console.log('[AutoPost] ImgBB upload สำเร็จ:', data.data.url);
+      return data.data.url; // permanent public URL
+    }
+    console.warn('[AutoPost] ImgBB upload ล้มเหลว:', data?.error?.message);
+    return null;
+  } catch (e) {
+    console.warn('[AutoPost] ImgBB error (ข้าม):', e.message);
+    return null;
+  }
+}
+
 // ===== 5. Notion Blog =====
-async function postToNotionBlog(blogData, term, caption, fbUrl) {
+async function postToNotionBlog(blogData, term, caption, fbUrl, coverImageUrl) {
   const notionToken = process.env.NOTION_TOKEN;
   const blogDb      = process.env.NOTION_BLOG_DB;
   if (!notionToken || !blogDb) throw new Error('NOTION credentials missing');
@@ -540,24 +513,34 @@ async function postToNotionBlog(blogData, term, caption, fbUrl) {
     push('paragraph', { rich_text: rt(caption.slice(i,i+1900)) });
 
   const today = new Date().toISOString().slice(0,10);
+
+  // Build the page payload
+  const pagePayload = {
+    parent: { database_id: blogDb },
+    properties: {
+      'Title':          { title:[{ text:{content: d.title||`${term} Guide`} }] },
+      'Slug':           { rich_text:[{ text:{content: d.slug||`${term.toLowerCase()}-${Date.now()}`} }] },
+      'Summary':        { rich_text:[{ text:{content:(d.summary||'').slice(0,2000)} }] },
+      'Tags':           { multi_select:(d.tags||[term,'Incoterms']).map(t=>({name:t})) },
+      'Published':      { checkbox: true },
+      'Category':       { select:{name:'Incoterms'} },
+      'Language':       { select:{name:'TH'} },
+      'Author':         { rich_text:[{ text:{content:'PIT Freight Expert'} }] },
+      'Published Date': { date:{start:today} },
+    },
+    children: blocks,
+  };
+
+  // Set page cover + Cover Image property if we have a public URL
+  if (coverImageUrl) {
+    pagePayload.cover = { type:'external', external:{ url: coverImageUrl } };
+    pagePayload.properties['Cover Image'] = { url: coverImageUrl };
+  }
+
   const res = await fetch('https://api.notion.com/v1/pages', {
     method:'POST',
     headers:{ 'Authorization':`Bearer ${notionToken}`, 'Content-Type':'application/json', 'Notion-Version':'2022-06-28' },
-    body: JSON.stringify({
-      parent: { database_id: blogDb },
-      properties: {
-        'Title':          { title:[{ text:{content: d.title||`${term} Guide`} }] },
-        'Slug':           { rich_text:[{ text:{content: d.slug||`${term.toLowerCase()}-${Date.now()}`} }] },
-        'Summary':        { rich_text:[{ text:{content:(d.summary||'').slice(0,2000)} }] },
-        'Tags':           { multi_select:(d.tags||[term,'Incoterms']).map(t=>({name:t})) },
-        'Published':      { checkbox: true },
-        'Category':       { select:{name:'Incoterms'} },
-        'Language':       { select:{name:'TH'} },
-        'Author':         { rich_text:[{ text:{content:'PIT Freight Expert'} }] },
-        'Published Date': { date:{start:today} },
-      },
-      children: blocks,
-    }),
+    body: JSON.stringify(pagePayload),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data?.message || JSON.stringify(data));
@@ -587,6 +570,12 @@ async function runAutoPost() {
     if (!fs.existsSync('/tmp/auto_post.jpg')) throw new Error('ไม่พบไฟล์ภาพ');
     console.log('[AutoPost] Infographic สำเร็จ');
 
+    // อัพโหลดภาพ product (ไม่ใช่ infographic) สำหรับ blog cover
+    console.log('[AutoPost] อัพโหลดภาพ blog cover...');
+    const blogCoverUrl = await uploadImageToImgBB(productImgPath);
+    if (blogCoverUrl) console.log(`[AutoPost] Blog cover URL: ${blogCoverUrl}`);
+    else console.log('[AutoPost] ข้าม blog cover (IMGBB_API_KEY ไม่ได้ตั้งค่า)');
+
     console.log('[AutoPost] โพสต์ Facebook...');
     const result = await postToFacebook('/tmp/auto_post.jpg', caption);
     const fbUrl  = `https://www.facebook.com/${result.post_id}`;
@@ -595,7 +584,7 @@ async function runAutoPost() {
     let blogUrl = '';
     try {
       if (blogData) {
-        const nr = await postToNotionBlog(blogData, term, caption, fbUrl);
+        const nr = await postToNotionBlog(blogData, term, caption, fbUrl, blogCoverUrl);
         blogUrl = `https://www.notion.so/${nr.id.replace(/-/g,'')}`;
         console.log(`[AutoPost] Notion Blog สำเร็จ! ${blogUrl}`);
       }

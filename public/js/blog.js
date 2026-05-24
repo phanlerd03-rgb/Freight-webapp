@@ -99,11 +99,56 @@ function readLabel(lang) {
   return lang === 'en' ? 'Read more →' : 'อ่านต่อ →';
 }
 
+// ── Incoterm color map ───────────────────────────────────
+const TERM_STYLE = {
+  FOB: { bg: 'linear-gradient(145deg,#0d2137 0%,#1a3a5c 100%)', accent: '#F5A623', shadow: 'rgba(245,166,35,.35)' },
+  CIF: { bg: 'linear-gradient(145deg,#0a1628 0%,#0d2b40 100%)', accent: '#00C2CB', shadow: 'rgba(0,194,203,.35)' },
+  EXW: { bg: 'linear-gradient(145deg,#1a0d2b 0%,#2d1a48 100%)', accent: '#9B59B6', shadow: 'rgba(155,89,182,.35)' },
+  DDP: { bg: 'linear-gradient(145deg,#0d2b1a 0%,#1a4a2e 100%)', accent: '#27AE60', shadow: 'rgba(39,174,96,.35)' },
+  DAP: { bg: 'linear-gradient(145deg,#2b1a0d 0%,#4a2e14 100%)', accent: '#E67E22', shadow: 'rgba(230,126,34,.35)' },
+  FCA: { bg: 'linear-gradient(145deg,#0d1a2b 0%,#142b48 100%)', accent: '#2980B9', shadow: 'rgba(41,128,185,.35)' },
+  CPT: { bg: 'linear-gradient(145deg,#1a2b0d 0%,#2e4a14 100%)', accent: '#1ABC9C', shadow: 'rgba(26,188,156,.35)' },
+  CFR: { bg: 'linear-gradient(145deg,#2b0d1a 0%,#4a1428 100%)', accent: '#E74C3C', shadow: 'rgba(231,76,60,.35)' },
+  CIP: { bg: 'linear-gradient(145deg,#0d2b2b 0%,#164040 100%)', accent: '#16A085', shadow: 'rgba(22,160,133,.35)' },
+  DPU: { bg: 'linear-gradient(145deg,#1a1a0d 0%,#2e2e14 100%)', accent: '#F39C12', shadow: 'rgba(243,156,18,.35)' },
+};
+const INCOTERM_LIST = Object.keys(TERM_STYLE);
+
+function extractTerm(title) {
+  return INCOTERM_LIST.find(t => title && title.toUpperCase().includes(t)) || null;
+}
+
+// Generate cover HTML — real image OR branded placeholder
+function makeCoverHtml(post, imgClass, phClass, phHeight) {
+  const term = extractTerm(post.title);
+  const ts = term ? TERM_STYLE[term] : null;
+
+  if (post.cover) {
+    // Real image — with graceful fallback to branded placeholder
+    const fbHtml = ts
+      ? `<div class="${phClass} blog-cover-branded" style="background:${ts.bg}" data-term="${term}" data-accent="${ts.accent}"></div>`
+      : `<div class="${phClass}">${categoryEmoji(post.category)}</div>`;
+    return `<img class="${imgClass}" src="${post.cover}" alt="${post.title}" loading="lazy" onerror="this.outerHTML='${fbHtml.replace(/'/g,"&#39;")}'">`;
+  }
+
+  if (ts) {
+    // Branded Incoterm cover
+    return `
+      <div class="${phClass} blog-cover-branded" style="background:${ts.bg}" data-term="${term}" data-accent="${ts.accent}">
+        <div class="bcc-term" style="color:${ts.accent};text-shadow:0 6px 28px ${ts.shadow}">${term}</div>
+        <div class="bcc-line" style="background:${ts.accent}"></div>
+        <div class="bcc-badge">INCOTERMS® 2020</div>
+        <div class="bcc-sub">PIT FREIGHT</div>
+      </div>`;
+  }
+
+  // Generic branded placeholder
+  return `<div class="${phClass}">${categoryEmoji(post.category)}</div>`;
+}
+
 // Render a single blog card
 function renderBlogCard(post) {
-  const cover = post.cover
-    ? `<img class="blog-card-cover" src="${post.cover}" alt="${post.title}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=\\'blog-card-cover-placeholder\\'>${categoryEmoji(post.category)}</div>'">`
-    : `<div class="blog-card-cover-placeholder">${categoryEmoji(post.category)}</div>`;
+  const cover = makeCoverHtml(post, 'blog-card-cover', 'blog-card-cover-placeholder', 180);
 
   const tags = post.tags.slice(0, 3).map(t => `<span class="blog-card-tag">${t}</span>`).join('');
 
@@ -299,10 +344,8 @@ async function loadLatestBlogs() {
     }
 
     grid.innerHTML = posts.map((post, i) => {
-      const cover = post.cover
-        ? `<img class="latest-blog-cover" src="${post.cover}" alt="${post.title}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
-        : '';
-      const placeholder = `<div class="latest-blog-cover-placeholder" ${post.cover ? 'style="display:none"' : ''}>${categoryEmoji(post.category)}</div>`;
+      const cover = makeCoverHtml(post, 'latest-blog-cover', 'latest-blog-cover-placeholder', 200);
+      const placeholder = '';
       const isFeature = i === 0;
 
       return `
