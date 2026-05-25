@@ -118,32 +118,58 @@ function extractTerm(title) {
   return INCOTERM_LIST.find(t => title && title.toUpperCase().includes(t)) || null;
 }
 
-// Generate cover HTML — real image OR branded placeholder
-function makeCoverHtml(post, imgClass, phClass, phHeight) {
-  const term = extractTerm(post.title);
-  const ts = term ? TERM_STYLE[term] : null;
+// Category → gradient map (non-Incoterm posts)
+const CAT_STYLE = {
+  'คู่มือ':          { bg: 'linear-gradient(145deg,#0d2137 0%,#1a3a5c 100%)', accent: '#4A9EFF', icon: '📘' },
+  'ข่าวสาร':         { bg: 'linear-gradient(145deg,#0d1a2b 0%,#1a2e45 100%)', accent: '#00C2CB', icon: '📰' },
+  'ราคา & โปรโมชัน': { bg: 'linear-gradient(145deg,#1a2b0d 0%,#253d12 100%)', accent: '#27AE60', icon: '💰' },
+  'กฎระเบียบ':       { bg: 'linear-gradient(145deg,#1a0d2b 0%,#2d1a48 100%)', accent: '#9B59B6', icon: '⚖️' },
+  'เคล็ดลับ':        { bg: 'linear-gradient(145deg,#2b1a0d 0%,#3d2510 100%)', accent: '#E67E22', icon: '💡' },
+  'Incoterms':       { bg: 'linear-gradient(145deg,#0d2137 0%,#1a3a5c 100%)', accent: '#F5A623', icon: '🚢' },
+};
 
-  if (post.cover) {
-    // Real image — with graceful fallback to branded placeholder
-    const fbHtml = ts
-      ? `<div class="${phClass} blog-cover-branded" style="background:${ts.bg}" data-term="${term}" data-accent="${ts.accent}"></div>`
-      : `<div class="${phClass}">${categoryEmoji(post.category)}</div>`;
-    return `<img class="${imgClass}" src="${post.cover}" alt="${post.title}" loading="lazy" onerror="this.outerHTML='${fbHtml.replace(/'/g,"&#39;")}'">`;
-  }
+// Global img error handler — avoids inline HTML-in-attribute escaping bugs
+window._bccImgError = function(img, slug) {
+  const post = window._bccPostMap && window._bccPostMap[slug];
+  if (!post) { img.style.display='none'; return; }
+  img.outerHTML = _makePlaceholderHtml(post, img.className.includes('latest') ? 'latest-blog-cover-placeholder' : 'blog-card-cover-placeholder');
+};
+window._bccPostMap = window._bccPostMap || {};
+
+function _makePlaceholderHtml(post, phClass) {
+  const term = extractTerm(post.title);
+  const ts   = term ? TERM_STYLE[term] : null;
+  const cs   = CAT_STYLE[post.category] || null;
 
   if (ts) {
-    // Branded Incoterm cover
-    return `
-      <div class="${phClass} blog-cover-branded" style="background:${ts.bg}" data-term="${term}" data-accent="${ts.accent}">
-        <div class="bcc-term" style="color:${ts.accent};text-shadow:0 6px 28px ${ts.shadow}">${term}</div>
-        <div class="bcc-line" style="background:${ts.accent}"></div>
-        <div class="bcc-badge">INCOTERMS® 2020</div>
-        <div class="bcc-sub">PIT FREIGHT</div>
-      </div>`;
+    return `<div class="${phClass} blog-cover-branded" style="background:${ts.bg}">` +
+      `<div class="bcc-term" style="color:${ts.accent};text-shadow:0 6px 28px ${ts.shadow}">${term}</div>` +
+      `<div class="bcc-line" style="background:${ts.accent}"></div>` +
+      `<div class="bcc-badge">INCOTERMS® 2020</div>` +
+      `<div class="bcc-sub">PIT FREIGHT</div></div>`;
+  }
+  if (cs) {
+    return `<div class="${phClass} blog-cover-branded" style="background:${cs.bg}">` +
+      `<div class="bcc-cat-icon">${cs.icon}</div>` +
+      `<div class="bcc-line" style="background:${cs.accent}"></div>` +
+      `<div class="bcc-badge" style="color:rgba(255,255,255,.8)">${post.category || 'บทความ'}</div>` +
+      `<div class="bcc-sub">PIT FREIGHT</div></div>`;
+  }
+  return `<div class="${phClass}">${categoryEmoji(post.category)}</div>`;
+}
+
+// Generate cover HTML — real image OR branded placeholder
+function makeCoverHtml(post, imgClass, phClass, phHeight) {
+  // Register post in global map for onerror handler
+  window._bccPostMap[post.slug] = post;
+
+  if (post.cover) {
+    // Use global function in onerror — no inline HTML embedding = no escaping bugs
+    return `<img class="${imgClass}" src="${post.cover}" alt="" loading="lazy" onerror="_bccImgError(this,'${post.slug.replace(/'/g,'&#39;')}')">`;
   }
 
-  // Generic branded placeholder
-  return `<div class="${phClass}">${categoryEmoji(post.category)}</div>`;
+  // No cover image → styled placeholder
+  return _makePlaceholderHtml(post, phClass);
 }
 
 // Render a single blog card
