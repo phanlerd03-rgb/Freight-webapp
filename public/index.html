@@ -6,8 +6,9 @@
   <title>Project International Trade — International Freight Services</title>
   <link rel="stylesheet" href="/css/style.css?v=6">
   <link rel="stylesheet" href="/css/apple.css?v=2">
+  <link rel="stylesheet" href="/css/redesign.css?v=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -43,24 +44,112 @@
 <section class="hero" id="home">
   <div class="hero-bg"></div>
   <div class="container hero-content">
-    <div class="hero-badge" data-i18n="hero.badge">🌏 บริการขนส่งครบวงจร 50+ ประเทศ</div>
-    <h1 class="hero-title" data-i18n="hero.title">ขนส่งสินค้าระหว่างประเทศ<br><span class="gradient-text">ปลอดภัย รวดเร็ว คุ้มค่า</span></h1>
-    <p class="hero-desc" data-i18n="hero.desc">บริการขนส่งสินค้าทางเรือ ทางอากาศ และทางบก ครบครัน ด้วยประสบการณ์กว่า 15 ปี พร้อมให้คำปรึกษาด้านพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก</p>
-    <div class="hero-actions">
-      <button class="btn-primary btn-lg" onclick="scrollToSection('quote')" data-i18n="hero.btn1">📦 ขอใบเสนอราคา</button>
-      <button class="btn-outline btn-lg" onclick="scrollToSection('tracking')" data-i18n="hero.btn2">🔍 ติดตามสินค้า</button>
+
+    <!-- LEFT: Text Content -->
+    <div class="hero-left">
+      <div class="hero-badge" data-i18n="hero.badge">🌏 บริการขนส่งครบวงจร 50+ ประเทศ</div>
+      <h1 class="hero-title" data-i18n="hero.title">ขนส่งสินค้าระหว่างประเทศ<br><span class="gradient-text">ที่คุณไว้วางใจได้</span></h1>
+      <p class="hero-desc" data-i18n="hero.desc">ทางเรือ ทางอากาศ ทางบก ครบวงจร พร้อมพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก ด้วยประสบการณ์กว่า 15 ปี</p>
+      <div class="hero-actions">
+        <button class="btn-primary btn-lg" onclick="scrollToSection('quote')" data-i18n="hero.btn1">📦 ขอใบเสนอราคาฟรี</button>
+        <button class="btn-outline btn-lg" onclick="scrollToSection('tracking')" data-i18n="hero.btn2">🔍 ติดตามสินค้า</button>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">50+</span><span class="stat-label" data-i18n="hero.stat1">ประเทศทั่วโลก</span></div>
+        <div class="stat"><span class="stat-num">15,000+</span><span class="stat-label" data-i18n="hero.stat2">ลูกค้าพึงพอใจ</span></div>
+        <div class="stat"><span class="stat-num">99.2%</span><span class="stat-label" data-i18n="hero.stat3">ส่งตรงเวลา</span></div>
+        <div class="stat"><span class="stat-num">24/7</span><span class="stat-label" data-i18n="hero.stat4">บริการลูกค้า</span></div>
+      </div>
     </div>
-    <div class="hero-stats">
-      <div class="stat"><span class="stat-num">50+</span><span class="stat-label" data-i18n="hero.stat1">ประเทศทั่วโลก</span></div>
-      <div class="stat"><span class="stat-num">15,000+</span><span class="stat-label" data-i18n="hero.stat2">ลูกค้าพึงพอใจ</span></div>
-      <div class="stat"><span class="stat-num">99.2%</span><span class="stat-label" data-i18n="hero.stat3">ส่งตรงเวลา</span></div>
-      <div class="stat"><span class="stat-num">24/7</span><span class="stat-label" data-i18n="hero.stat4">บริการลูกค้า</span></div>
+
+    <!-- RIGHT: Dashboard Visual -->
+    <div class="hero-right">
+      <!-- Floating badge top-left -->
+      <div class="hero-float hero-float-1">
+        <span class="hero-float-icon">✅</span>
+        <span>สินค้าถึงปลายทางแล้ว!</span>
+      </div>
+
+      <div class="hero-dashboard">
+        <div class="hd-topbar">
+          <div class="hd-dots">
+            <div class="hd-dot"></div><div class="hd-dot"></div><div class="hd-dot"></div>
+          </div>
+          <span class="hd-title">PIT Freight — Live Tracking</span>
+        </div>
+        <div class="hd-body">
+          <!-- Route -->
+          <div class="hd-route">
+            <span class="hd-flag">🇹🇭</span>
+            <span class="hd-route-label">Bangkok</span>
+            <div class="hd-route-line"></div>
+            <span class="hd-route-label">Tokyo</span>
+            <span class="hd-flag">🇯🇵</span>
+          </div>
+          <!-- Status Steps -->
+          <div class="hd-status-list">
+            <div class="hd-status-item">
+              <div class="hd-status-dot done"></div>
+              <span class="hd-status-text">รับสินค้าแล้ว</span>
+              <span class="hd-status-time">May 20</span>
+            </div>
+            <div class="hd-status-item">
+              <div class="hd-status-dot done"></div>
+              <span class="hd-status-text">ผ่านพิธีการศุลกากร</span>
+              <span class="hd-status-time">May 22</span>
+            </div>
+            <div class="hd-status-item">
+              <div class="hd-status-dot active"></div>
+              <span class="hd-status-text" style="color:var(--blue)">อยู่ระหว่างขนส่ง ✈</span>
+              <span class="hd-status-time">May 24</span>
+            </div>
+            <div class="hd-status-item">
+              <div class="hd-status-dot pending"></div>
+              <span class="hd-status-text" style="color:var(--text-muted)">ถึงปลายทาง</span>
+              <span class="hd-status-time">May 26</span>
+            </div>
+          </div>
+          <!-- Metrics -->
+          <div class="hd-metrics">
+            <div class="hd-metric">
+              <span class="hd-metric-val">98kg</span>
+              <span class="hd-metric-lbl">น้ำหนัก</span>
+            </div>
+            <div class="hd-metric">
+              <span class="hd-metric-val">2วัน</span>
+              <span class="hd-metric-lbl">คงเหลือ</span>
+            </div>
+            <div class="hd-metric">
+              <span class="hd-metric-val" style="color:var(--green)">On Time</span>
+              <span class="hd-metric-lbl">สถานะ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Floating badge bottom-right -->
+      <div class="hero-float hero-float-2">
+        <span class="hero-float-icon">📦</span>
+        <span>3 shipments in transit</span>
+      </div>
     </div>
+
   </div>
   <div class="hero-wave">
     <svg viewBox="0 0 1200 100" preserveAspectRatio="none"><path d="M0,50 C300,100 900,0 1200,50 L1200,100 L0,100 Z" fill="#f8fafc"/></svg>
   </div>
 </section>
+
+<!-- TRUST STRIP -->
+<div class="trust-strip">
+  <div class="trust-strip-inner">
+    <div class="trust-item"><span class="trust-icon">🏛️</span> กรมศุลกากรรับรอง</div>
+    <div class="trust-item"><span class="trust-icon">🌏</span> 50+ ประเทศทั่วโลก</div>
+    <div class="trust-item"><span class="trust-icon">🔒</span> ประกันสินค้าทุกชิ้น</div>
+    <div class="trust-item"><span class="trust-icon">⏱️</span> On-Time Delivery 99.2%</div>
+    <div class="trust-item"><span class="trust-icon">💬</span> ซัพพอร์ต 24/7</div>
+  </div>
+</div>
 
 
 <!-- LATEST BLOG (หน้าแรก) -->
@@ -167,6 +256,43 @@
           <li>✓ บริการ Port-to-Port ทั่วโลก</li>
         </ul>
         <button class="btn-service" onclick="openContactForService('RoRo')">ขอใบเสนอราคา</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="container">
+    <div class="section-header" style="text-align:center">
+      <span class="section-badge">ขั้นตอนการใช้งาน</span>
+      <h2 class="section-title" style="margin-top:12px">ใช้งานง่าย 4 ขั้นตอน</h2>
+      <p class="section-subtitle">จากการติดต่อครั้งแรกถึงสินค้าถึงมือผู้รับ ทีมงานดูแลทุกขั้นตอน</p>
+    </div>
+    <div class="how-grid">
+      <div class="how-step">
+        <div class="how-step-num">1</div>
+        <div class="how-step-icon">📋</div>
+        <h4>แจ้งรายละเอียดสินค้า</h4>
+        <p>กรอกข้อมูลสินค้า น้ำหนัก ปลายทาง และรับใบเสนอราคาฟรีทันที</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num active-step">2</div>
+        <div class="how-step-icon">✅</div>
+        <h4>ยืนยันและชำระเงิน</h4>
+        <p>เลือกวิธีขนส่ง ยืนยันราคา และชำระเงินผ่านช่องทางที่สะดวก</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">3</div>
+        <div class="how-step-icon">📦</div>
+        <h4>รับสินค้าและดำเนินการ</h4>
+        <p>ทีมงานรับสินค้า จัดการเอกสารศุลกากร และดำเนินพิธีการนำเข้า-ส่งออก</p>
+      </div>
+      <div class="how-step">
+        <div class="how-step-num">4</div>
+        <div class="how-step-icon">🚀</div>
+        <h4>ติดตามสินค้า Real-time</h4>
+        <p>รับ Tracking Number ติดตามสินค้าแบบ Real-time จนถึงมือผู้รับ</p>
       </div>
     </div>
   </div>
@@ -1165,6 +1291,18 @@
     </div>
   </div>
 </section>
+
+<!-- CTA BANNER -->
+<div class="container">
+  <div class="cta-banner">
+    <h2>พร้อมเริ่มต้นกับเราวันนี้?</h2>
+    <p>ขอใบเสนอราคาฟรี ไม่มีค่าใช้จ่าย ทีมงานผู้เชี่ยวชาญพร้อมให้คำแนะนำ</p>
+    <div class="cta-banner-btns">
+      <button class="btn-cta-primary" onclick="scrollToSection('quote')">📦 ขอใบเสนอราคาฟรี</button>
+      <button class="btn-cta-secondary" onclick="scrollToSection('contact')">💬 ติดต่อทีมงาน</button>
+    </div>
+  </div>
+</div>
 
 <!-- FOOTER -->
 <footer class="footer">
