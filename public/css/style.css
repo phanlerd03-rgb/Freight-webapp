@@ -82,12 +82,13 @@ img { max-width: 100%; }
 }
 .btn-lang:hover { border-color: var(--accent); color: var(--accent); }
 .btn-nav-register {
-  background: transparent; border: 1.5px solid var(--primary);
-  padding: 6px 13px; border-radius: 7px; font-size: 12.5px; font-weight: 700;
-  cursor: pointer; font-family: 'Sarabun', sans-serif; color: var(--primary);
+  background: var(--primary); border: none;
+  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: 'Sarabun', sans-serif; color: #fff;
   transition: all .18s; white-space: nowrap; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(26,58,92,.25);
 }
-.btn-nav-register:hover { background: var(--primary); color: #fff; }
+.btn-nav-register:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,58,92,.3); }
 
 /* ===== HERO ===== */
 .hero {
