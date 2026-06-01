@@ -103,6 +103,9 @@ router.get('/', async (req, res) => {
 
 // GET /api/blog/:slug — get single post with full content
 router.get('/:slug', async (req, res) => {
+  // ป้องกัน Cloudflare cache
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
   try {
     const { slug } = req.params;
 

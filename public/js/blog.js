@@ -296,8 +296,9 @@ async function openBlogPost(slug) {
     const post = await res.json();
     const isEn = post.language === 'en';
 
+    const safeAlt = (post.title||'').replace(/"/g,'&quot;').replace(/</g,'&lt;');
     const cover = post.cover
-      ? `<img class="blog-post-cover" src="${post.cover}" alt="${post.title}">`
+      ? `<img class="blog-post-cover" src="${post.cover}?v=${Date.now()}" alt="${safeAlt}" onerror="this.style.display='none'">`
       : '';
 
     const tags = post.tags.map(t => `<span class="blog-post-tag">${t}</span>`).join('');
