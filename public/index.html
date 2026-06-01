@@ -12,135 +12,100 @@
 </head>
 <body>
 
+<!-- TOP BAR (DHL-style red utility bar) -->
+<div class="topbar">
+  <div class="container topbar-inner">
+    <div class="topbar-left">
+      <span>🇹🇭 ประเทศไทย</span>
+      <span class="topbar-sep">|</span>
+      <a href="#contact">ติดต่อเรา</a>
+      <span class="topbar-sep">|</span>
+      <a href="#tracking">ติดตามสินค้า</a>
+    </div>
+    <div class="topbar-right">
+      <button onclick="openRegisterModal()">👤 สมัครสมาชิก / เข้าสู่ระบบ</button>
+      <button class="btn-lang" id="langToggle" onclick="toggleLang()">🇬🇧 EN</button>
+    </div>
+  </div>
+</div>
+
 <!-- NAV -->
 <nav class="navbar" id="navbar">
   <div class="container nav-inner">
     <div class="logo">
-      <span class="logo-icon">🚢</span>
+      <div class="logo-pit">PIT</div>
       <div>
         <div class="logo-name">Project International Trade</div>
         <div class="logo-sub">International Freight Services</div>
       </div>
     </div>
     <ul class="nav-links">
-      <li><a href="#services" data-i18n="nav.services">บริการ</a></li>
-      <li><a href="#quote" data-i18n="nav.quote">ขอใบเสนอราคา</a></li>
-      <li><a href="#booking" data-i18n="nav.booking">จองขนส่ง</a></li>
-      <li><a href="#tracking" data-i18n="nav.tracking">ติดตามสินค้า</a></li>
-      <li><a href="#alibaba">🛒 Alibaba</a></li>
-      <li><a href="#products">🇹🇭 สินค้าส่งออก</a></li>
-      <li><a href="#tools">🧾 Import Tax</a></li>
-      <li><a href="#blog" data-i18n="nav.blog">บทความ</a></li>
-      <li><a href="#contact" data-i18n="nav.contact">ติดต่อเรา</a></li>
+      <li><a href="#services">บริการ</a></li>
+      <li><a href="#quote">ขอใบเสนอราคา</a></li>
+      <li><a href="#booking">จองขนส่ง</a></li>
+      <li><a href="#tracking">ติดตามสินค้า</a></li>
+      <li><a href="#alibaba">Alibaba</a></li>
+      <li><a href="#tools">Import Tax</a></li>
+      <li><a href="#blog">บทความ</a></li>
+      <li><a href="#contact">ติดต่อเรา</a></li>
     </ul>
-    <button class="btn-lang" id="langToggle" onclick="toggleLang()">🇬🇧 EN</button>
-    <button class="btn-nav-register" onclick="openRegisterModal()">👤 สมัครสมาชิก</button>
-    <button class="btn-nav-cta" onclick="scrollToSection('quote')" data-i18n="nav.cta">ขอราคาฟรี</button>
+    <button class="btn-nav-cta" onclick="scrollToSection('quote')">ขอราคาฟรี</button>
     <button class="hamburger" id="hamburger">☰</button>
   </div>
 </nav>
 
-<!-- HERO -->
+<!-- HERO (DHL-style: dark photo bg + centered headline + yellow CTA) -->
 <section class="hero" id="home">
   <div class="hero-bg"></div>
-  <div class="container hero-content">
-
-    <!-- LEFT: Text -->
-    <div class="hero-left">
-      <div class="hero-badge" data-i18n="hero.badge">🌏 Full Freight Services — 50+ Countries</div>
-      <h1 class="hero-title">International<br>Freight<br><span class="hero-accent">Services</span></h1>
-      <p class="hero-tagline">Safe. Fast. Cost-Effective.</p>
-      <p class="hero-desc" data-i18n="hero.desc">Comprehensive sea, air, and land freight services with over 15 years of experience. Expert customs clearance and import-export documentation support.</p>
-      <div class="hero-actions">
-        <button class="btn-hero-main" onclick="scrollToSection('quote')">📦 Get a Quote</button>
-        <button class="btn-hero-sec" onclick="scrollToSection('tracking')">🔍 Track Shipment</button>
-      </div>
-      <!-- Stats Row -->
-      <div class="hero-stats-row">
-        <div class="hsr-item">
-          <span class="hsr-num">50+</span>
-          <span class="hsr-lbl">Countries</span>
-        </div>
-        <div class="hsr-div"></div>
-        <div class="hsr-item">
-          <span class="hsr-num">15K+</span>
-          <span class="hsr-lbl">Happy Clients</span>
-        </div>
-        <div class="hsr-div"></div>
-        <div class="hsr-item">
-          <span class="hsr-num">99.2%</span>
-          <span class="hsr-lbl">On-Time</span>
-        </div>
-        <div class="hsr-div"></div>
-        <div class="hsr-item">
-          <span class="hsr-num">24/7</span>
-          <span class="hsr-lbl">Support</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- RIGHT: Route Network Card -->
-    <div class="hero-routes-panel">
-      <div class="hrp-header">
-        <span class="hrp-dot hrp-dot--green"></span>
-        <span class="hrp-title">Global Route Network</span>
-        <span class="hrp-live">LIVE</span>
-      </div>
-      <div class="hrp-origin">
-        <span class="hrp-flag">🇹🇭</span>
-        <div>
-          <div class="hrp-origin-city">Bangkok, Thailand</div>
-          <div class="hrp-origin-sub">Origin Hub</div>
-        </div>
-      </div>
-      <div class="hrp-routes">
-        <div class="hrp-route-item">
-          <span class="hrp-dest-flag">🇯🇵</span>
-          <div class="hrp-dest-info">
-            <span class="hrp-dest-name">Tokyo, Japan</span>
-            <span class="hrp-dest-time">Air · 3–5 days</span>
-          </div>
-          <span class="hrp-badge hrp-badge--air">✈ AIR</span>
-        </div>
-        <div class="hrp-route-item">
-          <span class="hrp-dest-flag">🇨🇳</span>
-          <div class="hrp-dest-info">
-            <span class="hrp-dest-name">Shanghai, China</span>
-            <span class="hrp-dest-time">Sea · 7–12 days</span>
-          </div>
-          <span class="hrp-badge hrp-badge--sea">🚢 SEA</span>
-        </div>
-        <div class="hrp-route-item">
-          <span class="hrp-dest-flag">🇦🇪</span>
-          <div class="hrp-dest-info">
-            <span class="hrp-dest-name">Dubai, UAE</span>
-            <span class="hrp-dest-time">Air · 5–7 days</span>
-          </div>
-          <span class="hrp-badge hrp-badge--air">✈ AIR</span>
-        </div>
-        <div class="hrp-route-item">
-          <span class="hrp-dest-flag">🇬🇧</span>
-          <div class="hrp-dest-info">
-            <span class="hrp-dest-name">London, UK</span>
-            <span class="hrp-dest-time">Sea · 25–30 days</span>
-          </div>
-          <span class="hrp-badge hrp-badge--sea">🚢 SEA</span>
-        </div>
-        <div class="hrp-route-item">
-          <span class="hrp-dest-flag">🇺🇸</span>
-          <div class="hrp-dest-info">
-            <span class="hrp-dest-name">Los Angeles, USA</span>
-            <span class="hrp-dest-time">Sea · 18–22 days</span>
-          </div>
-          <span class="hrp-badge hrp-badge--sea">🚢 SEA</span>
-        </div>
-      </div>
-      <button class="hrp-cta" onclick="scrollToSection('quote')">Get Custom Quote →</button>
-    </div>
-
+  <!-- Background shapes -->
+  <div class="hero-shapes">
+    <div class="hs-circle hs-1"></div>
+    <div class="hs-circle hs-2"></div>
+    <div class="hs-grid"></div>
   </div>
-  <div class="hero-wave">
-    <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="#f8fafc"/></svg>
+
+  <div class="container hero-dhl">
+    <!-- Eyebrow -->
+    <div class="hero-eyebrow">
+      <span class="hero-pill">🌏 50+ Countries Worldwide</span>
+      <span class="hero-pill hero-pill--outline">✅ Customs Cleared</span>
+    </div>
+    <!-- Big Headline -->
+    <h1 class="hero-h1">
+      Excellence.<br>
+      <span class="hero-h1-yellow">Simply Delivered.</span>
+    </h1>
+    <p class="hero-sub">บริการขนส่งสินค้าระหว่างประเทศครบวงจร ทางเรือ ทางอากาศ ทางบก<br>พร้อมพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก ด้วยประสบการณ์กว่า 15 ปี</p>
+
+    <!-- Action buttons -->
+    <div class="hero-btns">
+      <button class="btn-dhl-primary" onclick="scrollToSection('quote')">ขอใบเสนอราคาฟรี</button>
+      <button class="btn-dhl-secondary" onclick="scrollToSection('tracking')">ติดตามสินค้า</button>
+    </div>
+
+    <!-- Inline Tracking Widget -->
+    <div class="hero-track-widget">
+      <div class="htw-label">🔍 ติดตามสินค้า</div>
+      <div class="htw-form">
+        <input id="heroTrackInput" type="text" placeholder="กรอก Tracking Number เช่น PIT-240001">
+        <button onclick="document.getElementById('trackingInput').value=document.getElementById('heroTrackInput').value;scrollToSection('tracking')">ติดตามเลย →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats bar (below hero, full-width yellow) -->
+  <div class="hero-statsbar">
+    <div class="container hero-statsbar-inner">
+      <div class="hsb-item"><span class="hsb-num">50+</span><span class="hsb-lbl">ประเทศทั่วโลก</span></div>
+      <div class="hsb-sep"></div>
+      <div class="hsb-item"><span class="hsb-num">15,000+</span><span class="hsb-lbl">ลูกค้าพึงพอใจ</span></div>
+      <div class="hsb-sep"></div>
+      <div class="hsb-item"><span class="hsb-num">99.2%</span><span class="hsb-lbl">ส่งตรงเวลา</span></div>
+      <div class="hsb-sep"></div>
+      <div class="hsb-item"><span class="hsb-num">15 ปี</span><span class="hsb-lbl">ประสบการณ์</span></div>
+      <div class="hsb-sep"></div>
+      <div class="hsb-item"><span class="hsb-num">24/7</span><span class="hsb-lbl">บริการลูกค้า</span></div>
+    </div>
   </div>
 </section>
 
