@@ -45,27 +45,102 @@
   <div class="hero-bg"></div>
   <div class="container hero-content">
 
-    <!-- LEFT: Text Content -->
+    <!-- LEFT: Text -->
     <div class="hero-left">
-      <div class="hero-badge" data-i18n="hero.badge">🌏 บริการขนส่งครบวงจร 50+ ประเทศ</div>
-      <h1 class="hero-title" data-i18n="hero.title">ขนส่งสินค้าระหว่างประเทศ<br><span class="gradient-text">ที่คุณไว้วางใจได้</span></h1>
-      <p class="hero-desc" data-i18n="hero.desc">ทางเรือ ทางอากาศ ทางบก ครบวงจร พร้อมพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก ด้วยประสบการณ์กว่า 15 ปี</p>
+      <div class="hero-badge" data-i18n="hero.badge">🌏 Full Freight Services — 50+ Countries</div>
+      <h1 class="hero-title">International<br>Freight<br><span class="hero-accent">Services</span></h1>
+      <p class="hero-tagline">Safe. Fast. Cost-Effective.</p>
+      <p class="hero-desc" data-i18n="hero.desc">Comprehensive sea, air, and land freight services with over 15 years of experience. Expert customs clearance and import-export documentation support.</p>
       <div class="hero-actions">
-        <button class="btn-primary btn-lg" onclick="scrollToSection('quote')" data-i18n="hero.btn1">📦 ขอใบเสนอราคาฟรี</button>
-        <button class="btn-outline btn-lg" onclick="scrollToSection('tracking')" data-i18n="hero.btn2">🔍 ติดตามสินค้า</button>
+        <button class="btn-hero-main" onclick="scrollToSection('quote')">📦 Get a Quote</button>
+        <button class="btn-hero-sec" onclick="scrollToSection('tracking')">🔍 Track Shipment</button>
       </div>
-      <div class="hero-stats">
-        <div class="stat"><span class="stat-num">50+</span><span class="stat-label" data-i18n="hero.stat1">ประเทศทั่วโลก</span></div>
-        <div class="stat"><span class="stat-num">15,000+</span><span class="stat-label" data-i18n="hero.stat2">ลูกค้าพึงพอใจ</span></div>
-        <div class="stat"><span class="stat-num">99.2%</span><span class="stat-label" data-i18n="hero.stat3">ส่งตรงเวลา</span></div>
-        <div class="stat"><span class="stat-num">24/7</span><span class="stat-label" data-i18n="hero.stat4">บริการลูกค้า</span></div>
+      <!-- Stats Row -->
+      <div class="hero-stats-row">
+        <div class="hsr-item">
+          <span class="hsr-num">50+</span>
+          <span class="hsr-lbl">Countries</span>
+        </div>
+        <div class="hsr-div"></div>
+        <div class="hsr-item">
+          <span class="hsr-num">15K+</span>
+          <span class="hsr-lbl">Happy Clients</span>
+        </div>
+        <div class="hsr-div"></div>
+        <div class="hsr-item">
+          <span class="hsr-num">99.2%</span>
+          <span class="hsr-lbl">On-Time</span>
+        </div>
+        <div class="hsr-div"></div>
+        <div class="hsr-item">
+          <span class="hsr-num">24/7</span>
+          <span class="hsr-lbl">Support</span>
+        </div>
       </div>
     </div>
 
+    <!-- RIGHT: Route Network Card -->
+    <div class="hero-routes-panel">
+      <div class="hrp-header">
+        <span class="hrp-dot hrp-dot--green"></span>
+        <span class="hrp-title">Global Route Network</span>
+        <span class="hrp-live">LIVE</span>
+      </div>
+      <div class="hrp-origin">
+        <span class="hrp-flag">🇹🇭</span>
+        <div>
+          <div class="hrp-origin-city">Bangkok, Thailand</div>
+          <div class="hrp-origin-sub">Origin Hub</div>
+        </div>
+      </div>
+      <div class="hrp-routes">
+        <div class="hrp-route-item">
+          <span class="hrp-dest-flag">🇯🇵</span>
+          <div class="hrp-dest-info">
+            <span class="hrp-dest-name">Tokyo, Japan</span>
+            <span class="hrp-dest-time">Air · 3–5 days</span>
+          </div>
+          <span class="hrp-badge hrp-badge--air">✈ AIR</span>
+        </div>
+        <div class="hrp-route-item">
+          <span class="hrp-dest-flag">🇨🇳</span>
+          <div class="hrp-dest-info">
+            <span class="hrp-dest-name">Shanghai, China</span>
+            <span class="hrp-dest-time">Sea · 7–12 days</span>
+          </div>
+          <span class="hrp-badge hrp-badge--sea">🚢 SEA</span>
+        </div>
+        <div class="hrp-route-item">
+          <span class="hrp-dest-flag">🇦🇪</span>
+          <div class="hrp-dest-info">
+            <span class="hrp-dest-name">Dubai, UAE</span>
+            <span class="hrp-dest-time">Air · 5–7 days</span>
+          </div>
+          <span class="hrp-badge hrp-badge--air">✈ AIR</span>
+        </div>
+        <div class="hrp-route-item">
+          <span class="hrp-dest-flag">🇬🇧</span>
+          <div class="hrp-dest-info">
+            <span class="hrp-dest-name">London, UK</span>
+            <span class="hrp-dest-time">Sea · 25–30 days</span>
+          </div>
+          <span class="hrp-badge hrp-badge--sea">🚢 SEA</span>
+        </div>
+        <div class="hrp-route-item">
+          <span class="hrp-dest-flag">🇺🇸</span>
+          <div class="hrp-dest-info">
+            <span class="hrp-dest-name">Los Angeles, USA</span>
+            <span class="hrp-dest-time">Sea · 18–22 days</span>
+          </div>
+          <span class="hrp-badge hrp-badge--sea">🚢 SEA</span>
+        </div>
+      </div>
+      <button class="hrp-cta" onclick="scrollToSection('quote')">Get Custom Quote →</button>
+    </div>
 
   </div>
   <div class="hero-wave">
-    <svg viewBox="0 0 1200 100" preserveAspectRatio="none"><path d="M0,50 C300,100 900,0 1200,50 L1200,100 L0,100 Z" fill="#f8fafc"/></svg>
+    <svg viewBox="0 0 1440 80" preserveAspectRatio="none"><path d="M0,40 C360,80 1080,0 1440,40 L1440,80 L0,80 Z" fill="#f8fafc"/></svg>
   </div>
 </section>
 
