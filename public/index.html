@@ -6,119 +6,61 @@
   <title>Project International Trade — International Freight Services</title>
   <link rel="stylesheet" href="/css/style.css?v=6">
   <link rel="stylesheet" href="/css/apple.css?v=2">
-  <link rel="stylesheet" href="/css/redesign.css?v=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<!-- TOP BAR (DHL-style red utility bar) -->
-<div class="topbar">
-  <div class="container topbar-inner">
-    <div class="topbar-left">
-      <span>🇹🇭 ประเทศไทย</span>
-      <span class="topbar-sep">|</span>
-      <a href="#contact">ติดต่อเรา</a>
-      <span class="topbar-sep">|</span>
-      <a href="#tracking">ติดตามสินค้า</a>
-    </div>
-    <div class="topbar-right">
-      <button onclick="openRegisterModal()">👤 สมัครสมาชิก / เข้าสู่ระบบ</button>
-      <button class="btn-lang" id="langToggle" onclick="toggleLang()">🇬🇧 EN</button>
-    </div>
-  </div>
-</div>
 
 <!-- NAV -->
 <nav class="navbar" id="navbar">
   <div class="container nav-inner">
     <div class="logo">
-      <div class="logo-pit">PIT</div>
+      <span class="logo-icon">🚢</span>
       <div>
         <div class="logo-name">Project International Trade</div>
         <div class="logo-sub">International Freight Services</div>
       </div>
     </div>
     <ul class="nav-links">
-      <li><a href="#services">บริการ</a></li>
-      <li><a href="#quote">ขอใบเสนอราคา</a></li>
-      <li><a href="#booking">จองขนส่ง</a></li>
-      <li><a href="#tracking">ติดตามสินค้า</a></li>
-      <li><a href="#alibaba">Alibaba</a></li>
-      <li><a href="#tools">Import Tax</a></li>
-      <li><a href="#blog">บทความ</a></li>
-      <li><a href="#contact">ติดต่อเรา</a></li>
+      <li><a href="#services" data-i18n="nav.services">บริการ</a></li>
+      <li><a href="#quote" data-i18n="nav.quote">ขอใบเสนอราคา</a></li>
+      <li><a href="#booking" data-i18n="nav.booking">จองขนส่ง</a></li>
+      <li><a href="#tracking" data-i18n="nav.tracking">ติดตามสินค้า</a></li>
+      <li><a href="#alibaba">🛒 Alibaba</a></li>
+      <li><a href="#products">🇹🇭 สินค้าส่งออก</a></li>
+      <li><a href="#tools">🧾 Import Tax</a></li>
+      <li><a href="#blog" data-i18n="nav.blog">บทความ</a></li>
+      <li><a href="#contact" data-i18n="nav.contact">ติดต่อเรา</a></li>
     </ul>
-    <button class="btn-nav-cta" onclick="scrollToSection('quote')">ขอราคาฟรี</button>
+    <button class="btn-lang" id="langToggle" onclick="toggleLang()">🇬🇧 EN</button>
+    <button class="btn-nav-register" onclick="openRegisterModal()">👤 สมัครสมาชิก</button>
+    <button class="btn-nav-cta" onclick="scrollToSection('quote')" data-i18n="nav.cta">ขอราคาฟรี</button>
     <button class="hamburger" id="hamburger">☰</button>
   </div>
 </nav>
 
-<!-- HERO (DHL-style: dark photo bg + centered headline + yellow CTA) -->
+<!-- HERO -->
 <section class="hero" id="home">
   <div class="hero-bg"></div>
-  <!-- Background shapes -->
-  <div class="hero-shapes">
-    <div class="hs-circle hs-1"></div>
-    <div class="hs-circle hs-2"></div>
-    <div class="hs-grid"></div>
-  </div>
-
-  <div class="container hero-dhl">
-    <!-- Eyebrow -->
-    <div class="hero-eyebrow">
-      <span class="hero-pill">🌏 50+ Countries Worldwide</span>
-      <span class="hero-pill hero-pill--outline">✅ Customs Cleared</span>
+  <div class="container hero-content">
+    <div class="hero-badge" data-i18n="hero.badge">🌏 บริการขนส่งครบวงจร 50+ ประเทศ</div>
+    <h1 class="hero-title" data-i18n="hero.title">ขนส่งสินค้าระหว่างประเทศ<br><span class="gradient-text">ปลอดภัย รวดเร็ว คุ้มค่า</span></h1>
+    <p class="hero-desc" data-i18n="hero.desc">บริการขนส่งสินค้าทางเรือ ทางอากาศ และทางบก ครบครัน ด้วยประสบการณ์กว่า 15 ปี พร้อมให้คำปรึกษาด้านพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก</p>
+    <div class="hero-actions">
+      <button class="btn-primary btn-lg" onclick="scrollToSection('quote')" data-i18n="hero.btn1">📦 ขอใบเสนอราคา</button>
+      <button class="btn-outline btn-lg" onclick="scrollToSection('tracking')" data-i18n="hero.btn2">🔍 ติดตามสินค้า</button>
     </div>
-    <!-- Big Headline -->
-    <h1 class="hero-h1">
-      Excellence.<br>
-      <span class="hero-h1-yellow">Simply Delivered.</span>
-    </h1>
-    <p class="hero-sub">บริการขนส่งสินค้าระหว่างประเทศครบวงจร ทางเรือ ทางอากาศ ทางบก<br>พร้อมพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก ด้วยประสบการณ์กว่า 15 ปี</p>
-
-    <!-- Action buttons -->
-    <div class="hero-btns">
-      <button class="btn-dhl-primary" onclick="scrollToSection('quote')">ขอใบเสนอราคาฟรี</button>
-      <button class="btn-dhl-secondary" onclick="scrollToSection('tracking')">ติดตามสินค้า</button>
-    </div>
-
-    <!-- Inline Tracking Widget -->
-    <div class="hero-track-widget">
-      <div class="htw-label">🔍 ติดตามสินค้า</div>
-      <div class="htw-form">
-        <input id="heroTrackInput" type="text" placeholder="กรอก Tracking Number เช่น PIT-240001">
-        <button onclick="document.getElementById('trackingInput').value=document.getElementById('heroTrackInput').value;scrollToSection('tracking')">ติดตามเลย →</button>
-      </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">50+</span><span class="stat-label" data-i18n="hero.stat1">ประเทศทั่วโลก</span></div>
+      <div class="stat"><span class="stat-num">15,000+</span><span class="stat-label" data-i18n="hero.stat2">ลูกค้าพึงพอใจ</span></div>
+      <div class="stat"><span class="stat-num">99.2%</span><span class="stat-label" data-i18n="hero.stat3">ส่งตรงเวลา</span></div>
+      <div class="stat"><span class="stat-num">24/7</span><span class="stat-label" data-i18n="hero.stat4">บริการลูกค้า</span></div>
     </div>
   </div>
-
-  <!-- Stats bar (below hero, full-width yellow) -->
-  <div class="hero-statsbar">
-    <div class="container hero-statsbar-inner">
-      <div class="hsb-item"><span class="hsb-num">50+</span><span class="hsb-lbl">ประเทศทั่วโลก</span></div>
-      <div class="hsb-sep"></div>
-      <div class="hsb-item"><span class="hsb-num">15,000+</span><span class="hsb-lbl">ลูกค้าพึงพอใจ</span></div>
-      <div class="hsb-sep"></div>
-      <div class="hsb-item"><span class="hsb-num">99.2%</span><span class="hsb-lbl">ส่งตรงเวลา</span></div>
-      <div class="hsb-sep"></div>
-      <div class="hsb-item"><span class="hsb-num">15 ปี</span><span class="hsb-lbl">ประสบการณ์</span></div>
-      <div class="hsb-sep"></div>
-      <div class="hsb-item"><span class="hsb-num">24/7</span><span class="hsb-lbl">บริการลูกค้า</span></div>
-    </div>
+  <div class="hero-wave">
+    <svg viewBox="0 0 1200 100" preserveAspectRatio="none"><path d="M0,50 C300,100 900,0 1200,50 L1200,100 L0,100 Z" fill="#f8fafc"/></svg>
   </div>
 </section>
-
-<!-- TRUST STRIP -->
-<div class="trust-strip">
-  <div class="trust-strip-inner">
-    <div class="trust-item"><span class="trust-icon">🏛️</span> กรมศุลกากรรับรอง</div>
-    <div class="trust-item"><span class="trust-icon">🌏</span> 50+ ประเทศทั่วโลก</div>
-    <div class="trust-item"><span class="trust-icon">🔒</span> ประกันสินค้าทุกชิ้น</div>
-    <div class="trust-item"><span class="trust-icon">⏱️</span> On-Time Delivery 99.2%</div>
-    <div class="trust-item"><span class="trust-icon">💬</span> ซัพพอร์ต 24/7</div>
-  </div>
-</div>
 
 
 <!-- LATEST BLOG (หน้าแรก) -->
@@ -225,43 +167,6 @@
           <li>✓ บริการ Port-to-Port ทั่วโลก</li>
         </ul>
         <button class="btn-service" onclick="openContactForService('RoRo')">ขอใบเสนอราคา</button>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- HOW IT WORKS -->
-<section class="how-section" id="how">
-  <div class="container">
-    <div class="section-header" style="text-align:center">
-      <span class="section-badge">ขั้นตอนการใช้งาน</span>
-      <h2 class="section-title" style="margin-top:12px">ใช้งานง่าย 4 ขั้นตอน</h2>
-      <p class="section-subtitle">จากการติดต่อครั้งแรกถึงสินค้าถึงมือผู้รับ ทีมงานดูแลทุกขั้นตอน</p>
-    </div>
-    <div class="how-grid">
-      <div class="how-step">
-        <div class="how-step-num">1</div>
-        <div class="how-step-icon">📋</div>
-        <h4>แจ้งรายละเอียดสินค้า</h4>
-        <p>กรอกข้อมูลสินค้า น้ำหนัก ปลายทาง และรับใบเสนอราคาฟรีทันที</p>
-      </div>
-      <div class="how-step">
-        <div class="how-step-num active-step">2</div>
-        <div class="how-step-icon">✅</div>
-        <h4>ยืนยันและชำระเงิน</h4>
-        <p>เลือกวิธีขนส่ง ยืนยันราคา และชำระเงินผ่านช่องทางที่สะดวก</p>
-      </div>
-      <div class="how-step">
-        <div class="how-step-num">3</div>
-        <div class="how-step-icon">📦</div>
-        <h4>รับสินค้าและดำเนินการ</h4>
-        <p>ทีมงานรับสินค้า จัดการเอกสารศุลกากร และดำเนินพิธีการนำเข้า-ส่งออก</p>
-      </div>
-      <div class="how-step">
-        <div class="how-step-num">4</div>
-        <div class="how-step-icon">🚀</div>
-        <h4>ติดตามสินค้า Real-time</h4>
-        <p>รับ Tracking Number ติดตามสินค้าแบบ Real-time จนถึงมือผู้รับ</p>
       </div>
     </div>
   </div>
@@ -1260,18 +1165,6 @@
     </div>
   </div>
 </section>
-
-<!-- CTA BANNER -->
-<div class="container">
-  <div class="cta-banner">
-    <h2>พร้อมเริ่มต้นกับเราวันนี้?</h2>
-    <p>ขอใบเสนอราคาฟรี ไม่มีค่าใช้จ่าย ทีมงานผู้เชี่ยวชาญพร้อมให้คำแนะนำ</p>
-    <div class="cta-banner-btns">
-      <button class="btn-cta-primary" onclick="scrollToSection('quote')">📦 ขอใบเสนอราคาฟรี</button>
-      <button class="btn-cta-secondary" onclick="scrollToSection('contact')">💬 ติดต่อทีมงาน</button>
-    </div>
-  </div>
-</div>
 
 <!-- FOOTER -->
 <footer class="footer">
