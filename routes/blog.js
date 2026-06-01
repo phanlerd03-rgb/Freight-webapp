@@ -35,6 +35,17 @@ function blocksToHtml(blocks) {
       case 'code': html += `<pre><code>${text}</code></pre>`; break;
       case 'quote': html += `<blockquote>${styled}</blockquote>`; break;
       case 'divider': html += `<hr>`; break;
+      case 'image': {
+        const imgUrl = b.image?.file?.url || b.image?.external?.url || '';
+        const caption = b.image?.caption?.map(c => c.plain_text).join('') || '';
+        if (imgUrl) html += `<figure class="blog-img-wrap"><img src="${imgUrl}" alt="${caption}" loading="lazy" class="blog-inline-img"><figcaption>${caption}</figcaption></figure>`;
+        break;
+      }
+      case 'callout': {
+        const icon = b.callout?.icon?.emoji || 'ℹ️';
+        html += `<div class="blog-callout"><span class="blog-callout-icon">${icon}</span><div>${styled}</div></div>`;
+        break;
+      }
       case 'table_row': {
         const cells = b.table_row?.cells?.map(c =>
           `<td>${c.map(x => x.plain_text).join('')}</td>`
