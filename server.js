@@ -61,6 +61,10 @@ app.use('/api/register', registerRoutes);
 const { startAutoPost } = require('./services/autopost');
 startAutoPost();
 
+// ===== Daily Blog (โอกาสนำเข้า-ส่งออก ทุกวัน 08:00 Bangkok) =====
+const { startDailyBlog } = require('./services/dailyblog');
+startDailyBlog();
+
 // ===== Admin Panel Page =====
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
