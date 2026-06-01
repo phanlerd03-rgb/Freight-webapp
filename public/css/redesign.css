@@ -796,3 +796,160 @@ footer {
   padding: 16px 0 !important;
   border-bottom: 1px solid var(--border) !important;
 }
+
+/* ============================================================
+   WHITE-TEXT FIXES  — convert all white-on-dark text to dark
+   for sections that are now on light/white backgrounds
+   ============================================================ */
+
+/* ── BLOG SECTION background + search bar ─────────────────── */
+#blog .section-badge {
+  background: var(--orange-light) !important;
+  color: var(--orange) !important;
+  border-color: rgba(249,115,22,.2) !important;
+}
+.blog-search-input {
+  background: #fff !important;
+  color: var(--text) !important;
+  border: 1.5px solid var(--border) !important;
+  box-shadow: var(--shadow-sm) !important;
+}
+.blog-search-input::placeholder { color: var(--text-muted) !important; }
+.blog-search-input:focus {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(29,95,192,.12) !important;
+}
+
+/* Blog filter pills */
+.blog-filter-btn {
+  background: #fff !important;
+  color: var(--text-mid) !important;
+  border: 1.5px solid var(--border) !important;
+  font-weight: 600 !important;
+}
+.blog-filter-btn.active,
+.blog-filter-btn:hover {
+  background: var(--navy) !important;
+  color: #fff !important;
+  border-color: var(--navy) !important;
+}
+.lang-filter-btn, .cat-filter-btn {
+  background: #fff !important;
+  color: var(--text-mid) !important;
+  border: 1.5px solid var(--border) !important;
+}
+.lang-filter-btn.active, .cat-filter-btn.active {
+  background: var(--navy) !important;
+  color: #fff !important;
+  border-color: var(--navy) !important;
+}
+
+/* ── BLOG CARDS — dark section, white text → dark text ──────── */
+.blog-card {
+  background: #fff !important;
+  border: 1px solid var(--border) !important;
+}
+.blog-card:hover {
+  background: #fff !important;
+  border-color: var(--border-dark) !important;
+}
+.blog-card-body { background: #fff !important; }
+
+.blog-card-title {
+  color: var(--navy) !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1.45 !important;
+}
+.blog-card-summary {
+  color: var(--text-muted) !important;
+  font-size: 13px !important;
+}
+.blog-card-date {
+  color: var(--text-muted) !important;
+  font-size: 12px !important;
+}
+.blog-card-category {
+  background: var(--blue-light) !important;
+  color: var(--blue) !important;
+  font-size: 11px !important;
+  border-radius: 20px !important;
+  padding: 3px 10px !important;
+  font-weight: 600 !important;
+}
+.blog-card-tag {
+  background: var(--bg-soft) !important;
+  color: var(--text-mid) !important;
+  border: 1px solid var(--border) !important;
+}
+.blog-card-footer {
+  border-top: 1px solid var(--border) !important;
+}
+.blog-card-read {
+  color: var(--blue) !important;
+  font-weight: 600 !important;
+}
+
+/* Share button on blog cards */
+.blog-share-btn {
+  background: var(--bg-soft) !important;
+  color: var(--text-mid) !important;
+  border: 1px solid var(--border) !important;
+}
+.blog-share-btn:hover {
+  background: var(--bg-blue) !important;
+  color: var(--blue) !important;
+  border-color: var(--blue) !important;
+}
+
+/* ── HERO STATS (white → dark on white bg) ───────────────── */
+.hero-stats {
+  background: var(--bg-soft) !important;
+  border: 1px solid var(--border) !important;
+}
+.stat-num { color: var(--navy) !important; }
+.stat-label { color: var(--text-muted) !important; }
+
+/* ── HERO TITLE & DESC ───────────────────────────────────── */
+.hero-title { color: var(--navy) !important; text-shadow: none !important; }
+.hero-desc   { color: var(--text-mid) !important; }
+
+/* ── TRACKING SECTION ──────────────────────────────────────── */
+.tracking-hint { color: var(--text-muted) !important; }
+
+/* ── INFO CARDS (highlight) on light bg ────────────────────── */
+.info-card.highlight h4 { color: var(--navy) !important; }
+.info-card.highlight p  { color: var(--text-mid) !important; }
+
+/* ── SEARCH PIT CTA text ────────────────────────────────────── */
+.search-pit-cta p { color: var(--text-mid) !important; }
+
+/* ── IMPORT TAX section headers ─────────────────────────────── */
+.import-tax-head h3 { color: var(--navy) !important; }
+.customs-step strong { color: var(--navy) !important; }
+
+/* ── WHY US section (section-gray) — already dark, just verify  */
+.why-card h4 { color: var(--navy) !important; }
+.why-card p  { color: var(--text-muted) !important; }
+
+/* ── SECTION HEADER text ensure visibility ─────────────────── */
+.section-header h2, .section-title { color: var(--navy) !important; }
+.section-header p, .section-subtitle { color: var(--text-muted) !important; }
+
+/* ── TAB BUTTONS on light sections ─────────────────────────── */
+.tab {
+  color: var(--text-muted) !important;
+  border-bottom: 2px solid transparent !important;
+}
+.tab.active {
+  color: var(--blue) !important;
+  border-bottom-color: var(--blue) !important;
+}
+
+/* ── FORM LABELS ────────────────────────────────────────────── */
+.form-section-title { color: var(--navy) !important; }
+label { color: var(--text-mid) !important; }
+
+/* Latest blog cards already have white bg with dark text */
+.latest-blog-title   { color: #1e293b !important; }
+.latest-blog-summary { color: #64748b !important; }
