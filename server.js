@@ -65,6 +65,10 @@ startAutoPost();
 const { startDailyBlog } = require('./services/dailyblog');
 startDailyBlog();
 
+// ===== News Feed (ข่าวนำเข้า-ส่งออก ทุกวัน 09:00 และ 15:00 Bangkok) =====
+const { startNewsFeed } = require('./services/newsfeed');
+startNewsFeed();
+
 // ===== Admin Panel Page =====
 app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
