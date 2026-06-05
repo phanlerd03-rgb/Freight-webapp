@@ -103,10 +103,19 @@ bg_path = '${safeBg}'
 if bg_path and os.path.exists(bg_path):
     bg = Image.open(bg_path).convert('RGB').resize((W, H), Image.LANCZOS)
     img.paste(bg)
-    # Dark overlay for text readability
-    overlay = Image.new('RGBA', (W, H), (8, 16, 32, 195))
+    # Lighter global overlay (เก็บรูปให้เห็นชัดขึ้น)
+    overlay = Image.new('RGBA', (W, H), (5, 12, 25, 140))
     img = img.convert('RGBA')
     img = Image.alpha_composite(img, overlay).convert('RGB')
+    draw = ImageDraw.Draw(img)
+    # Dark panel ซ้าย (เพิ่มความชัดให้ตัวอักษร)
+    left_panel = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    ld = ImageDraw.Draw(left_panel)
+    for x in range(660):
+        alpha = int(200 * (1 - x/660))
+        ld.line([(x,0),(x,H)], fill=(5,12,25,alpha))
+    img = img.convert('RGBA')
+    img = Image.alpha_composite(img, left_panel).convert('RGB')
     draw = ImageDraw.Draw(img)
 else:
     bg1 = tuple(int('${bg1}'.lstrip('#')[i:i+2],16) for i in (0,2,4))
@@ -118,64 +127,75 @@ else:
         for y in range(0,H,36):
             draw.rectangle([x,y,x+2,y+2], fill=(255,255,255,20))
 
-fhuge  = ImageFont.truetype(FONT, 68)
-flarge = ImageFont.truetype(FONT, 38)
-fmed   = ImageFont.truetype(FONT, 26)
-fsmall = ImageFont.truetype(FONT, 21)
-fxs    = ImageFont.truetype(FONT, 17)
+flarge = ImageFont.truetype(FONT, 42)
+fmed   = ImageFont.truetype(FONT, 30)
+fsmall = ImageFont.truetype(FONT, 23)
+fxs    = ImageFont.truetype(FONT, 18)
 ACC    = '${acc}'
 
-draw.rectangle([0,0,7,H], fill=ACC)
+draw.rectangle([0,0,8,H], fill=ACC)
 
 # Time badge
-draw.rounded_rectangle([50,34,330,72], radius=19, fill=ACC)
-draw.text((66,44), '${label}  |  ${safeDateTag}', font=fxs, fill='#0a0820')
+draw.rounded_rectangle([50,32,345,74], radius=20, fill=ACC)
+draw.text((68,43), '${label}  |  ${safeDateTag}', font=fxs, fill='#050c1a')
 
-# News label
-draw.text((50, 88), 'ข่าวสารนำเข้า-ส่งออก', font=flarge, fill=ACC)
+# News label — สีขาวทึบ ตัวใหญ่
+draw.text((50, 86), 'ข่าวสารนำเข้า-ส่งออก', font=flarge, fill='#ffffff')
 
-# Headline
+# Accent line under label
+draw.rectangle([50, 138, 430, 143], fill=ACC)
+
+# Headline — ตัวใหญ่ขึ้น สีสว่าง
 headline = '${safeHeadline}'
 words = headline.split()
 lines, cur = [], ''
 for w in words:
     test = cur + w + ' '
-    if draw.textbbox((0,0), test, font=fmed)[2] > 640 and cur:
+    if draw.textbbox((0,0), test, font=fmed)[2] > 570 and cur:
         lines.append(cur.strip()); cur = w + ' '
     else:
         cur = test
 if cur: lines.append(cur.strip())
-y = 142
+y = 158
 for line in lines[:4]:
     draw.text((50, y), line, font=fmed, fill='#ffffff')
-    y += 36
+    y += 42
 
-draw.rectangle([50, y+8, 400, y+12], fill=ACC)
+# Accent divider under headline
+draw.rectangle([50, y+10, 380, y+14], fill=ACC)
 
-# Right card: why this matters
-cx, cy, cw, ch = 660, 50, 510, 512
-draw.rounded_rectangle([cx,cy,cx+cw,cy+ch], radius=16, fill=(255,255,255,12))
-draw.rounded_rectangle([cx,cy,cx+cw,cy+ch], radius=16, outline=ACC, width=2)
-draw.text((cx+24, cy+22), 'ประโยชน์สำหรับ SME', font=fmed, fill=ACC)
-draw.rectangle([cx+24,cy+58,cx+cw-24,cy+61], fill=ACC)
+# Right card — พื้นขาวทึบ ตัวอักษรดำ อ่านง่าย
+cx, cy, cw, ch = 655, 44, 518, 524
+# Card ขาวทึบ — ตัวอักษรดำ อ่านชัด
+draw.rounded_rectangle([cx,cy,cx+cw,cy+ch], radius=18, fill=(255,255,255))
+# Header bar สีพิเศษ
+draw.rounded_rectangle([cx,cy,cx+cw,cy+58], radius=18, fill=ACC)
+draw.rectangle([cx,cy+38,cx+cw,cy+58], fill=ACC)
+draw.text((cx+24, cy+12), 'ประโยชน์สำหรับ SME ไทย', font=fmed, fill='#050c1a')
+draw.rectangle([cx+24,cy+58,cx+cw-24,cy+61], fill=(220,230,240))
 
 tips = [
     'อัพเดทตรงจากแหล่งข่าวน่าเชื่อถือ',
     'วิเคราะห์ผลกระทบต่อธุรกิจนำเข้า-ส่งออก',
     'คำแนะนำปฏิบัติสำหรับ SME ไทย',
-    'อ้างอิงลิ้งที่มาครบถ้วน',
+    'อ้างอิงแหล่งที่มาครบถ้วน',
     'ติดตามทุกวัน ไม่พลาดโอกาส',
 ]
 for i, tip in enumerate(tips):
-    ty = cy+76 + i*80
-    draw.ellipse([cx+22,ty+8,cx+38,ty+24], fill=ACC)
-    draw.text((cx+50, ty+4), tip, font=fsmall, fill=(215,235,255))
+    ty = cy + 72 + i * 82
+    # Bullet วงกลม
+    draw.ellipse([cx+22, ty+8, cx+42, ty+28], fill=ACC)
+    # ตัวอักษรดำ อ่านชัด
+    draw.text((cx+54, ty+4), tip, font=fsmall, fill='#1a1a2e')
+    if i < len(tips)-1:
+        draw.line([cx+24, ty+62, cx+cw-24, ty+62], fill=(220,230,240), width=1)
 
+# Footer
 draw.rectangle([0,H-60,W,H], fill=(5,8,18))
 draw.rectangle([0,H-60,W,H-57], fill=ACC)
 draw.text((50,H-44),    'PIT FREIGHT', font=fmed, fill=ACC)
-draw.text((240,H-44),   '|  ข่าวสารนำเข้า-ส่งออก ประจำวัน', font=fmed, fill=(155,185,215))
-draw.text((W-215,H-44), 'pitfreight.com', font=fmed, fill=(120,155,190))
+draw.text((240,H-44),   '|  ข่าวสารนำเข้า-ส่งออก ประจำวัน', font=fmed, fill='#ffffff')
+draw.text((W-215,H-44), 'pitfreight.com', font=fmed, fill=(200,215,230))
 img.save('${outPath}', 'JPEG', quality=93)
 print('ok')
 `;
