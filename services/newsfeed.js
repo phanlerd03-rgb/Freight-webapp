@@ -32,13 +32,53 @@ const AFTERNOON_TOPICS = [
   'นโยบายสนับสนุนผู้ส่งออก DITP กรมส่งเสริมการค้าระหว่างประเทศ',
 ];
 
-// ── สร้าง cover image ด้วย Python PIL ───────────────────────────────────
-function createNewsCover(headline, timeSlot, dateTag, outPath) {
-  const isAM = timeSlot === '09:00';
-  const bg1  = isAM ? '#0a1628' : '#150820';
-  const bg2  = isAM ? '#1a3a5c' : '#2d1a45';
-  const acc  = isAM ? '#38bdf8' : '#a78bfa';
+// ── สร้างรูปข่าวด้วย gpt-image-1 ────────────────────────────────────────
+async function generateNewsImage(topic, headline) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return null;
+  try {
+    const imgPrompt = `Professional news photo for Thai import-export business article about: "${headline}".
+Show: international shipping containers at port, cargo planes, customs office, trade fair, or Thai export products.
+Photorealistic, cinematic lighting, wide angle. No text, no words, no letters.`;
+
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-image-1',
+        prompt: imgPrompt,
+        size: '1536x1024',
+        quality: 'medium',
+        output_format: 'jpeg',
+        n: 1,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error?.message || 'OpenAI image error');
+
+    const tmpPath = `/tmp/news_bg_${Date.now()}.jpg`;
+    if (data.data[0].b64_json) {
+      fs.writeFileSync(tmpPath, Buffer.from(data.data[0].b64_json, 'base64'));
+    } else {
+      execSync(`curl -sL "${data.data[0].url}" -o ${tmpPath}`);
+    }
+    console.log('[NewsFeed] gpt-image-1 ✅');
+    return tmpPath;
+  } catch(e) {
+    console.error('[NewsFeed] gpt-image-1 error:', e.message.slice(0, 150));
+    return null;
+  }
+}
+
+// ── สร้าง cover image ด้วย Python PIL (+ bg photo overlay) ──────────────
+function createNewsCover(headline, timeSlot, dateTag, outPath, bgImagePath = null) {
+  const isAM  = timeSlot === '09:00';
+  const bg1   = isAM ? '#0a1628' : '#150820';
+  const bg2   = isAM ? '#1a3a5c' : '#2d1a45';
+  const acc   = isAM ? '#38bdf8' : '#a78bfa';
   const label = isAM ? 'ข่าวเช้า 09:00' : 'ข่าวบ่าย 15:00';
+  const hasBg = bgImagePath && fs.existsSync(bgImagePath);
+  const safeBg = hasBg ? bgImagePath.replace(/'/g, "\\'") : '';
 
   // Escape for Python
   const safeHeadline = headline.replace(/'/g, "\\'").replace(/\n/g, ' ').slice(0, 80);
@@ -47,7 +87,7 @@ function createNewsCover(headline, timeSlot, dateTag, outPath) {
   const script = `
 import sys, os
 sys.stdout.reconfigure(encoding='utf-8')
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import urllib.request
 
 FONT = '/tmp/SarabunB.ttf'
@@ -57,14 +97,26 @@ if not os.path.exists(FONT):
 W, H = 1200, 630
 img  = Image.new('RGB', (W, H))
 draw = ImageDraw.Draw(img)
-bg1  = tuple(int('${bg1}'.lstrip('#')[i:i+2],16) for i in (0,2,4))
-bg2  = tuple(int('${bg2}'.lstrip('#')[i:i+2],16) for i in (0,2,4))
-for y in range(H):
-    t = y/H
-    draw.line([(0,y),(W,y)], fill=tuple(int(bg1[i]+t*(bg2[i]-bg1[i])) for i in range(3)))
-for x in range(0,W,36):
-    for y in range(0,H,36):
-        draw.rectangle([x,y,x+2,y+2], fill=(255,255,255,20))
+
+# Background: real photo OR gradient
+bg_path = '${safeBg}'
+if bg_path and os.path.exists(bg_path):
+    bg = Image.open(bg_path).convert('RGB').resize((W, H), Image.LANCZOS)
+    img.paste(bg)
+    # Dark overlay for text readability
+    overlay = Image.new('RGBA', (W, H), (8, 16, 32, 195))
+    img = img.convert('RGBA')
+    img = Image.alpha_composite(img, overlay).convert('RGB')
+    draw = ImageDraw.Draw(img)
+else:
+    bg1 = tuple(int('${bg1}'.lstrip('#')[i:i+2],16) for i in (0,2,4))
+    bg2 = tuple(int('${bg2}'.lstrip('#')[i:i+2],16) for i in (0,2,4))
+    for y in range(H):
+        t = y/H
+        draw.line([(0,y),(W,y)], fill=tuple(int(bg1[i]+t*(bg2[i]-bg1[i])) for i in range(3)))
+    for x in range(0,W,36):
+        for y in range(0,H,36):
+            draw.rectangle([x,y,x+2,y+2], fill=(255,255,255,20))
 
 fhuge  = ImageFont.truetype(FONT, 68)
 flarge = ImageFont.truetype(FONT, 38)
@@ -242,8 +294,13 @@ async function runNewsFeed(timeSlot) {
     const headline = content.split('\n').find(l => l.trim()) || topic;
     const cleanHeadline = headline.replace(/[*#]/g, '').trim().slice(0, 80);
 
-    // 3. Create cover
-    createNewsCover(cleanHeadline, timeSlot, dateTag, imgPath);
+    // 3. Generate news photo with gpt-image-1
+    console.log('[NewsFeed] Generating news photo...');
+    const bgImagePath = await generateNewsImage(topic, cleanHeadline);
+
+    // 4. Create cover (with real photo as background)
+    createNewsCover(cleanHeadline, timeSlot, dateTag, imgPath, bgImagePath);
+    if (bgImagePath && fs.existsSync(bgImagePath)) fs.unlinkSync(bgImagePath);
     console.log('[NewsFeed] Cover ✅');
 
     // 4. Notion Blog
