@@ -61,13 +61,13 @@ app.use('/api/register', registerRoutes);
 const { startAutoPost } = require('./services/autopost');
 startAutoPost();
 
-// ===== Daily Blog (โอกาสนำเข้า-ส่งออก ทุกวัน 08:00 Bangkok) =====
-const { startDailyBlog } = require('./services/dailyblog');
-startDailyBlog();
+// ===== Daily Blog — PAUSED =====
+// const { startDailyBlog } = require('./services/dailyblog');
+// startDailyBlog();
 
-// ===== News Feed (ข่าวนำเข้า-ส่งออก ทุกวัน 09:00 และ 15:00 Bangkok) =====
-const { startNewsFeed } = require('./services/newsfeed');
-startNewsFeed();
+// ===== News Feed — PAUSED =====
+// const { startNewsFeed } = require('./services/newsfeed');
+// startNewsFeed();
 
 // ===== Admin Panel Page =====
 app.get('/admin', (req, res) => {
