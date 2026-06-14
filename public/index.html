@@ -60,21 +60,191 @@
 </section>
 
 
-<!-- LATEST BLOG (หน้าแรก) -->
-<section class="section latest-blogs-section" id="latest-blogs">
+<section class="section section-gray" id="tools">
   <div class="container">
-    <div class="latest-blogs-header">
-      <div>
-        <span class="section-badge">📰 บทความล่าสุด</span>
-        <h2 class="section-title" style="margin-top:12px;margin-bottom:0">ข่าวสาร & คู่มือนำเข้า-ส่งออก</h2>
+    <div class="section-header">
+      <span class="section-badge">🧾 คำนวณภาษีนำเข้า</span>
+      <h2 class="section-title">Thailand Import Tax Calculator</h2>
+      <p class="section-subtitle">คำนวณภาษีนำเข้าเบื้องต้น ค้นหาอัตราค่าขนส่ง และเปรียบเทียบระยะเวลา powered by PIT Freight</p>
+    </div>
+
+    <!-- SEARATES TABS -->
+    <div class="searates-tab-bar">
+      <button class="searates-tab-btn" onclick="switchSeaTab('rates', this)">🚢 Freight Rates</button>
+      <button class="searates-tab-btn" onclick="switchSeaTab('distance', this)">📍 Distance & Time</button>
+      <button class="searates-tab-btn" onclick="switchSeaTab('ports', this)">⚓ Port Map</button>
+      <button class="searates-tab-btn" onclick="switchSeaTab('container', this)">📦 Container Calculator</button>
+      <button class="searates-tab-btn active" onclick="switchSeaTab('import-tax', this)">🧾 Import Tax</button>
+    </div>
+
+    <div class="searates-pane" id="sea-rates">
+      <div class="searates-frame-wrap">
+        <iframe src="https://www.searates.com/reference/calculator/" class="searates-frame" loading="lazy" title="SeaRates Freight Calculator" allowfullscreen></iframe>
       </div>
-      <a href="#blog" class="btn-view-all">ดูทั้งหมด →</a>
     </div>
-    <div class="latest-blogs-grid" id="latestBlogsGrid">
-      <div class="latest-blog-skeleton"></div>
-      <div class="latest-blog-skeleton"></div>
-      <div class="latest-blog-skeleton"></div>
+
+    <div class="searates-pane" id="sea-distance">
+      <div class="searates-frame-wrap">
+        <iframe src="https://www.searates.com/services/distances-time/" class="searates-frame" loading="lazy" title="SeaRates Distance & Time" allowfullscreen></iframe>
+      </div>
     </div>
+
+    <div class="searates-pane" id="sea-ports">
+      <div class="searates-frame-wrap">
+        <iframe src="https://www.searates.com/reference/portmap/" class="searates-frame" loading="lazy" title="SeaRates Port Map" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="searates-pane" id="sea-container">
+      <div class="searates-frame-wrap">
+        <iframe src="https://www.searates.com/reference/equipment/" class="searates-frame" loading="lazy" title="SeaRates Container Guide" allowfullscreen></iframe>
+      </div>
+    </div>
+
+    <div class="searates-pane active" id="sea-import-tax">
+      <div class="import-tax-calculator">
+        <div class="import-tax-head">
+          <div class="import-tax-hero-copy">
+            <span class="import-tax-kicker">Thailand Import Estimate</span>
+            <h3>Thailand Import Tax Calculator</h3>
+            <p>วางแผนต้นทุนนำเข้าแบบมืออาชีพจาก CIF, อากรขาเข้า, FTA, VAT และค่าใช้จ่ายปลายทาง</p>
+          </div>
+          <div class="customs-flow" aria-label="Thailand customs workflow">
+            <div class="customs-step"><span>01</span><strong>HS Code</strong><small>Classify goods</small></div>
+            <div class="customs-step"><span>02</span><strong>CIF Value</strong><small>Invoice + freight</small></div>
+            <div class="customs-step"><span>03</span><strong>Duty / FTA</strong><small>Preference check</small></div>
+            <div class="customs-step"><span>04</span><strong>VAT</strong><small>Tax base review</small></div>
+            <div class="customs-step"><span>05</span><strong>Clearance</strong><small>Release cargo</small></div>
+          </div>
+        </div>
+
+        <div class="import-tax-body">
+          <div class="import-tax-panel">
+            <div class="import-tax-panel-title">
+              <span>Shipment Valuation</span>
+              <strong>Cost, Insurance & Freight</strong>
+            </div>
+            <form class="import-tax-form" id="importTaxForm">
+              <div class="import-tax-grid">
+                <label class="wide">
+                  <span>สินค้า / Product</span>
+                  <input type="text" name="product" placeholder="เช่น Machine parts, fabric, cosmetics">
+                </label>
+                <label>
+                  <span>HS Code</span>
+                  <input type="text" name="hsCode" placeholder="เช่น 8483.90">
+                </label>
+                <label>
+                  <span>Origin Country</span>
+                  <input type="text" name="originCountry" placeholder="เช่น China, Japan, Vietnam">
+                </label>
+                <label>
+                  <span>Currency</span>
+                  <select name="currency">
+                    <option value="USD">USD - US Dollar</option>
+                    <option value="CNY">CNY - Chinese Yuan</option>
+                    <option value="EUR">EUR - Euro</option>
+                    <option value="JPY">JPY - Japanese Yen</option>
+                    <option value="THB" selected>THB - Thai Baht</option>
+                  </select>
+                </label>
+                <label>
+                  <span>Exchange Rate to THB</span>
+                  <input type="number" name="exchangeRate" min="0.0001" step="0.0001" value="1" required>
+                </label>
+                <label>
+                  <span>Invoice Value</span>
+                  <input type="number" name="invoiceValue" min="0" step="0.01" value="100000" required>
+                </label>
+                <label>
+                  <span>Freight</span>
+                  <input type="number" name="freight" min="0" step="0.01" value="0">
+                </label>
+                <label>
+                  <span>Insurance</span>
+                  <input type="number" name="insurance" min="0" step="0.01" value="0">
+                </label>
+                <label>
+                  <span>Import Duty Rate (%)</span>
+                  <input type="number" name="dutyRate" min="0" step="0.01" value="10" required>
+                </label>
+                <label>
+                  <span>FTA Preference</span>
+                  <select name="ftaScheme">
+                    <option value="none" data-reduction="0" selected>No FTA / MFN duty</option>
+                    <option value="atiga" data-reduction="100">ATIGA - ASEAN Form D</option>
+                    <option value="acfta" data-reduction="100">ACFTA - ASEAN China</option>
+                    <option value="ajcep" data-reduction="80">AJCEP / JTEPA - Japan</option>
+                    <option value="akfta" data-reduction="80">AKFTA - ASEAN Korea</option>
+                    <option value="aanzfta" data-reduction="80">AANZFTA - Australia NZ</option>
+                    <option value="rcep" data-reduction="50">RCEP - Regional preference</option>
+                    <option value="manual" data-reduction="0">Manual reduction</option>
+                  </select>
+                </label>
+                <label>
+                  <span>FTA / Duty Reduction (%)</span>
+                  <input type="number" name="dutyReduction" min="0" max="100" step="0.01" value="0">
+                </label>
+                <label>
+                  <span>Excise / Other Tax (%)</span>
+                  <input type="number" name="exciseRate" min="0" step="0.01" value="0">
+                </label>
+                <label>
+                  <span>VAT Rate (%)</span>
+                  <input type="number" name="vatRate" min="0" step="0.01" value="7" required>
+                </label>
+                <label>
+                  <span>Customs / Port Fees (THB)</span>
+                  <input type="number" name="otherFees" min="0" step="0.01" value="0">
+                </label>
+              </div>
+
+              <div class="currency-strip" id="currencyStrip">
+                <span>Indicative converter:</span>
+                <strong>1 USD = 36.50 THB</strong>
+                <small>Rates are editable for your shipment date.</small>
+              </div>
+
+              <div class="import-tax-actions">
+                <button type="submit" class="btn-import-primary">Calculate Tax</button>
+                <button type="button" class="btn-import-secondary" id="importTaxPdf">Export PDF</button>
+                <button type="button" class="btn-import-ghost" id="importTaxReset">Reset</button>
+              </div>
+            </form>
+          </div>
+
+          <aside class="import-tax-side">
+            <div class="import-tax-result" id="importTaxResult" aria-live="polite">
+              <div class="import-tax-empty">
+                <strong>Ready to estimate landed cost</strong>
+                <span>Enter shipment value, duty rate and any FTA preference to calculate CIF, import duty, VAT and landed cost.</span>
+              </div>
+            </div>
+
+            <form class="import-lead-form" id="importLeadForm">
+              <div class="lead-form-title">
+                <span>Need customs support?</span>
+                <strong>Request a landed-cost review</strong>
+              </div>
+              <div class="lead-grid">
+                <label><span>Name *</span><input type="text" name="name" required placeholder="Your name"></label>
+                <label><span>Email *</span><input type="email" name="email" required placeholder="email@example.com"></label>
+                <label><span>Phone</span><input type="tel" name="phone" placeholder="+66..."></label>
+                <label><span>Company</span><input type="text" name="company" placeholder="Company name"></label>
+              </div>
+              <textarea name="message" rows="3" placeholder="Tell us about product, HS Code, origin, quantity, target arrival date"></textarea>
+              <button type="submit" class="btn-lead-submit">Send to PIT Freight</button>
+              <div class="lead-status" id="importLeadStatus"></div>
+            </form>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <div class="searates-open-btn-wrap">
+      <a href="https://www.searates.com/" target="_blank" rel="noopener" class="btn-searates-open">🔗 เปิด SeaRates.com แบบเต็มหน้าจอ →</a>
+    </div>
+
   </div>
 </section>
 
@@ -823,194 +993,6 @@
 </section>
 
 <!-- SEARATES FREIGHT TOOLS -->
-<section class="section section-gray" id="tools">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-badge">🚢 Freight Tools</span>
-      <h2 class="section-title">Import Tax & Freight Calculator</h2>
-      <p class="section-subtitle">คำนวณภาษีนำเข้าเบื้องต้น ค้นหาอัตราค่าขนส่ง และเปรียบเทียบระยะเวลา powered by PIT Freight</p>
-    </div>
-
-    <!-- SEARATES TABS -->
-    <div class="searates-tab-bar">
-      <button class="searates-tab-btn" onclick="switchSeaTab('rates', this)">🚢 Freight Rates</button>
-      <button class="searates-tab-btn" onclick="switchSeaTab('distance', this)">📍 Distance & Time</button>
-      <button class="searates-tab-btn" onclick="switchSeaTab('ports', this)">⚓ Port Map</button>
-      <button class="searates-tab-btn" onclick="switchSeaTab('container', this)">📦 Container Calculator</button>
-      <button class="searates-tab-btn active" onclick="switchSeaTab('import-tax', this)">🧾 Import Tax</button>
-    </div>
-
-    <div class="searates-pane" id="sea-rates">
-      <div class="searates-frame-wrap">
-        <iframe src="https://www.searates.com/reference/calculator/" class="searates-frame" loading="lazy" title="SeaRates Freight Calculator" allowfullscreen></iframe>
-      </div>
-    </div>
-
-    <div class="searates-pane" id="sea-distance">
-      <div class="searates-frame-wrap">
-        <iframe src="https://www.searates.com/services/distances-time/" class="searates-frame" loading="lazy" title="SeaRates Distance & Time" allowfullscreen></iframe>
-      </div>
-    </div>
-
-    <div class="searates-pane" id="sea-ports">
-      <div class="searates-frame-wrap">
-        <iframe src="https://www.searates.com/reference/portmap/" class="searates-frame" loading="lazy" title="SeaRates Port Map" allowfullscreen></iframe>
-      </div>
-    </div>
-
-    <div class="searates-pane" id="sea-container">
-      <div class="searates-frame-wrap">
-        <iframe src="https://www.searates.com/reference/equipment/" class="searates-frame" loading="lazy" title="SeaRates Container Guide" allowfullscreen></iframe>
-      </div>
-    </div>
-
-    <div class="searates-pane active" id="sea-import-tax">
-      <div class="import-tax-calculator">
-        <div class="import-tax-head">
-          <div class="import-tax-hero-copy">
-            <span class="import-tax-kicker">Thailand Import Estimate</span>
-            <h3>Thailand Import Tax Calculator</h3>
-            <p>วางแผนต้นทุนนำเข้าแบบมืออาชีพจาก CIF, อากรขาเข้า, FTA, VAT และค่าใช้จ่ายปลายทาง</p>
-          </div>
-          <div class="customs-flow" aria-label="Thailand customs workflow">
-            <div class="customs-step"><span>01</span><strong>HS Code</strong><small>Classify goods</small></div>
-            <div class="customs-step"><span>02</span><strong>CIF Value</strong><small>Invoice + freight</small></div>
-            <div class="customs-step"><span>03</span><strong>Duty / FTA</strong><small>Preference check</small></div>
-            <div class="customs-step"><span>04</span><strong>VAT</strong><small>Tax base review</small></div>
-            <div class="customs-step"><span>05</span><strong>Clearance</strong><small>Release cargo</small></div>
-          </div>
-        </div>
-
-        <div class="import-tax-body">
-          <div class="import-tax-panel">
-            <div class="import-tax-panel-title">
-              <span>Shipment Valuation</span>
-              <strong>Cost, Insurance & Freight</strong>
-            </div>
-            <form class="import-tax-form" id="importTaxForm">
-              <div class="import-tax-grid">
-                <label class="wide">
-                  <span>สินค้า / Product</span>
-                  <input type="text" name="product" placeholder="เช่น Machine parts, fabric, cosmetics">
-                </label>
-                <label>
-                  <span>HS Code</span>
-                  <input type="text" name="hsCode" placeholder="เช่น 8483.90">
-                </label>
-                <label>
-                  <span>Origin Country</span>
-                  <input type="text" name="originCountry" placeholder="เช่น China, Japan, Vietnam">
-                </label>
-                <label>
-                  <span>Currency</span>
-                  <select name="currency">
-                    <option value="USD">USD - US Dollar</option>
-                    <option value="CNY">CNY - Chinese Yuan</option>
-                    <option value="EUR">EUR - Euro</option>
-                    <option value="JPY">JPY - Japanese Yen</option>
-                    <option value="THB" selected>THB - Thai Baht</option>
-                  </select>
-                </label>
-                <label>
-                  <span>Exchange Rate to THB</span>
-                  <input type="number" name="exchangeRate" min="0.0001" step="0.0001" value="1" required>
-                </label>
-                <label>
-                  <span>Invoice Value</span>
-                  <input type="number" name="invoiceValue" min="0" step="0.01" value="100000" required>
-                </label>
-                <label>
-                  <span>Freight</span>
-                  <input type="number" name="freight" min="0" step="0.01" value="0">
-                </label>
-                <label>
-                  <span>Insurance</span>
-                  <input type="number" name="insurance" min="0" step="0.01" value="0">
-                </label>
-                <label>
-                  <span>Import Duty Rate (%)</span>
-                  <input type="number" name="dutyRate" min="0" step="0.01" value="10" required>
-                </label>
-                <label>
-                  <span>FTA Preference</span>
-                  <select name="ftaScheme">
-                    <option value="none" data-reduction="0" selected>No FTA / MFN duty</option>
-                    <option value="atiga" data-reduction="100">ATIGA - ASEAN Form D</option>
-                    <option value="acfta" data-reduction="100">ACFTA - ASEAN China</option>
-                    <option value="ajcep" data-reduction="80">AJCEP / JTEPA - Japan</option>
-                    <option value="akfta" data-reduction="80">AKFTA - ASEAN Korea</option>
-                    <option value="aanzfta" data-reduction="80">AANZFTA - Australia NZ</option>
-                    <option value="rcep" data-reduction="50">RCEP - Regional preference</option>
-                    <option value="manual" data-reduction="0">Manual reduction</option>
-                  </select>
-                </label>
-                <label>
-                  <span>FTA / Duty Reduction (%)</span>
-                  <input type="number" name="dutyReduction" min="0" max="100" step="0.01" value="0">
-                </label>
-                <label>
-                  <span>Excise / Other Tax (%)</span>
-                  <input type="number" name="exciseRate" min="0" step="0.01" value="0">
-                </label>
-                <label>
-                  <span>VAT Rate (%)</span>
-                  <input type="number" name="vatRate" min="0" step="0.01" value="7" required>
-                </label>
-                <label>
-                  <span>Customs / Port Fees (THB)</span>
-                  <input type="number" name="otherFees" min="0" step="0.01" value="0">
-                </label>
-              </div>
-
-              <div class="currency-strip" id="currencyStrip">
-                <span>Indicative converter:</span>
-                <strong>1 USD = 36.50 THB</strong>
-                <small>Rates are editable for your shipment date.</small>
-              </div>
-
-              <div class="import-tax-actions">
-                <button type="submit" class="btn-import-primary">Calculate Tax</button>
-                <button type="button" class="btn-import-secondary" id="importTaxPdf">Export PDF</button>
-                <button type="button" class="btn-import-ghost" id="importTaxReset">Reset</button>
-              </div>
-            </form>
-          </div>
-
-          <aside class="import-tax-side">
-            <div class="import-tax-result" id="importTaxResult" aria-live="polite">
-              <div class="import-tax-empty">
-                <strong>Ready to estimate landed cost</strong>
-                <span>Enter shipment value, duty rate and any FTA preference to calculate CIF, import duty, VAT and landed cost.</span>
-              </div>
-            </div>
-
-            <form class="import-lead-form" id="importLeadForm">
-              <div class="lead-form-title">
-                <span>Need customs support?</span>
-                <strong>Request a landed-cost review</strong>
-              </div>
-              <div class="lead-grid">
-                <label><span>Name *</span><input type="text" name="name" required placeholder="Your name"></label>
-                <label><span>Email *</span><input type="email" name="email" required placeholder="email@example.com"></label>
-                <label><span>Phone</span><input type="tel" name="phone" placeholder="+66..."></label>
-                <label><span>Company</span><input type="text" name="company" placeholder="Company name"></label>
-              </div>
-              <textarea name="message" rows="3" placeholder="Tell us about product, HS Code, origin, quantity, target arrival date"></textarea>
-              <button type="submit" class="btn-lead-submit">Send to PIT Freight</button>
-              <div class="lead-status" id="importLeadStatus"></div>
-            </form>
-          </aside>
-        </div>
-      </div>
-    </div>
-
-    <div class="searates-open-btn-wrap">
-      <a href="https://www.searates.com/" target="_blank" rel="noopener" class="btn-searates-open">🔗 เปิด SeaRates.com แบบเต็มหน้าจอ →</a>
-    </div>
-
-  </div>
-</section>
-
 <!-- BLOG -->
 <section class="section section-dark" id="blog">
   <div class="container">
