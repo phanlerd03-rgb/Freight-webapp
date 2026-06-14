@@ -27,8 +27,52 @@ const TOPICS = [
   { key:'incoterms', title_th:'Incoterms 2020 ฉบับเข้าใจง่าย — เลือก Term ไหนดีที่สุด',             keywords:'Incoterms 2020,EXW,FOB,CIF,DDP,DAP',       category:'Incoterms', accent:'#F5A623', bg1:'#1a1205', bg2:'#2d1f08' },
 ];
 
+// ── สร้างรูป gpt-image-1 ตามหัวข้อ ──────────────────────────────────────
+async function generateTopicImage(topic) {
+  const key = process.env.OPENAI_API_KEY;
+  if (!key) return null;
+  const prompts = {
+    fta:        'International free trade agreement signing ceremony, flags of ASEAN nations, diplomats shaking hands, modern conference room, professional photography',
+    hscode:     'Customs officer inspecting cargo at port, HS code tariff books, computer screens with trade data, international shipping containers background',
+    lc:         'Bank trade finance letter of credit documents, banker reviewing international payment papers, modern bank office, professional lighting',
+    packaging:  'Export product packaging quality control, workers checking boxes, ISO certified factory, organized warehouse with labeled cartons',
+    customs:    'Thai customs clearance process, official stamping documents, cargo x-ray machine at border, officers in uniform',
+    asean:      'ASEAN trade route map, cargo ships between Southeast Asian ports, colorful flags, aerial view of busy seaport',
+    china:      'China-Thailand trade goods, shipping containers with Chinese and Thai flags, Laem Chabang port, busy freight terminal',
+    japan:      'Thai products exported to Japan — rice, fruits, seafood, Japanese supermarket shelf with Thai labels, quality inspection',
+    halal:      'Halal certified food products, Muslim-friendly export goods, halal logo, Middle Eastern market with Thai products',
+    seafreight: 'Large container ship at Laem Chabang port Thailand, FCL LCL cargo loading, crane operations, sunset over sea',
+    food:       'Thai food export quality inspection lab, GMP certified factory, food safety testing, colorful Thai products ready for export',
+    incoterms:  'International shipping terms diagram, cargo handover at port, Incoterms 2020 concept, logistics professionals reviewing contract',
+  };
+  const prompt = (prompts[topic.key] || `Professional photo for ${topic.title_th} — international trade logistics Thailand`) +
+    '. Photorealistic, cinematic lighting, no text, no words.';
+  try {
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model:'gpt-image-1', prompt, size:'1536x1024', quality:'medium', output_format:'jpeg', n:1 }),
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error?.message || 'img error');
+    const tmpPath = `/tmp/daily_bg_${topic.key}_${Date.now()}.jpg`;
+    if (data.data[0].b64_json) {
+      fs.writeFileSync(tmpPath, Buffer.from(data.data[0].b64_json, 'base64'));
+    } else {
+      execSync(`curl -sL "${data.data[0].url}" -o ${tmpPath}`);
+    }
+    console.log('[DailyBlog] gpt-image-1 ✅');
+    return tmpPath;
+  } catch(e) {
+    console.error('[DailyBlog] gpt-image-1 error:', e.message.slice(0,120));
+    return null;
+  }
+}
+
 // ── สร้างรูป Cover ด้วย Python PIL ───────────────────────────────────────
-function createCoverPython(topic, dateTag, outPath) {
+function createCoverPython(topic, dateTag, outPath, bgImagePath = null) {
+  const hasBg  = bgImagePath && fs.existsSync(bgImagePath);
+  const safeBg = hasBg ? bgImagePath.replace(/'/g, "\\'") : '';
   const script = `
 import sys
 sys.stdout.reconfigure(encoding='utf-8')
@@ -43,16 +87,33 @@ W, H = 1200, 630
 img = Image.new('RGB', (W, H))
 draw = ImageDraw.Draw(img)
 
-bg1 = tuple(int('${topic.bg1}'.lstrip('#')[i:i+2],16) for i in (0,2,4))
-bg2 = tuple(int('${topic.bg2}'.lstrip('#')[i:i+2],16) for i in (0,2,4))
-for y in range(H):
-    t = y/H
-    c = tuple(int(bg1[i]+t*(bg2[i]-bg1[i])) for i in range(3))
-    draw.line([(0,y),(W,y)], fill=c)
+bg_path = '${safeBg}'
+if bg_path and os.path.exists(bg_path):
+    bg = Image.open(bg_path).convert('RGB').resize((W, H), Image.LANCZOS)
+    img.paste(bg)
+    overlay = Image.new('RGBA', (W, H), (5, 12, 25, 150))
+    img = img.convert('RGBA')
+    img = Image.alpha_composite(img, overlay).convert('RGB')
+    draw = ImageDraw.Draw(img)
+    left_panel = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    ld = ImageDraw.Draw(left_panel)
+    for x in range(680):
+        alpha = int(210 * (1 - x/680))
+        ld.line([(x,0),(x,H)], fill=(5,12,25,alpha))
+    img = img.convert('RGBA')
+    img = Image.alpha_composite(img, left_panel).convert('RGB')
+    draw = ImageDraw.Draw(img)
+else:
+    bg1 = tuple(int('${topic.bg1}'.lstrip('#')[i:i+2],16) for i in (0,2,4))
+    bg2 = tuple(int('${topic.bg2}'.lstrip('#')[i:i+2],16) for i in (0,2,4))
+    for y in range(H):
+        t = y/H
+        c = tuple(int(bg1[i]+t*(bg2[i]-bg1[i])) for i in range(3))
+        draw.line([(0,y),(W,y)], fill=c)
 
-for x in range(0, W, 36):
-    for y in range(0, H, 36):
-        draw.rectangle([x,y,x+2,y+2], fill=(255,255,255,25))
+    for x in range(0, W, 36):
+        for y in range(0, H, 36):
+            draw.rectangle([x,y,x+2,y+2], fill=(255,255,255,25))
 
 fhuge  = ImageFont.truetype(FONT, 78)
 flarge = ImageFont.truetype(FONT, 38)
@@ -130,7 +191,13 @@ draw.text((W-215,H-44), 'pitfreight.com', font=fmed, fill=(120,165,140))
 img.save('${outPath}', 'JPEG', quality=93)
 print('ok')
 `;
-  execSync(`python3 -c "${script.replace(/"/g, '\\"')}"`, { encoding: 'utf8' });
+  try {
+    execSync(`python3 -c "${script.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`, { encoding: 'utf8', timeout: 35000 });
+    return true;
+  } catch(e) {
+    console.error('[DailyBlog] Cover error:', e.message.slice(0, 200));
+    return false;
+  }
 }
 
 // ── Generate content with OpenAI ─────────────────────────────────────────
@@ -178,19 +245,38 @@ async function postNotion(topic, slug, content, coverUrl) {
     page_size: 1,
   });
   if (ex.results.length) return ex.results[0].id;
+
+  // แปลง content เป็น blocks (paragraph ต่อย่อหน้า) + inline cover image
+  const paragraphs = content.split('\n\n').filter(t => t.trim()).slice(0, 20);
+  const contentBlocks = [];
+
+  // รูป cover ใน body บทความ
+  contentBlocks.push({
+    object: 'block', type: 'image',
+    image: { type:'external', external:{ url: coverUrl }, caption:[{type:'text',text:{content: topic.title_th}}] },
+  });
+
+  // เนื้อหาแต่ละย่อหน้า
+  paragraphs.forEach(para => {
+    contentBlocks.push({
+      object: 'block', type: 'paragraph',
+      paragraph: { rich_text:[{ type:'text', text:{ content: para.trim() } }] },
+    });
+  });
+
   const p = await notion.pages.create({
     parent: { database_id: process.env.NOTION_BLOG_DB },
     cover: { type:'external', external:{ url: coverUrl } },
     properties: {
       Title:           { title:[{ text:{ content: topic.title_th } }] },
       Slug:            { rich_text:[{ text:{ content: slug } }] },
-      Summary:         { rich_text:[{ text:{ content: content.slice(0,200) } }] },
+      Summary:         { rich_text:[{ text:{ content: content.replace(/[*#]/g,'').trim().slice(0,200) } }] },
       Category:        { select:{ name: topic.category } },
       Published:       { checkbox: true },
       'Cover Image':   { url: coverUrl },
       'Published Date':{ date:{ start: new Date().toISOString().split('T')[0] } },
     },
-    children:[{ object:'block', type:'paragraph', paragraph:{ rich_text:[{text:{content}}] } }],
+    children: contentBlocks,
   });
   return p.id;
 }
@@ -210,25 +296,30 @@ async function runDailyBlog() {
   console.log(`[DailyBlog] ${dateStr} — ${topic.title_th}`);
 
   try {
-    // 1. Cover image
-    createCoverPython(topic, dateTag, imgPath);
+    // 1. Generate relevant photo with gpt-image-1
+    console.log('[DailyBlog] Generating topic photo...');
+    const bgImagePath = await generateTopicImage(topic);
+
+    // 2. Cover image (PIL + real photo background)
+    createCoverPython(topic, dateTag, imgPath, bgImagePath);
+    if (bgImagePath && fs.existsSync(bgImagePath)) fs.unlinkSync(bgImagePath);
     console.log('[DailyBlog] Cover ✅');
 
-    // 2. Content
+    // 3. Content
     const content = await generateContent(topic);
     console.log('[DailyBlog] Content ✅');
 
-    // 3. Notion
+    // 4. Notion (with inline image block)
     await postNotion(topic, slug, content, coverUrl);
     console.log('[DailyBlog] Notion ✅');
 
-    // 4. Facebook
+    // 5. Facebook
     const fb1 = await postFacebook(process.env.FB_PAGE_ID,  process.env.FB_PAGE_ACCESS_TOKEN,  content, imgPath);
     const fb2 = await postFacebook(process.env.FB_PAGE2_ID, process.env.FB_PAGE2_ACCESS_TOKEN, content, imgPath);
     console.log('[DailyBlog] FB1:', fb1.id ? '✅' : `❌ ${fb1.error?.message}`);
     console.log('[DailyBlog] FB2:', fb2.id ? '✅' : `❌ ${fb2.error?.message}`);
 
-    // 5. Slack
+    // 6. Slack
     const fbUrl = fb1.post_id ? `https://www.facebook.com/${fb1.post_id}` : '';
     await fetch(process.env.SLACK_WEBHOOK_URL, {
       method:'POST', headers:{'Content-Type':'application/json'},

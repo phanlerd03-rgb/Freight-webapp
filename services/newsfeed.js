@@ -285,6 +285,25 @@ async function postNotion(title, slug, content, coverUrl) {
   if (ex.results.length) return ex.results[0].id;
 
   const summary = content.replace(/#\w+/g, '').trim().slice(0, 200);
+
+  // แปลง content เป็น blocks แยกย่อหน้า
+  const paragraphs = content.split('\n\n').filter(t => t.trim()).slice(0, 20);
+  const contentBlocks = [];
+
+  // รูป cover ใน body บทความ
+  contentBlocks.push({
+    object: 'block', type: 'image',
+    image: { type:'external', external:{ url: coverUrl }, caption:[{type:'text',text:{content: title}}] },
+  });
+
+  // เนื้อหาแต่ละย่อหน้า
+  paragraphs.forEach(para => {
+    contentBlocks.push({
+      object: 'block', type: 'paragraph',
+      paragraph: { rich_text:[{ type:'text', text:{ content: para.trim() } }] },
+    });
+  });
+
   const p = await notion.pages.create({
     parent: { database_id: process.env.NOTION_BLOG_DB },
     cover: { type:'external', external:{ url: coverUrl } },
@@ -297,10 +316,7 @@ async function postNotion(title, slug, content, coverUrl) {
       'Cover Image':   { url: coverUrl },
       'Published Date':{ date:{ start: new Date().toISOString().split('T')[0] } },
     },
-    children:[
-      { object:'block', type:'image', image:{ type:'external', external:{ url: coverUrl }, caption:[{type:'text',text:{content:title}}] } },
-      { object:'block', type:'paragraph', paragraph:{ rich_text:[{text:{content}}] } },
-    ],
+    children: contentBlocks,
   });
   return p.id;
 }
