@@ -1293,8 +1293,20 @@ function switchHWTab(btn, id) {
     <div id="reg_success" class="reg-success" style="display:none">
       <div class="reg-success-icon">🎉</div>
       <h3>สมัครสมาชิกสำเร็จ!</h3>
-      <p>ทีมงาน PIT Freight จะติดต่อกลับภายใน 24 ชั่วโมง<br>กรุณาตรวจสอบอีเมลของคุณด้วยครับ/ค่ะ</p>
-      <button class="reg-submit" onclick="closeRegisterModal()" style="margin-top:16px">ปิด</button>
+      <p>ข้อมูลของคุณถูกส่งให้ทีมงาน PIT Freight แล้ว<br>ติดต่อเพิ่มเติมได้ทันทีผ่านช่องทางด้านล่าง</p>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:20px;width:100%;">
+        <a id="reg_lineBtn" href="https://lin.ee/nEpu4wM" target="_blank" rel="noopener"
+           style="display:flex;align-items:center;justify-content:center;gap:10px;background:#06C755;color:#fff;border:none;padding:14px 20px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;text-decoration:none;font-family:'Sarabun',sans-serif;box-shadow:0 4px 16px rgba(6,199,85,.35);">
+          <svg width="22" height="22" viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="10" fill="#06C755"/><path d="M40 22.3C40 15.5 33.3 10 25 10S10 15.5 10 22.3c0 6.1 5.4 11.2 12.7 12.2.5.1 1.2.3 1.3.8.1.4 0 1.1 0 1.5l-.2 1.2c-.1.4-.4 1.7 1.5.9s10.2-6 13.9-10.3c2.6-2.7 3.8-5.5 3.8-6.3z" fill="#fff"/></svg>
+          แชทผ่าน LINE กับทีมงาน
+        </a>
+        <button id="reg_emailBtn" onclick="sendRegEmail()"
+           style="display:flex;align-items:center;justify-content:center;gap:10px;background:linear-gradient(135deg,#1a4f8a,#1a8fd1);color:#fff;border:none;padding:14px 20px;border-radius:12px;font-size:15px;font-weight:800;cursor:pointer;font-family:'Sarabun',sans-serif;box-shadow:0 4px 16px rgba(26,79,138,.3);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+          ส่งข้อมูลทาง Email
+        </button>
+        <button class="reg-submit" onclick="closeRegisterModal()" style="background:#eef2f7;color:#334155;margin-top:4px;box-shadow:none;">ปิด</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1396,6 +1408,8 @@ function closeRegisterModal() {
 }
 document.addEventListener('keydown', e => { if(e.key === 'Escape') closeRegisterModal(); });
 
+let _regData = {};
+
 async function submitRegister(e) {
   e.preventDefault();
   const btn  = document.getElementById('reg_submitBtn');
@@ -1405,18 +1419,20 @@ async function submitRegister(e) {
   err.style.display = 'none';
   btn.disabled = true; txt.style.display = 'none'; ldr.style.display = '';
 
+  _regData = {
+    name:         document.getElementById('reg_name').value.trim(),
+    email:        document.getElementById('reg_email').value.trim(),
+    phone:        document.getElementById('reg_phone').value.trim(),
+    company:      document.getElementById('reg_company').value.trim(),
+    businessType: document.getElementById('reg_businessType').value,
+    message:      document.getElementById('reg_message').value.trim(),
+  };
+
   try {
     const res = await fetch('/api/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name:         document.getElementById('reg_name').value.trim(),
-        email:        document.getElementById('reg_email').value.trim(),
-        phone:        document.getElementById('reg_phone').value.trim(),
-        company:      document.getElementById('reg_company').value.trim(),
-        businessType: document.getElementById('reg_businessType').value,
-        message:      document.getElementById('reg_message').value.trim(),
-      }),
+      body: JSON.stringify(_regData),
     });
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.error || 'เกิดข้อผิดพลาด');
@@ -1427,6 +1443,31 @@ async function submitRegister(e) {
     err.style.display = '';
     btn.disabled = false; txt.style.display = ''; ldr.style.display = 'none';
   }
+}
+
+function sendRegEmail() {
+  const d = _regData;
+  const now = new Date().toLocaleString('th-TH');
+  const subject = encodeURIComponent(`[PIT Freight] สมาชิกใหม่ — ${d.name}`);
+  const body = encodeURIComponent(
+`สวัสดีครับ/ค่ะ ทีมงาน PIT Freight
+
+มีสมาชิกใหม่สมัครเข้ามาในระบบ:
+
+=== ข้อมูลสมาชิก ===
+ชื่อ-นามสกุล:    ${d.name}
+อีเมล:           ${d.email}
+เบอร์โทรศัพท์:   ${d.phone || '-'}
+บริษัท / ชื่อร้าน: ${d.company || '-'}
+ประเภทธุรกิจ:    ${d.businessType || '-'}
+ข้อความเพิ่มเติม: ${d.message || '-'}
+
+วันที่สมัคร: ${now}
+ช่องทาง: pitfreight.com
+
+กรุณาติดต่อกลับภายใน 24 ชั่วโมงครับ/ค่ะ`
+  );
+  window.location.href = `mailto:phanlerd.03@gmail.com?subject=${subject}&body=${body}`;
 }
 </script>
 
