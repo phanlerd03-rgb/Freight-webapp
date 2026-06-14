@@ -86,7 +86,7 @@ img { max-width: 100%; }
 .btn-nav-register {
   background: linear-gradient(135deg, #c9a84c, #e2c06a);
   border: none; padding: 10px 20px; border-radius: 9px; font-size: 14px; font-weight: 800;
-  cursor: pointer; font-family: 'Sarabun', sans-serif; color: #0a1a2e;
+  cursor: pointer; font-family: 'Sarabun', sans-serif; color: #000000;
   transition: all .22s; white-space: nowrap; flex-shrink: 0;
   box-shadow: 0 3px 14px rgba(201,168,76,.45);
   letter-spacing: .2px;
