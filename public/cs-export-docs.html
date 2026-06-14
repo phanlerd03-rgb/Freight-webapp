@@ -1,0 +1,1939 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS Export Docs — ระบบงานเอกสารส่งออก</title>
+<style>
+:root{
+  --bg:#f1f5f9; --panel:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0;
+  --brand:#0e3a5f; --brand2:#1769aa; --accent:#0ea5e9; --accent-bg:#e0f2fe;
+  --green:#16a34a; --green-bg:#dcfce7; --amber:#d97706; --amber-bg:#fef3c7;
+  --red:#dc2626; --red-bg:#fee2e2; --slate-bg:#f8fafc; --shadow:0 1px 3px rgba(15,23,42,.08),0 1px 2px rgba(15,23,42,.04);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Tahoma,"Helvetica Neue",Arial,"Noto Sans Thai",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;line-height:1.5}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px}
+a{color:var(--brand2);text-decoration:none}
+
+/* Layout */
+.app{display:flex;min-height:100vh}
+.sidebar{width:236px;background:var(--brand);color:#cbd5e1;display:flex;flex-direction:column;position:fixed;top:0;bottom:0;left:0;z-index:20}
+.brand{padding:18px 20px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:10px}
+.brand .logo{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--brand2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:16px}
+.brand h1{font-size:15px;color:#fff;font-weight:700;line-height:1.1}
+.brand small{font-size:10.5px;color:#7dd3fc;letter-spacing:.5px}
+.nav{padding:10px 12px;flex:1;overflow:auto}
+.nav-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:#64829e;padding:14px 12px 6px}
+.nav a{display:flex;align-items:center;gap:11px;padding:9px 12px;border-radius:8px;color:#cbd5e1;font-size:13.5px;margin-bottom:2px;transition:.15s}
+.nav a .ic{width:18px;text-align:center;font-size:15px}
+.nav a:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav a.active{background:var(--brand2);color:#fff;font-weight:600}
+.nav a .badge{margin-left:auto;background:var(--red);color:#fff;font-size:10px;padding:1px 7px;border-radius:10px;font-weight:700}
+.side-foot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#64829e}
+
+.main{margin-left:236px;flex:1;min-width:0}
+.topbar{background:var(--panel);border-bottom:1px solid var(--line);padding:13px 26px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:15}
+.topbar h2{font-size:17px;font-weight:700}
+.topbar .sub{font-size:12px;color:var(--muted)}
+.topbar .spacer{flex:1}
+.search{position:relative}
+.search input{padding:8px 12px 8px 32px;border:1px solid var(--line);border-radius:8px;width:240px;background:var(--slate-bg)}
+.search .si{position:absolute;left:10px;top:8px;color:var(--muted)}
+.content{padding:24px 26px 60px}
+
+/* Buttons */
+.btn{padding:8px 15px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:13.5px;font-weight:600;color:var(--ink);display:inline-flex;align-items:center;gap:7px;transition:.15s}
+.btn:hover{background:var(--slate-bg)}
+.btn-primary{background:var(--brand2);border-color:var(--brand2);color:#fff}
+.btn-primary:hover{background:#125a93}
+.btn-sm{padding:5px 11px;font-size:12.5px}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-danger{color:var(--red);border-color:var(--red-bg)}
+.btn-danger:hover{background:var(--red-bg)}
+
+/* Cards */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:17px 18px;box-shadow:var(--shadow)}
+.stat .k{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px}
+.stat .v{font-size:27px;font-weight:800;margin-top:7px;letter-spacing:-.5px}
+.stat .d{font-size:11.5px;color:var(--muted);margin-top:3px}
+.stat .ico{width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;font-size:15px}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);margin-bottom:20px;overflow:hidden}
+.panel-h{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.panel-h h3{font-size:15px;font-weight:700}
+.panel-h .sub{font-size:12px;color:var(--muted)}
+.panel-h .spacer{flex:1}
+.panel-b{padding:18px}
+.grid2{display:grid;grid-template-columns:1.6fr 1fr;gap:20px}
+
+/* Table */
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);padding:11px 16px;border-bottom:1px solid var(--line);background:var(--slate-bg);white-space:nowrap}
+td{padding:12px 16px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:middle}
+tbody tr:hover{background:var(--slate-bg);cursor:pointer}
+tbody tr:last-child td{border-bottom:none}
+.mono{font-family:"SF Mono",Consolas,monospace;font-size:12.5px;font-weight:600}
+
+/* Badges / status */
+.tag{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.s-booking{background:#ede9fe;color:#6d28d9}
+.s-docs{background:var(--amber-bg);color:var(--amber)}
+.s-si{background:var(--accent-bg);color:var(--brand2)}
+.s-bl{background:#cffafe;color:#0e7490}
+.s-departed{background:var(--green-bg);color:var(--green)}
+.s-done{background:#e2e8f0;color:#475569}
+.s-cancel{background:var(--red-bg);color:var(--red)}
+
+/* Forms */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:12px;font-weight:600;color:#334155}
+.fg label .en{color:var(--muted);font-weight:400}
+.fg input,.fg select,.fg textarea{padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:#fff;width:100%}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)}
+.fg textarea{resize:vertical;min-height:62px}
+.section-title{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--brand2);margin:8px 0 2px;grid-column:1/-1;border-bottom:2px solid var(--accent-bg);padding-bottom:6px}
+
+/* Modal */
+.overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:50;display:none;align-items:flex-start;justify-content:center;padding:30px;overflow:auto}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:880px;box-shadow:0 20px 50px rgba(0,0,0,.3);animation:pop .18s ease}
+@keyframes pop{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+.modal-h{padding:18px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center}
+.modal-h h3{font-size:17px;font-weight:700}
+.modal-h .x{margin-left:auto;border:none;background:none;font-size:22px;color:var(--muted);line-height:1}
+.modal-b{padding:22px;max-height:66vh;overflow:auto}
+.modal-f{padding:15px 22px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--slate-bg)}
+
+/* Items table editor */
+.items-tbl{width:100%;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:4px}
+.items-tbl th{padding:8px 9px;font-size:10px}
+.items-tbl td{padding:5px 7px}
+.items-tbl input{padding:6px 7px;border:1px solid transparent;border-radius:6px;width:100%;background:transparent}
+.items-tbl input:focus{border-color:var(--accent);background:#fff}
+.items-tbl tr:hover{background:transparent;cursor:default}
+.lnk-add{font-size:12.5px;color:var(--brand2);font-weight:600;padding:8px;display:inline-block}
+
+/* Detail */
+.detail-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:20px}
+.detail-head .jno{font-size:22px;font-weight:800}
+.detail-head .meta{font-size:13px;color:var(--muted);margin-top:3px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:20px}
+.tabs button{padding:10px 16px;border:none;background:none;font-size:13.5px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs button.active{color:var(--brand2);border-color:var(--brand2)}
+.kv{display:grid;grid-template-columns:150px 1fr;gap:9px 16px;font-size:13.5px}
+.kv .k{color:var(--muted)}
+.kv .v{font-weight:600}
+
+/* Timeline */
+.timeline{position:relative;padding-left:8px}
+.tl-item{display:flex;gap:14px;padding-bottom:4px}
+.tl-rail{display:flex;flex-direction:column;align-items:center}
+.tl-node{width:26px;height:26px;border-radius:50%;background:#fff;border:2px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--muted);flex-shrink:0;z-index:1}
+.tl-item.done .tl-node{background:var(--green);border-color:var(--green);color:#fff}
+.tl-item.current .tl-node{background:var(--brand2);border-color:var(--brand2);color:#fff;box-shadow:0 0 0 4px var(--accent-bg)}
+.tl-line{width:2px;flex:1;background:var(--line);min-height:16px}
+.tl-item.done .tl-line{background:var(--green)}
+.tl-body{padding-bottom:20px;flex:1}
+.tl-body .t{font-weight:700;font-size:14px}
+.tl-body .d{font-size:12px;color:var(--muted)}
+
+/* Checklist */
+.chk{display:flex;align-items:center;gap:12px;padding:11px 14px;border:1px solid var(--line);border-radius:9px;margin-bottom:8px;background:#fff}
+.chk input[type=checkbox]{width:18px;height:18px;accent-color:var(--green);cursor:pointer}
+.chk .ct{font-weight:600;font-size:13.5px}
+.chk .cs{font-size:11.5px;color:var(--muted)}
+.chk.checked{background:var(--green-bg);border-color:#bbf7d0}
+.chk.checked .ct{text-decoration:line-through;color:var(--muted)}
+.chk .dl{margin-left:auto;font-size:11.5px;font-weight:700}
+.dl-late{color:var(--red)}.dl-soon{color:var(--amber)}.dl-ok{color:var(--green)}
+
+/* Alert list */
+.alert-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:9px;margin-bottom:8px;border:1px solid var(--line)}
+.alert-row .ai{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.alert-row .at{font-weight:700;font-size:13.5px}
+.alert-row .ad{font-size:12px;color:var(--muted)}
+.alert-row .ax{margin-left:auto;font-size:12px;font-weight:700}
+
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .ei{font-size:40px;margin-bottom:10px;opacity:.5}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{padding:6px 13px;border-radius:20px;border:1px solid var(--line);background:#fff;font-size:12.5px;font-weight:600;color:var(--muted)}
+.chip.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+.progress{height:6px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress > i{display:block;height:100%;background:var(--green);border-radius:4px}
+
+/* Documents */
+.doc-types{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.doc-card{border:1px solid var(--line);border-radius:12px;padding:18px;background:#fff;text-align:center;transition:.15s}
+.doc-card:hover{border-color:var(--accent);box-shadow:var(--shadow);transform:translateY(-2px)}
+.doc-card .di{font-size:30px;margin-bottom:8px}
+.doc-card .dt{font-weight:700;font-size:14px}
+.doc-card .dd{font-size:11.5px;color:var(--muted);margin-top:3px;min-height:30px}
+
+/* Printable doc */
+.sheet{background:#fff;color:#000;padding:34px 40px;font-size:12px;line-height:1.45;max-width:820px;margin:0 auto;border:1px solid var(--line)}
+.sheet h1{font-size:20px;text-align:center;letter-spacing:2px;margin-bottom:4px;border-bottom:2px solid #000;padding-bottom:8px}
+.sheet .doc-head{display:flex;justify-content:space-between;margin-bottom:14px}
+.sheet .co{font-size:15px;font-weight:800}
+.sheet table.dt{width:100%;border-collapse:collapse;margin:10px 0}
+.sheet table.dt th,.sheet table.dt td{border:1px solid #333;padding:6px 8px;font-size:11px}
+.sheet table.dt th{background:#eee}
+.sheet .box{border:1px solid #333;padding:8px 10px;margin-bottom:8px}
+.sheet .lbl{font-size:9px;text-transform:uppercase;color:#555;letter-spacing:.5px;font-weight:700}
+.sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sheet .sig{margin-top:30px;text-align:right}
+.sheet .tot{text-align:right;font-weight:800;font-size:13px}
+.toolbar-print{display:flex;gap:10px;justify-content:center;margin-bottom:16px}
+
+/* Dedicated print area — holds ONLY the document to print on real A4 */
+#printArea{display:none}
+@media print{
+  @page{size:A4;margin:14mm}
+  html,body{background:#fff!important;margin:0;padding:0}
+  /* hide the whole app, show only the print area */
+  body.printing .app,body.printing .overlay{display:none!important}
+  body.printing #printArea{display:block!important}
+  /* default print: hide chrome, keep inline sheet usable too */
+  .sidebar,.topbar,.toolbar-print,.no-print{display:none!important}
+  .main{margin:0}.content{padding:0}
+  #printArea .sheet{border:none!important;max-width:none;margin:0;padding:0;font-size:11.5px;box-shadow:none}
+  #printArea .sheet h1{font-size:19px}
+  /* clean page breaks */
+  #printArea table.dt{page-break-inside:auto}
+  #printArea table.dt thead{display:table-header-group}
+  #printArea table.dt tr{page-break-inside:avoid;page-break-after:auto}
+  #printArea .sig,#printArea .box{page-break-inside:avoid}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+@media(max-width:1100px){.cards,.doc-types{grid-template-columns:repeat(2,1fr)}.grid2{grid-template-columns:1fr}}
+@media(max-width:720px){.sidebar{display:none}.main{margin:0}.form-grid,.kv{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">CS</div>
+      <div>
+        <h1>Export Docs</h1>
+        <small>CS DOCUMENT · ขาออก</small>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">หลัก / Main</div>
+      <a data-view="dashboard" class="active"><span class="ic">▦</span> แดชบอร์ด <span style="color:#7dd3fc;font-size:11px">Dashboard</span></a>
+      <a data-view="jobs"><span class="ic">▤</span> งานขาออก <span style="color:#7dd3fc;font-size:11px">Jobs</span></a>
+      <a data-view="documents"><span class="ic">▣</span> เอกสาร <span style="color:#7dd3fc;font-size:11px">Documents</span></a>
+      <a data-view="alerts"><span class="ic">◉</span> แจ้งเตือน <span style="color:#7dd3fc;font-size:11px">Alerts</span><span class="badge" id="alertBadge">0</span></a>
+      <div class="nav-label">อื่นๆ / Others</div>
+      <a data-view="customers"><span class="ic">◍</span> ลูกค้า <span style="color:#7dd3fc;font-size:11px">Customers</span></a>
+      <a data-view="partners"><span class="ic">⬡</span> พาร์ทเนอร์ <span style="color:#7dd3fc;font-size:11px">Partners</span></a>
+      <a data-view="settings"><span class="ic">⚙</span> ตั้งค่า <span style="color:#7dd3fc;font-size:11px">Settings</span></a>
+    </nav>
+    <div class="side-foot">
+      <div id="meName" style="color:#cbd5e1;font-weight:600">CS Export Team</div>
+      <div>v1.0 · เก็บข้อมูลในเครื่อง</div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="topbar">
+      <div>
+        <h2 id="pageTitle">แดชบอร์ด</h2>
+        <div class="sub" id="pageSub">ภาพรวมงานเอกสารส่งออก / Export documentation overview</div>
+      </div>
+      <div class="spacer"></div>
+      <div class="search no-print">
+        <span class="si">⌕</span>
+        <input id="globalSearch" placeholder="ค้นหา Job No / ลูกค้า / B/L...">
+      </div>
+      <button class="btn btn-primary no-print" onclick="openJobModal()">＋ สร้างงานขาออก</button>
+    </header>
+    <main class="content" id="content"></main>
+  </div>
+</div>
+
+<!-- Job Modal -->
+<div class="overlay" id="jobOverlay">
+  <div class="modal">
+    <div class="modal-h">
+      <h3 id="jobModalTitle">สร้างงานขาออก / New Export Job</h3>
+      <button class="x" onclick="closeJobModal()">×</button>
+    </div>
+    <div class="modal-b">
+      <form id="jobForm" class="form-grid">
+        <input type="hidden" id="f_id">
+        <div class="section-title">ข้อมูลงาน / Job Info</div>
+        <div class="fg"><label>Job No <span class="en">/ เลขที่งาน</span></label><input id="f_jobNo" placeholder="EXP-2026-0001"></div>
+        <div class="fg"><label>สถานะ <span class="en">/ Status</span></label>
+          <select id="f_status">
+            <option value="booking">Booking — รับงาน/จองเรือ</option>
+            <option value="docs">Docs Preparing — เตรียมเอกสาร</option>
+            <option value="si">SI Submitted — ส่ง Shipping Instruction</option>
+            <option value="bl">B/L Confirmed — ยืนยัน B/L</option>
+            <option value="departed">Departed — เรือออก</option>
+            <option value="done">Completed — ปิดงาน</option>
+          </select>
+        </div>
+        <div class="fg"><label>Booking No <span class="en">/ เลขที่บุ๊คกิ้ง</span></label><input id="f_bookingNo" placeholder="BKG-..."></div>
+        <div class="fg"><label>B/L No <span class="en">/ เลขที่ B/L</span></label><input id="f_blNo" placeholder="MBL/HBL..."></div>
+
+        <div class="section-title">คู่ค้า / Parties</div>
+        <div class="fg full"><label>Shipper <span class="en">/ ผู้ส่งออก</span> &nbsp;<select id="pick_shipper" onchange="fillParty('f_shipper',this.value);this.value=''" style="display:inline-block;width:auto;padding:3px 6px;font-size:11px"><option value="">↧ ดึงจากทะเบียน</option></select></label><textarea id="f_shipper" placeholder="ชื่อบริษัท ที่อยู่ ประเทศ"></textarea></div>
+        <div class="fg full"><label>Consignee <span class="en">/ ผู้รับปลายทาง</span> &nbsp;<select id="pick_consignee" onchange="fillParty('f_consignee',this.value);this.value=''" style="display:inline-block;width:auto;padding:3px 6px;font-size:11px"><option value="">↧ ดึงจากทะเบียน</option></select></label><textarea id="f_consignee" placeholder="Consignee name & address"></textarea></div>
+        <div class="fg full"><label>Notify Party <span class="en">/ ผู้รับแจ้ง</span></label><textarea id="f_notify" placeholder="SAME AS CONSIGNEE หรือระบุ"></textarea></div>
+
+        <div class="section-title">การขนส่ง / Shipment</div>
+        <div class="fg"><label>Port of Loading <span class="en">/ ท่าต้นทาง</span></label><input id="f_pol" placeholder="THLCH Laem Chabang"></div>
+        <div class="fg"><label>Port of Discharge <span class="en">/ ท่าปลายทาง</span></label><input id="f_pod" placeholder="JPYOK Yokohama"></div>
+        <div class="fg"><label>Incoterms <span class="en">2020</span></label>
+          <select id="f_incoterm"><option>FOB</option><option>CIF</option><option>CFR</option><option>EXW</option><option>FCA</option><option>CPT</option><option>CIP</option><option>DAP</option><option>DDP</option></select>
+        </div>
+        <div class="fg"><label>Mode <span class="en">/ รูปแบบ</span></label>
+          <select id="f_mode"><option>Sea FCL</option><option>Sea LCL</option><option>Air</option></select>
+        </div>
+        <div class="fg"><label>Vessel / Flight <span class="en">/ เรือ-เที่ยวบิน</span></label><input id="f_vessel" placeholder="WAN HAI 805"></div>
+        <div class="fg"><label>Voyage <span class="en">/ เที่ยว</span></label><input id="f_voyage" placeholder="V.123E"></div>
+        <div class="fg"><label>ETD <span class="en">/ วันเรือออก</span></label><input id="f_etd" type="date"></div>
+        <div class="fg"><label>ETA <span class="en">/ วันถึงปลายทาง</span></label><input id="f_eta" type="date"></div>
+        <div class="fg"><label>Container No <span class="en">/ ตู้</span></label><input id="f_container" placeholder="TEMU1234567"></div>
+        <div class="fg"><label>Seal / Type <span class="en">/ ซีล-ชนิดตู้</span></label><input id="f_seal" placeholder="SEAL123 / 1x40HC"></div>
+
+        <div class="section-title">เอกสารการค้า / Commercial</div>
+        <div class="fg"><label>Invoice No</label><input id="f_invNo" placeholder="INV-2026-0001"></div>
+        <div class="fg"><label>Invoice Date</label><input id="f_invDate" type="date"></div>
+        <div class="fg"><label>Currency <span class="en">/ สกุลเงิน</span></label>
+          <select id="f_ccy"><option>USD</option><option>EUR</option><option>JPY</option><option>CNY</option><option>THB</option><option>SGD</option></select>
+        </div>
+        <div class="fg"><label>Payment Term <span class="en">/ เงื่อนไขชำระ</span></label><input id="f_payterm" placeholder="T/T 30 days / L/C at sight"></div>
+
+        <div class="section-title">รายการสินค้า / Goods</div>
+        <div class="fg full">
+          <table class="items-tbl">
+            <thead><tr>
+              <th style="width:26%">Description</th><th>HS Code</th><th>Qty</th><th>Unit</th>
+              <th>Unit Price</th><th>Ctns</th><th>N.W (kg)</th><th>G.W (kg)</th><th></th>
+            </tr></thead>
+            <tbody id="itemsBody"></tbody>
+          </table>
+          <a class="lnk-add" onclick="addItemRow()">＋ เพิ่มรายการ / Add line</a>
+        </div>
+
+        <div class="fg full"><label>หมายเหตุ <span class="en">/ Remarks</span></label><textarea id="f_remarks" placeholder="Special instructions, marks & numbers..."></textarea></div>
+      </form>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-danger" id="delJobBtn" style="margin-right:auto;display:none" onclick="deleteJob()">ลบงาน</button>
+      <button class="btn" onclick="closeJobModal()">ยกเลิก</button>
+      <button class="btn" onclick="previewJobFromForm()">👁 Preview</button>
+      <button class="btn btn-primary" onclick="saveJob()">บันทึก / Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Customer Modal -->
+<div class="overlay" id="custOverlay">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-h">
+      <h3 id="custModalTitle">เพิ่มลูกค้า / New Customer</h3>
+      <button class="x" onclick="closeCustModal()">×</button>
+    </div>
+    <div class="modal-b">
+      <form id="custForm" class="form-grid">
+        <input type="hidden" id="cf_id">
+        <div class="fg full"><label>ชื่อบริษัท <span class="en">/ Company Name *</span></label><input id="cf_name" placeholder="บริษัท ... จำกัด / Co., Ltd."></div>
+        <div class="fg"><label>ประเภท <span class="en">/ Type</span></label>
+          <select id="cf_type">
+            <option value="consignee">Consignee — ผู้รับปลายทาง</option>
+            <option value="shipper">Shipper — ผู้ส่งออก</option>
+            <option value="both">Both — ทั้งสองอย่าง</option>
+            <option value="notify">Notify Party — ผู้รับแจ้ง</option>
+          </select>
+        </div>
+        <div class="fg"><label>ประเทศ <span class="en">/ Country</span></label><input id="cf_country" placeholder="Thailand"></div>
+        <div class="fg full"><label>ที่อยู่ <span class="en">/ Address</span></label><textarea id="cf_address" placeholder="เลขที่ ถนน แขวง/เขต จังหวัด รหัสไปรษณีย์ ประเทศ"></textarea></div>
+        <div class="fg"><label>เลขประจำตัวผู้เสียภาษี <span class="en">/ Tax ID</span></label><input id="cf_taxId" placeholder="0105540012345"></div>
+        <div class="fg"><label>ผู้ติดต่อ <span class="en">/ Contact Person</span></label><input id="cf_contact" placeholder="คุณ... / Mr./Ms."></div>
+        <div class="fg"><label>โทรศัพท์ <span class="en">/ Tel</span></label><input id="cf_tel" placeholder="+66 ..."></div>
+        <div class="fg"><label>อีเมล <span class="en">/ Email</span></label><input id="cf_email" type="email" placeholder="name@company.com"></div>
+        <div class="fg full"><label>LINE <span class="en">/ LINE ID หรือลิงก์แชท (สำหรับปุ่มอัพเดทงาน)</span></label><input id="cf_line" placeholder="@thaifresh หรือ https://line.me/ti/p/~xxxx"></div>
+      </form>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-danger" id="delCustBtn" style="margin-right:auto;display:none" onclick="deleteCustomer()">ลบลูกค้า</button>
+      <button class="btn" onclick="closeCustModal()">ยกเลิก</button>
+      <button class="btn" onclick="previewCustomer()">👁 Preview</button>
+      <button class="btn btn-primary" onclick="saveCustomer()">บันทึก / Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Partner Modal -->
+<div class="overlay" id="partnerOverlay">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-h">
+      <h3 id="partnerModalTitle">เพิ่มพาร์ทเนอร์ / New Partner</h3>
+      <button class="x" onclick="closePartnerModal()">×</button>
+    </div>
+    <div class="modal-b">
+      <form id="partnerForm" class="form-grid">
+        <input type="hidden" id="pf_id">
+        <div class="fg"><label>ประเภท <span class="en">/ Role</span></label>
+          <select id="pf_role">
+            <option value="shipping">Shipping — พิธีการศุลกากร</option>
+            <option value="freight">Freight Forwarder — สายเรือ/เฟรท</option>
+            <option value="transport">Transport — รถลากตู้/ขนส่ง</option>
+          </select></div>
+        <div class="fg"><label>ชื่อบริษัท <span class="en">/ Company *</span></label><input id="pf_name" placeholder="บริษัท ... จำกัด"></div>
+        <div class="fg"><label>ผู้ติดต่อ <span class="en">/ Contact</span></label><input id="pf_contact" placeholder="คุณ..."></div>
+        <div class="fg"><label>โทรศัพท์ <span class="en">/ Tel</span></label><input id="pf_tel" placeholder="+66 ..."></div>
+        <div class="fg"><label>อีเมล <span class="en">/ Email</span></label><input id="pf_email" type="email" placeholder="ops@partner.com"></div>
+        <div class="fg"><label>LINE <span class="en">/ LINE ID หรือลิงก์</span></label><input id="pf_line" placeholder="@partner"></div>
+        <div class="fg full"><label>หมายเหตุ <span class="en">/ Note</span></label><textarea id="pf_note" placeholder="ขอบเขตงาน, สายเรือที่รับ, พื้นที่บริการ ฯลฯ"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-danger" id="delPartnerBtn" style="margin-right:auto;display:none" onclick="deletePartner()">ลบ</button>
+      <button class="btn" onclick="closePartnerModal()">ยกเลิก</button>
+      <button class="btn btn-primary" onclick="savePartner()">บันทึก / Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cancel Job Modal -->
+<div class="overlay" id="cancelOverlay">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-h"><h3>✕ ยกเลิกงาน / Cancel Job</h3><button class="x" onclick="closeCancelModal()">×</button></div>
+    <div class="modal-b">
+      <input type="hidden" id="cancel_jobId">
+      <div id="cancel_jobInfo" style="font-weight:700;margin-bottom:6px"></div>
+      <div style="background:var(--red-bg);color:var(--red);padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:14px">⚠ งานนี้จะถูกทำเครื่องหมายว่า "ยกเลิก" และนำออกจากรายการงานที่ดำเนินอยู่ (กู้คืนได้ภายหลัง)</div>
+      <label style="font-size:12px;font-weight:600;color:#334155">เหตุผลที่ยกเลิก / Reason</label>
+      <div class="filters" id="cancelReasons" style="margin:8px 0">
+        <span class="chip" onclick="pickCancelReason('ลูกค้ายกเลิก booking')">ลูกค้ายกเลิก booking</span>
+        <span class="chip" onclick="pickCancelReason('สินค้าไม่พร้อมส่ง')">สินค้าไม่พร้อม</span>
+        <span class="chip" onclick="pickCancelReason('เปลี่ยนสายเรือ/เที่ยวเรือ')">เปลี่ยนสายเรือ</span>
+        <span class="chip" onclick="pickCancelReason('ปัญหาเอกสาร/พิธีการ')">ปัญหาเอกสาร</span>
+      </div>
+      <textarea id="cancel_reason" style="width:100%;min-height:80px;padding:10px;border:1px solid var(--line);border-radius:8px" placeholder="ระบุเหตุผล..."></textarea>
+    </div>
+    <div class="modal-f">
+      <button class="btn" onclick="closeCancelModal()">ปิด</button>
+      <button class="btn btn-danger" style="background:var(--red);color:#fff;border-color:var(--red)" onclick="confirmCancelJob()">ยืนยันยกเลิกงาน</button>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden print area: only this prints on paper -->
+<div id="printArea"></div>
+
+<!-- LINE Update Modal -->
+<div class="overlay" id="lineOverlay">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-h">
+      <h3>💬 อัพเดทงานผ่าน LINE</h3>
+      <button class="x" onclick="closeLineModal()">×</button>
+    </div>
+    <div class="modal-b">
+      <div id="lineTo" style="font-size:13px;color:var(--muted);margin-bottom:10px"></div>
+      <label style="font-size:12px;font-weight:600;color:#334155">ข้อความ (แก้ไขได้ก่อนส่ง) / Message</label>
+      <textarea id="lineMsg" style="width:100%;min-height:230px;padding:12px;border:1px solid var(--line);border-radius:10px;margin-top:6px;font-size:13px;line-height:1.55;resize:vertical"></textarea>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">เลือกวิธีส่ง: <b>เปิด LINE & แชร์</b> จะเปิดแอป LINE ให้เลือกแชทลูกค้า · หรือ <b>คัดลอก</b> แล้วไปวางในแชทเอง</div>
+    </div>
+    <div class="modal-f" style="flex-wrap:wrap">
+      <button class="btn" id="lineChatBtn" style="margin-right:auto;display:none" onclick="openLineChat()">เปิดแชทลูกค้า</button>
+      <button class="btn" onclick="copyLineMsg()">📋 คัดลอกข้อความ</button>
+      <button class="btn btn-primary" style="background:#06c755;border-color:#06c755" onclick="shareToLine()">💬 เปิด LINE &amp; แชร์</button>
+    </div>
+  </div>
+</div>
+
+<!-- Email Update Modal -->
+<div class="overlay" id="mailOverlay">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-h">
+      <h3>✉️ ส่งอัพเดทงานผ่าน Email</h3>
+      <button class="x" onclick="closeMailModal()">×</button>
+    </div>
+    <div class="modal-b">
+      <div class="form-grid" style="grid-template-columns:1fr">
+        <div class="fg"><label>ถึง <span class="en">/ To</span></label><input id="mail_to" placeholder="customer@email.com"></div>
+        <div class="fg"><label>สำเนา <span class="en">/ Cc (คั่นด้วย ,)</span></label><input id="mail_cc" placeholder="ไม่บังคับ / optional"></div>
+        <div class="fg"><label>หัวข้อ <span class="en">/ Subject</span></label><input id="mail_subject"></div>
+        <div class="fg"><label>เนื้อหา (แก้ไขได้) <span class="en">/ Body</span></label>
+          <textarea id="mail_body" style="min-height:230px;line-height:1.55"></textarea></div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px"><b>เปิดโปรแกรมอีเมล</b> จะเปิด Mail/Outlook/Gmail ที่ตั้งไว้ในเครื่องพร้อมกรอกข้อมูลให้ · หรือ <b>คัดลอก</b> เนื้อหาไปวางเอง</div>
+    </div>
+    <div class="modal-f" style="flex-wrap:wrap">
+      <button class="btn" onclick="copyMailBody()">📋 คัดลอกเนื้อหา</button>
+      <button class="btn btn-primary" onclick="sendMail()">✉️ เปิดโปรแกรมอีเมล</button>
+    </div>
+  </div>
+</div>
+
+<!-- Preview Modal (shared) -->
+<div class="overlay" id="previewOverlay">
+  <div class="modal" style="max-width:900px">
+    <div class="modal-h">
+      <h3 id="previewTitle">ดูตัวอย่าง / Preview</h3>
+      <button class="x" onclick="closePreview()">×</button>
+    </div>
+    <div class="modal-b" id="previewBody" style="background:#f1f5f9"></div>
+    <div class="modal-f" id="previewFoot"></div>
+  </div>
+</div>
+
+<script>
+/* ============ Data Layer ============ */
+const KEY='cs_export_docs_v1';
+const STATUSES=[
+  {id:'booking',label:'Booking',th:'จองเรือ',cls:'s-booking'},
+  {id:'docs',label:'Docs Prep',th:'เตรียมเอกสาร',cls:'s-docs'},
+  {id:'si',label:'SI Submitted',th:'ส่ง SI',cls:'s-si'},
+  {id:'bl',label:'B/L Confirmed',th:'ยืนยัน B/L',cls:'s-bl'},
+  {id:'departed',label:'Departed',th:'เรือออกแล้ว',cls:'s-departed'},
+  {id:'done',label:'Completed',th:'ปิดงาน',cls:'s-done'},
+];
+const CHECKLIST_TEMPLATE=[
+  {id:'booking',t:'Booking Confirmation',th:'ยืนยันการจองเรือกับสายเรือ',offset:-14},
+  {id:'inv',t:'Commercial Invoice',th:'ออกใบกำกับการค้า',offset:-7},
+  {id:'pl',t:'Packing List',th:'ออกใบรายการบรรจุ',offset:-7},
+  {id:'si',t:'Shipping Instruction (SI)',th:'ส่ง SI ให้สายเรือ',offset:-5},
+  {id:'vgm',t:'VGM Submission',th:'แจ้งน้ำหนักตู้ (VGM)',offset:-3},
+  {id:'customs',t:'Export Declaration',th:'ใบขนสินค้าขาออก (ผ่านพิธีการ)',offset:-3},
+  {id:'co',t:'Certificate of Origin',th:'หนังสือรับรองถิ่นกำเนิด (C/O)',offset:-2},
+  {id:'bldraft',t:'Draft B/L Approval',th:'ตรวจ-อนุมัติ Draft B/L',offset:-1},
+  {id:'docsend',t:'Send Docs to Customer',th:'ส่งเอกสารให้ลูกค้า/ธนาคาร',offset:3},
+];
+const seedItems=(d,h,q,u,p,c,n,g)=>({desc:d,hs:h,qty:q,unit:u,price:p,ctns:c,nw:n,gw:g});
+
+let DB=load();
+function load(){
+  let raw=localStorage.getItem(KEY);
+  if(raw){try{let data=JSON.parse(raw);if(!data.partners)data.partners=seedPartners();(data.jobs||[]).forEach(normalizeJob);return data;}catch(e){}}
+  const seed={company:{name:'SIAM GLOBAL LOGISTICS CO., LTD.',addr:'88/8 Bangna-Trad Rd., Bangkok 10260, Thailand',tel:'+66 2 123 4567',tax:'0105500000001'},
+    customers:[
+      {id:'c1',type:'shipper',name:'Thai Fresh Foods Co., Ltd.',address:'88 Rama IV Rd., Khlong Toei, Bangkok 10500, Thailand',taxId:'0105540012345',country:'Thailand',contact:'คุณสมชาย ใจดี',tel:'+66 2 555 1234',email:'export@thaifresh.co.th',line:'@thaifresh'},
+      {id:'c2',type:'consignee',name:'Nippon Trading K.K.',address:'2-1 Marunouchi, Chiyoda-ku, Tokyo 100-0005, Japan',taxId:'JP-7010001008436',country:'Japan',contact:'Mr. Tanaka Hiroshi',tel:'+81 3 1234 5678',email:'import@nippontrade.jp',line:''},
+      {id:'c3',type:'consignee',name:'EuroParts GmbH',address:'Industriestrasse 5, 70565 Stuttgart, Germany',taxId:'DE811234567',country:'Germany',contact:'Ms. Müller',tel:'+49 711 987654',email:'logistics@europarts.de',line:''},
+    ],
+    jobs:[
+      mkJob('EXP-2026-0042','si','Thai Fresh Foods Co., Ltd.\n88 Rama IV Rd., Bangkok 10500, Thailand',
+        'Nippon Trading K.K.\n2-1 Marunouchi, Chiyoda-ku, Tokyo, Japan','SAME AS CONSIGNEE',
+        'THLCH Laem Chabang','JPYOK Yokohama','FOB','Sea FCL','WAN HAI 805','V.231E',
+        addDays(4),addDays(11),'TEMU7788990','SL-44521 / 1x40RF','BKG-WH88231','WHLC2026042',
+        'INV-2026-0042',today(),'USD','T/T 30 days',
+        [seedItems('Frozen Durian Pulp','0811.90',1200,'CTN',18.50,1200,12000,12600),
+         seedItems('Dried Mango Slices','0804.50',300,'CTN',24.00,300,3000,3180)],
+        'MARKS: TFF/TOKYO/NO.1-1500. Keep frozen at -18°C.'),
+      mkJob('EXP-2026-0041','docs','Thai Fresh Foods Co., Ltd.\n88 Rama IV Rd., Bangkok 10500, Thailand',
+        'EuroParts GmbH\nIndustriestrasse 5, 70565 Stuttgart, Germany','SAME AS CONSIGNEE',
+        'THLCH Laem Chabang','DEHAM Hamburg','CIF','Sea FCL','MAERSK CAIRO','V.118W',
+        addDays(9),addDays(35),'MSKU1122334','SL-99812 / 1x20GP','BKG-MX55120','',
+        'INV-2026-0041',today(),'EUR','L/C at sight',
+        [seedItems('Natural Rubber RSS3','4001.21',320,'BALE',1.85,320,32000,32320)],
+        'MARKS: EP/HAMBURG. Net per bale 100kg.'),
+      mkJob('EXP-2026-0040','departed','Thai Fresh Foods Co., Ltd.\n88 Rama IV Rd., Bangkok 10500, Thailand',
+        'Nippon Trading K.K.\n2-1 Marunouchi, Chiyoda-ku, Tokyo, Japan','SAME AS CONSIGNEE',
+        'THBKK Bangkok','SGSIN Singapore','CFR','Sea LCL','SITC HEFEI','V.075S',
+        addDays(-2),addDays(5),'N/A (LCL)','LCL','BKG-ST44100','SITC2026040',
+        'INV-2026-0040',addDateStr(-5),'USD','T/T advance',
+        [seedItems('Jasmine Rice 5%','1006.30',500,'BAG',0.95,500,25000,25250)],
+        'MARKS: NT/SIN. 50kg PP bag.'),
+      mkJob('EXP-2026-0039','done','Thai Fresh Foods Co., Ltd.\n88 Rama IV Rd., Bangkok 10500, Thailand',
+        'EuroParts GmbH\nIndustriestrasse 5, 70565 Stuttgart, Germany','SAME AS CONSIGNEE',
+        'THLCH Laem Chabang','NLRTM Rotterdam','FOB','Sea FCL','CMA CGM TITAN','V.402W',
+        addDays(-12),addDays(18),'CMAU5566778','SL-11003 / 1x40HC','BKG-CM77001','CMAU2026039',
+        'INV-2026-0039',addDateStr(-15),'EUR','T/T 60 days',
+        [seedItems('Auto Rubber Seals','4016.93',850,'CTN',6.40,850,8500,9100)],
+        'Completed & filed.'),
+    ],
+    partners:seedPartners(),
+    checklistState:{}
+  };
+  seed.jobs.forEach(normalizeJob);
+  // demo hand-off assignments
+  Object.assign(seed.jobs[0].handoff.shipping,{partnerId:'p1',status:'confirmed',sentAt:new Date(Date.now()-2*86400000).toISOString(),confirmedAt:new Date(Date.now()-86400000).toISOString()});
+  Object.assign(seed.jobs[0].handoff.freight,{partnerId:'p2',status:'sent',sentAt:new Date(Date.now()-86400000).toISOString()});
+  Object.assign(seed.jobs[0].handoff.transport,{partnerId:'p3',status:'pending'});
+  Object.assign(seed.jobs[1].handoff.shipping,{partnerId:'p1',status:'sent',sentAt:new Date(Date.now()-43200000).toISOString()});
+  seed.jobs[1].handoff.freight.partnerId='p2';
+  // demo customs + received files
+  Object.assign(seed.jobs[0].customs,{declType:'0 - ใบขนสินค้าขาออก',exporterTax:'0105540012345',branch:'00000',customsOffice:'0309 ศุลกากรท่าเรือแหลมฉบัง',exportPort:'THLCH',countryOrigin:'TH',countryDest:'JP',exchangeRate:'36.50',privilege:'000 ทั่วไป (ไม่ใช้สิทธิ)',declNo:''});
+  seed.jobs[0].files=[
+    {id:'f1',name:'Commercial_Invoice_INV-2026-0042.pdf',category:'invoice',size:131072,type:'application/pdf',dataUrl:'',uploadedAt:today(),received:true,note:'รับจากลูกค้า'},
+    {id:'f2',name:'Packing_List_INV-2026-0042.pdf',category:'packing',size:98304,type:'application/pdf',dataUrl:'',uploadedAt:today(),received:true,note:'รับจากลูกค้า'}];
+  Object.assign(seed.jobs[3].customs,{declType:'0 - ใบขนสินค้าขาออก',exporterTax:'0105540012345',branch:'00000',customsOffice:'0309 ศุลกากรท่าเรือแหลมฉบัง',exportPort:'THLCH',countryOrigin:'TH',countryDest:'NL',exchangeRate:'39.10',privilege:'000 ทั่วไป (ไม่ใช้สิทธิ)',declNo:'A0392026000123'});
+  localStorage.setItem(KEY,JSON.stringify(seed));return seed;
+}
+function normalizeJob(j){
+  j.files=Array.isArray(j.files)?j.files:[];
+  j.customs=Object.assign({declType:'0 - ใบขนสินค้าขาออก',exporterTax:'',branch:'00000',
+    customsOffice:'',exportPort:'',countryOrigin:'TH',countryDest:'',exchangeRate:'',
+    fobTHB:'',privilege:'000 ทั่วไป (ไม่ใช้สิทธิ)',declNo:''},j.customs||{});
+  j.handoff=j.handoff||{};
+  ['customer','shipping','freight','transport'].forEach(r=>{
+    j.handoff[r]=Object.assign({partnerId:'',status:'pending',sentAt:'',confirmedAt:''},j.handoff[r]||{});});
+  if(!('cancelled' in j))j.cancelled=null;
+  return j;
+}
+function seedPartners(){return [
+  {id:'p1',role:'shipping',name:'ชิปปิ้งไทยรุ่งเรือง / Thai Rung Customs Broker',contact:'คุณวิชัย',tel:'+66 2 333 1122',email:'ops@thairung-broker.co.th',line:'@thairungcb',note:'ผ่านพิธีการแหลมฉบัง/กรุงเทพ'},
+  {id:'p2',role:'freight',name:'OceanLink Freight Co., Ltd.',contact:'K.นภา',tel:'+66 2 777 8899',email:'booking@oceanlink.co.th',line:'@oceanlink',note:'WAN HAI / SITC / MAERSK agent'},
+  {id:'p3',role:'transport',name:'ส.ขนส่ง รถหัวลาก / S.Transport Haulage',contact:'คุณประสงค์',tel:'+66 81 234 5678',email:'dispatch@stransport.co.th',line:'',note:'รถหัวลาก 20/40 ฟุต'},
+];}
+function save(d){
+  DB=d||DB;
+  try{localStorage.setItem(KEY,JSON.stringify(DB));return true;}
+  catch(e){alert('⚠ พื้นที่จัดเก็บในเบราว์เซอร์เต็ม (localStorage ~5MB)\nไฟล์แนบขนาดใหญ่อาจเกินพื้นที่ — ลองลบไฟล์เก่าหรือแนบไฟล์ขนาดเล็กลง\n\nStorage quota exceeded.');return false;}
+}
+
+/* date helpers */
+function today(){return new Date().toISOString().slice(0,10)}
+function addDays(n){let d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
+function addDateStr(n){return addDays(n)}
+function mkJob(jobNo,status,shipper,consignee,notify,pol,pod,inc,mode,vessel,voyage,etd,eta,container,seal,bookingNo,blNo,invNo,invDate,ccy,payterm,items,remarks){
+  return {id:'j'+Math.random().toString(36).slice(2,9),jobNo,status,shipper,consignee,notify,pol,pod,incoterm:inc,mode,vessel,voyage,etd,eta,container,seal,bookingNo,blNo,invNo,invDate,ccy,payterm,items,remarks,createdAt:today()};
+}
+function statusOf(id){return STATUSES.find(s=>s.id===id)||STATUSES[0]}
+function statusIdx(id){return STATUSES.findIndex(s=>s.id===id)}
+function fmtMoney(n,c){return (c||'')+' '+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function fmtDate(s){if(!s)return '—';let d=new Date(s);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}
+function fmtDateTime(s){if(!s)return '—';let d=new Date(s);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'})+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}
+function jobTotal(j){return (j.items||[]).reduce((a,i)=>a+Number(i.qty||0)*Number(i.price||0),0)}
+function jobNW(j){return (j.items||[]).reduce((a,i)=>a+Number(i.nw||0),0)}
+function jobGW(j){return (j.items||[]).reduce((a,i)=>a+Number(i.gw||0),0)}
+function jobCtns(j){return (j.items||[]).reduce((a,i)=>a+Number(i.ctns||0),0)}
+function daysFromNow(s){if(!s)return null;return Math.round((new Date(s)-new Date(today()))/86400000)}
+
+/* checklist per job */
+function chkKey(jobId,itemId){return jobId+'::'+itemId}
+function isChecked(jobId,itemId){return !!DB.checklistState[chkKey(jobId,itemId)]}
+function toggleChk(jobId,itemId,val){DB.checklistState[chkKey(jobId,itemId)]=val;save()}
+function chkDeadline(j,tpl){if(!j.etd)return null;let d=new Date(j.etd);d.setDate(d.getDate()+tpl.offset);return d.toISOString().slice(0,10)}
+function jobProgress(j){let done=CHECKLIST_TEMPLATE.filter(t=>isChecked(j.id,t.id)).length;return Math.round(done/CHECKLIST_TEMPLATE.length*100)}
+
+/* ============ Router ============ */
+const TITLES={dashboard:['แดชบอร์ด','ภาพรวมงานเอกสารส่งออก / Export documentation overview'],
+  jobs:['งานขาออก','รายการงานทั้งหมด / All export jobs'],
+  documents:['เอกสาร','สร้างและพิมพ์เอกสารส่งออก / Generate export documents'],
+  alerts:['แจ้งเตือน','เดดไลน์และงานค้าง / Deadlines & pending tasks'],
+  customers:['ลูกค้า','ทะเบียนคู่ค้า / Customer registry'],
+  partners:['พาร์ทเนอร์','ชิปปิ้ง · สายเรือ · ขนส่ง / Service partners'],
+  settings:['ตั้งค่า','ข้อมูลบริษัทและระบบ / Company & system']};
+let CURRENT='dashboard',CURRENT_JOB=null;
+
+document.getElementById('nav').addEventListener('click',e=>{
+  let a=e.target.closest('a');if(!a)return;e.preventDefault();go(a.dataset.view);
+});
+function go(view,jobId){
+  CURRENT=view;CURRENT_JOB=jobId||null;
+  document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===view));
+  let t=TITLES[view]||['',''];
+  document.getElementById('pageTitle').textContent=t[0];
+  document.getElementById('pageSub').textContent=t[1];
+  const c=document.getElementById('content');
+  if(jobId){renderJobDetail(jobId);return}
+  ({dashboard:renderDashboard,jobs:renderJobs,documents:renderDocuments,alerts:renderAlerts,customers:renderCustomers,partners:renderPartners,settings:renderSettings}[view]||renderDashboard)();
+  window.scrollTo(0,0);
+}
+
+/* ============ Dashboard ============ */
+function renderDashboard(){
+  const jobs=DB.jobs;
+  const active=jobs.filter(j=>j.status!=='done'&&!j.cancelled).length;
+  const departing=jobs.filter(j=>{let d=daysFromNow(j.etd);return j.status!=='done'&&!j.cancelled&&d!==null&&d>=0&&d<=7}).length;
+  const allAlerts=collectAlerts();
+  const overdue=allAlerts.filter(a=>a.level==='late').length;
+  const value=jobs.filter(j=>j.status!=='done'&&!j.cancelled).reduce((a,j)=>a+jobTotal(j),0);
+
+  const c=document.getElementById('content');
+  c.innerHTML=`
+  <div class="cards">
+    ${statCard('งานที่ดำเนินอยู่','Active jobs',active,'ทั้งหมด '+jobs.length+' งาน','▤','var(--accent-bg)','var(--brand2)')}
+    ${statCard('เรือออกใน 7 วัน','Departing ≤7d',departing,'ต้องเร่งเอกสาร','⛴','var(--amber-bg)','var(--amber)')}
+    ${statCard('งานเกินกำหนด','Overdue tasks',overdue,overdue?'ต้องดำเนินการด่วน':'ไม่มีงานค้าง','⚠','var(--red-bg)','var(--red)')}
+    ${statCard('มูลค่าส่งออก','Active value','$'+Math.round(value).toLocaleString(),'รวมงานที่ยังไม่ปิด','＄','var(--green-bg)','var(--green)')}
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <div class="panel-h"><h3>งานล่าสุด</h3><span class="sub">Recent jobs</span><div class="spacer"></div>
+        <button class="btn btn-sm" onclick="go('jobs')">ดูทั้งหมด →</button></div>
+      <table>
+        <thead><tr><th>Job No</th><th>Consignee</th><th>เส้นทาง</th><th>ETD</th><th>Status</th><th>Progress</th></tr></thead>
+        <tbody>
+        ${jobs.slice(0,6).map(j=>{
+          let st=statusOf(j.status),p=jobProgress(j);
+          return `<tr onclick="go('jobs','${j.id}')">
+            <td class="mono">${j.jobNo}</td>
+            <td>${escapeHtml((j.consignee||'').split('\n')[0])}</td>
+            <td style="font-size:12px">${escapeHtml(short(j.pol))} → ${escapeHtml(short(j.pod))}</td>
+            <td>${fmtDate(j.etd)}</td>
+            <td><span class="tag ${st.cls}"><span class="dot" style="background:currentColor"></span>${st.label}</span></td>
+            <td style="min-width:110px"><div class="progress"><i style="width:${p}%"></i></div><span style="font-size:11px;color:var(--muted)">${p}%</span></td>
+          </tr>`;
+        }).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-h"><h3>เดดไลน์ใกล้ถึง</h3><span class="sub">Upcoming</span><div class="spacer"></div>
+        <button class="btn btn-sm" onclick="go('alerts')">ทั้งหมด →</button></div>
+      <div class="panel-b" style="padding-top:8px">
+        ${allAlerts.slice(0,6).map(alertRow).join('')||'<div class="empty"><div class="ei">✓</div>ไม่มีงานค้าง<br>No pending deadlines</div>'}
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-h"><h3>สถานะตามขั้นตอน</h3><span class="sub">Pipeline by status</span></div>
+    <div class="panel-b">
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:12px">
+        ${STATUSES.map(s=>{let n=jobs.filter(j=>j.status===s.id).length;
+          return `<div style="text-align:center;padding:14px;border:1px solid var(--line);border-radius:10px;cursor:pointer" onclick="go('jobs')">
+            <div style="font-size:26px;font-weight:800">${n}</div>
+            <span class="tag ${s.cls}" style="margin-top:6px">${s.label}</span>
+            <div style="font-size:11px;color:var(--muted);margin-top:5px">${s.th}</div></div>`;}).join('')}
+      </div>
+    </div>
+  </div>`;
+  updateAlertBadge();
+}
+function statCard(k,en,v,d,ic,bg,col){
+  return `<div class="card stat"><div class="k"><span class="ico" style="background:${bg};color:${col}">${ic}</span>${k} · <span style="color:var(--muted)">${en}</span></div>
+  <div class="v">${v}</div><div class="d">${d}</div></div>`;
+}
+
+/* ============ Jobs ============ */
+let JOB_FILTER='all',JOB_SEARCH='';
+function renderJobs(){
+  const c=document.getElementById('content');
+  c.innerHTML=`
+  <div class="panel">
+    <div class="panel-h">
+      <div class="filters" id="jobFilters">
+        <span class="chip ${JOB_FILTER==='all'?'active':''}" onclick="setJobFilter('all')">ทั้งหมด</span>
+        ${STATUSES.map(s=>`<span class="chip ${JOB_FILTER===s.id?'active':''}" onclick="setJobFilter('${s.id}')">${s.label}</span>`).join('')}
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-primary btn-sm" onclick="openJobModal()">＋ งานใหม่</button>
+    </div>
+    <table>
+      <thead><tr><th>Job No</th><th>Consignee</th><th>เส้นทาง / Route</th><th>Inc.</th><th>ETD</th><th>มูลค่า</th><th>Status</th><th>Docs</th><th></th></tr></thead>
+      <tbody id="jobsBody"></tbody>
+    </table>
+  </div>`;
+  renderJobsBody();
+}
+function setJobFilter(f){JOB_FILTER=f;renderJobs()}
+function renderJobsBody(){
+  const tb=document.getElementById('jobsBody');if(!tb)return;
+  let list=DB.jobs.filter(j=>JOB_FILTER==='all'||j.status===JOB_FILTER);
+  if(JOB_SEARCH){let q=JOB_SEARCH.toLowerCase();
+    list=list.filter(j=>(j.jobNo+j.consignee+j.shipper+j.blNo+j.pod+j.pol).toLowerCase().includes(q));}
+  if(!list.length){tb.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="ei">▤</div>ไม่พบงาน / No jobs found</div></td></tr>`;return}
+  tb.innerHTML=list.map(j=>{
+    let st=statusOf(j.status),p=jobProgress(j),d=daysFromNow(j.etd);
+    let etdTag=d!==null&&j.status!=='done'?`<span style="font-size:10px;color:${d<0?'var(--red)':d<=3?'var(--amber)':'var(--muted)'};font-weight:700"> ${d<0?Math.abs(d)+'d ago':'in '+d+'d'}</span>`:'';
+    return `<tr onclick="go('jobs','${j.id}')" ${j.cancelled?'style="opacity:.62"':''}>
+      <td class="mono">${j.jobNo}<div style="font-size:10px;color:var(--muted)">${j.mode}</div></td>
+      <td><div style="font-weight:600">${escapeHtml((j.consignee||'').split('\n')[0])}</div><div style="font-size:11px;color:var(--muted)">${escapeHtml((j.consignee||'').split('\n')[1]||'')}</div></td>
+      <td style="font-size:12px">${escapeHtml(short(j.pol))}<br><span style="color:var(--muted)">→ ${escapeHtml(short(j.pod))}</span></td>
+      <td><span class="tag s-si">${j.incoterm}</span></td>
+      <td>${fmtDate(j.etd)}${j.cancelled?'':etdTag}</td>
+      <td class="mono">${fmtMoney(jobTotal(j),j.ccy)}</td>
+      <td>${j.cancelled?'<span class="tag s-cancel">✕ ยกเลิก</span>':`<span class="tag ${st.cls}">${st.label}</span>`}</td>
+      <td style="min-width:90px"><div class="progress"><i style="width:${p}%"></i></div><span style="font-size:10px;color:var(--muted)">${p}%</span></td>
+      <td style="white-space:nowrap"><button class="btn btn-sm" title="ดูตัวอย่าง" onclick="event.stopPropagation();previewJobRow('${j.id}')">👁</button>
+        <button class="btn btn-sm" title="อัพเดท LINE" style="background:#06c755;border-color:#06c755;color:#fff" onclick="event.stopPropagation();openLineUpdate('${j.id}')">💬</button>
+        <button class="btn btn-sm" title="ส่ง Email" onclick="event.stopPropagation();openMailUpdate('${j.id}')">✉️</button></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============ Job Detail ============ */
+let DETAIL_TAB='overview';
+function renderJobDetail(jobId){
+  const j=DB.jobs.find(x=>x.id===jobId);
+  if(!j){go('jobs');return}
+  document.getElementById('pageTitle').textContent=j.jobNo;
+  document.getElementById('pageSub').textContent=(j.consignee||'').split('\n')[0]+' · '+short(j.pol)+' → '+short(j.pod);
+  const st=statusOf(j.status),p=jobProgress(j);
+  const c=document.getElementById('content');
+  c.innerHTML=`
+  <button class="btn btn-sm btn-ghost no-print" onclick="go('jobs')">← กลับ / Back</button>
+  ${j.cancelled?`<div style="margin-top:12px;background:var(--red-bg);border:1px solid #fca5a5;border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px">
+    <span style="font-size:24px">🚫</span>
+    <div style="flex:1"><div style="font-weight:800;color:var(--red);font-size:15px">งานนี้ถูกยกเลิก / CANCELLED</div>
+      <div style="font-size:12.5px;color:#7f1d1d">เหตุผล: ${escapeHtml(j.cancelled.reason)} · เมื่อ ${fmtDateTime(j.cancelled.at)}</div></div>
+    <div class="no-print" style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn btn-sm" style="background:#06c755;border-color:#06c755;color:#fff" onclick="dispatchHandoff('${j.id}','customer','line')">💬 แจ้งลูกค้า</button>
+      <button class="btn btn-sm" onclick="dispatchHandoff('${j.id}','customer','email')">✉️ แจ้งลูกค้า</button>
+      <button class="btn btn-sm" onclick="setDetailTab('${j.id}','workflow')">แจ้งผู้เกี่ยวข้อง →</button>
+      <button class="btn btn-sm btn-primary" onclick="restoreJob('${j.id}')">↺ คืนสถานะงาน</button>
+    </div></div>`:''}
+  <div class="detail-head" style="margin-top:12px">
+    <div style="flex:1">
+      <div class="jno">${j.jobNo} ${j.cancelled?'<span class="tag s-cancel" style="vertical-align:middle">✕ ยกเลิกแล้ว</span>':`<span class="tag ${st.cls}" style="vertical-align:middle">${st.label} · ${st.th}</span>`}</div>
+      <div class="meta">${escapeHtml((j.consignee||'').split('\n')[0])} &nbsp;·&nbsp; ${escapeHtml(short(j.pol))} → ${escapeHtml(short(j.pod))} &nbsp;·&nbsp; ${j.incoterm} &nbsp;·&nbsp; ${j.mode}</div>
+    </div>
+    <div class="no-print" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+      <button class="btn" onclick="openJobModal('${j.id}')">✎ แก้ไข</button>
+      <button class="btn" onclick="validateJob('${j.id}')">✓ ตรวจสอบ</button>
+      <button class="btn" style="background:#06c755;border-color:#06c755;color:#fff" onclick="openLineUpdate('${j.id}')">💬 LINE</button>
+      <button class="btn" onclick="openMailUpdate('${j.id}')">✉️ Email</button>
+      ${j.cancelled?'':`<button class="btn btn-danger" onclick="openCancelModal('${j.id}')">✕ ยกเลิกงาน</button>`}
+      <button class="btn btn-primary" onclick="go('documents','${j.id}')">▣ สร้างเอกสาร</button>
+    </div>
+  </div>
+  <div class="tabs no-print">
+    ${['overview|ภาพรวม','workflow|ส่งมอบงาน','customs|ใบขนขาออก','files|ไฟล์แนบ','timeline|ไทม์ไลน์','checklist|เช็คลิสต์','docs|เอกสาร'].map(t=>{let[id,lb]=t.split('|');
+      let badge=id==='files'&&(j.files||[]).length?` <span style="background:var(--accent-bg);color:var(--brand2);border-radius:10px;padding:0 6px;font-size:10px">${j.files.length}</span>`:'';
+      return `<button class="${DETAIL_TAB===id?'active':''}" onclick="setDetailTab('${j.id}','${id}')">${lb}${badge}</button>`}).join('')}
+  </div>
+  <div id="detailBody"></div>`;
+  renderDetailBody(j);
+}
+function setDetailTab(id,tab){DETAIL_TAB=tab;renderJobDetail(id)}
+function renderDetailBody(j){
+  const b=document.getElementById('detailBody');
+  if(DETAIL_TAB==='overview')b.innerHTML=detailOverview(j);
+  else if(DETAIL_TAB==='workflow')b.innerHTML=detailWorkflow(j);
+  else if(DETAIL_TAB==='customs')b.innerHTML=detailCustoms(j);
+  else if(DETAIL_TAB==='files')b.innerHTML=detailFiles(j);
+  else if(DETAIL_TAB==='timeline')b.innerHTML=detailTimeline(j);
+  else if(DETAIL_TAB==='checklist')b.innerHTML=detailChecklist(j);
+  else if(DETAIL_TAB==='docs')b.innerHTML=detailDocs(j);
+}
+function detailOverview(j){
+  return `<div class="grid2">
+    <div class="panel"><div class="panel-h"><h3>ข้อมูลการขนส่ง / Shipment</h3></div><div class="panel-b">
+      <div class="kv">
+        <div class="k">Booking No</div><div class="v mono">${j.bookingNo||'—'}</div>
+        <div class="k">B/L No</div><div class="v mono">${j.blNo||'— (pending)'}</div>
+        <div class="k">Vessel / Voyage</div><div class="v">${j.vessel||'—'} ${j.voyage||''}</div>
+        <div class="k">Port of Loading</div><div class="v">${escapeHtml(j.pol)}</div>
+        <div class="k">Port of Discharge</div><div class="v">${escapeHtml(j.pod)}</div>
+        <div class="k">ETD / ETA</div><div class="v">${fmtDate(j.etd)} → ${fmtDate(j.eta)}</div>
+        <div class="k">Container / Seal</div><div class="v mono">${j.container||'—'} · ${j.seal||'—'}</div>
+        <div class="k">Incoterms</div><div class="v">${j.incoterm} 2020</div>
+      </div>
+    </div></div>
+    <div class="panel"><div class="panel-h"><h3>การค้า / Commercial</h3></div><div class="panel-b">
+      <div class="kv">
+        <div class="k">Invoice No</div><div class="v mono">${j.invNo||'—'}</div>
+        <div class="k">Invoice Date</div><div class="v">${fmtDate(j.invDate)}</div>
+        <div class="k">Currency</div><div class="v">${j.ccy}</div>
+        <div class="k">Payment</div><div class="v">${escapeHtml(j.payterm||'—')}</div>
+        <div class="k">Total Value</div><div class="v" style="font-size:16px;color:var(--green)">${fmtMoney(jobTotal(j),j.ccy)}</div>
+        <div class="k">Net / Gross Wt</div><div class="v">${jobNW(j).toLocaleString()} / ${jobGW(j).toLocaleString()} kg</div>
+        <div class="k">Cartons</div><div class="v">${jobCtns(j).toLocaleString()} CTNS</div>
+        <div class="k">อัพเดท LINE ล่าสุด</div><div class="v">${j.lastLineUpdate?'<span style="color:#06c755">💬 '+fmtDateTime(j.lastLineUpdate)+'</span>':'<span style="color:var(--muted)">ยังไม่ได้อัพเดท</span>'}</div>
+        <div class="k">ส่ง Email ล่าสุด</div><div class="v">${j.lastMailUpdate?'<span style="color:var(--brand2)">✉️ '+fmtDateTime(j.lastMailUpdate)+'</span>':'<span style="color:var(--muted)">ยังไม่ได้ส่ง</span>'}</div>
+      </div>
+    </div></div>
+  </div>
+  <div class="panel"><div class="panel-h"><h3>คู่ค้า / Parties</h3></div><div class="panel-b">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px">
+      ${partyBox('Shipper / ผู้ส่งออก',j.shipper)}
+      ${partyBox('Consignee / ผู้รับ',j.consignee)}
+      ${partyBox('Notify Party',j.notify)}
+    </div>
+  </div></div>
+  <div class="panel"><div class="panel-h"><h3>รายการสินค้า / Goods</h3></div>
+    <table><thead><tr><th>Description</th><th>HS Code</th><th>Qty</th><th>Unit Price</th><th>Amount</th><th>Ctns</th><th>N.W</th><th>G.W</th></tr></thead>
+    <tbody>${(j.items||[]).map(i=>`<tr style="cursor:default"><td>${escapeHtml(i.desc)}</td><td class="mono">${i.hs}</td><td>${i.qty} ${i.unit}</td>
+      <td class="mono">${fmtMoney(i.price,j.ccy)}</td><td class="mono">${fmtMoney(i.qty*i.price,j.ccy)}</td><td>${i.ctns}</td><td>${Number(i.nw).toLocaleString()}</td><td>${Number(i.gw).toLocaleString()}</td></tr>`).join('')}
+      <tr style="cursor:default;font-weight:800;background:var(--slate-bg)"><td colspan="4">TOTAL</td><td class="mono">${fmtMoney(jobTotal(j),j.ccy)}</td><td>${jobCtns(j)}</td><td>${jobNW(j).toLocaleString()}</td><td>${jobGW(j).toLocaleString()}</td></tr>
+    </tbody></table>
+  </div>
+  ${j.remarks?`<div class="panel"><div class="panel-b"><span class="lbl" style="font-size:11px;color:var(--muted);font-weight:700">REMARKS / หมายเหตุ</span><div style="margin-top:6px">${escapeHtml(j.remarks)}</div></div></div>`:''}`;
+}
+function partyBox(t,v){return `<div><div style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;margin-bottom:6px">${t}</div><div style="white-space:pre-line;font-size:13px;line-height:1.5">${escapeHtml(v||'—')}</div></div>`}
+
+function detailTimeline(j){
+  let cur=statusIdx(j.status);
+  const dates={booking:j.createdAt,docs:'',si:'',bl:'',departed:j.etd,done:j.eta};
+  return `<div class="panel"><div class="panel-h"><h3>ความคืบหน้างาน / Shipment Timeline</h3><div class="spacer"></div>
+    <span class="sub">เลื่อนสถานะ:</span>
+    <select class="btn btn-sm no-print" onchange="quickStatus('${j.id}',this.value)" style="font-weight:600">
+      ${STATUSES.map(s=>`<option value="${s.id}" ${s.id===j.status?'selected':''}>${s.label} · ${s.th}</option>`).join('')}
+    </select></div>
+    <div class="panel-b"><div class="timeline">
+    ${STATUSES.map((s,i)=>{
+      let cls=i<cur?'done':i===cur?'current':'';
+      let icon=i<cur?'✓':i===cur?'●':(i+1);
+      return `<div class="tl-item ${cls}">
+        <div class="tl-rail"><div class="tl-node">${icon}</div>${i<STATUSES.length-1?'<div class="tl-line"></div>':''}</div>
+        <div class="tl-body"><div class="t">${s.label} · ${s.th}</div>
+          <div class="d">${i<cur?'เสร็จแล้ว':i===cur?'กำลังดำเนินการ':'รอดำเนินการ'} ${dates[s.id]?'· '+fmtDate(dates[s.id]):''}</div></div>
+      </div>`;
+    }).join('')}
+    </div></div></div>`;
+}
+function quickStatus(id,val){let j=DB.jobs.find(x=>x.id===id);j.status=val;save();renderJobDetail(id)}
+
+function detailChecklist(j){
+  let p=jobProgress(j);
+  return `<div class="panel"><div class="panel-h"><h3>เช็คลิสต์เอกสาร / Document Checklist</h3><div class="spacer"></div>
+    <div style="min-width:160px"><div class="progress"><i style="width:${p}%"></i></div></div><span style="font-weight:700">${p}%</span></div>
+    <div class="panel-b">
+    ${CHECKLIST_TEMPLATE.map(t=>{
+      let ck=isChecked(j.id,t.id),dl=chkDeadline(j,t),d=daysFromNow(dl);
+      let dcls=ck?'dl-ok':d===null?'':d<0?'dl-late':d<=2?'dl-soon':'dl-ok';
+      let dtxt=ck?'✓ เสร็จ':dl?(fmtDate(dl)+(d!==null?(d<0?` · เลย ${Math.abs(d)}d`:d===0?' · วันนี้':` · อีก ${d}d`):'')):'';
+      return `<label class="chk ${ck?'checked':''}">
+        <input type="checkbox" ${ck?'checked':''} onchange="toggleChk('${j.id}','${t.id}',this.checked);renderJobDetail('${j.id}')">
+        <div><div class="ct">${t.t}</div><div class="cs">${t.th}</div></div>
+        <div class="dl ${dcls}">${dtxt}</div>
+      </label>`;
+    }).join('')}
+    </div></div>`;
+}
+function detailDocs(j){
+  return `<div class="doc-types">
+    ${docCard('📄','Commercial Invoice','ใบกำกับการค้า','invoice',j.id)}
+    ${docCard('📦','Packing List','ใบรายการบรรจุ','packing',j.id)}
+    ${docCard('🚢','Shipping Instruction','คำสั่งส่งของให้สายเรือ','si',j.id)}
+    ${docCard('📋','Draft Bill of Lading','ร่างใบตราส่ง','bl',j.id)}
+    ${docCard('🛃','Export Declaration','ใบขนสินค้าขาออก','decl',j.id)}
+  </div>`;
+}
+function docCard(ic,t,th,type,jobId){
+  return `<div class="doc-card"><div class="di">${ic}</div><div class="dt">${t}</div><div class="dd">${th}</div>
+    <div style="display:flex;gap:6px;justify-content:center;margin-top:10px">
+      <button class="btn btn-sm" onclick="event.stopPropagation();previewDoc('${jobId}','${type}')">👁 Preview</button>
+      <button class="btn btn-sm btn-primary" onclick="event.stopPropagation();openDoc('${jobId}','${type}')">เปิด / Open</button>
+    </div></div>`;
+}
+
+/* ============ Documents view ============ */
+let DOC_JOB=null,DOC_TYPE=null;
+function renderDocuments(){
+  if(CURRENT_JOB){DOC_JOB=CURRENT_JOB;}
+  const c=document.getElementById('content');
+  c.innerHTML=`
+  <div class="panel"><div class="panel-h"><h3>เลือกงาน / Select Job</h3></div>
+  <div class="panel-b">
+    <div class="fg" style="max-width:420px"><label>Job</label>
+    <select id="docJobSel" onchange="DOC_JOB=this.value;renderDocBody()">
+      <option value="">— เลือกงานขาออก —</option>
+      ${DB.jobs.map(j=>`<option value="${j.id}" ${DOC_JOB===j.id?'selected':''}>${j.jobNo} · ${escapeHtml((j.consignee||'').split('\n')[0])}</option>`).join('')}
+    </select></div>
+  </div></div>
+  <div id="docBody"></div>`;
+  renderDocBody();
+}
+function renderDocBody(){
+  const b=document.getElementById('docBody');if(!b)return;
+  if(!DOC_JOB){b.innerHTML='';return}
+  const j=DB.jobs.find(x=>x.id===DOC_JOB);
+  b.innerHTML=`<div class="doc-types">
+    ${docCard('📄','Commercial Invoice','ใบกำกับการค้า','invoice',j.id)}
+    ${docCard('📦','Packing List','ใบรายการบรรจุ','packing',j.id)}
+    ${docCard('🚢','Shipping Instruction','คำสั่งส่งของ','si',j.id)}
+    ${docCard('📋','Draft Bill of Lading','ร่างใบตราส่ง','bl',j.id)}
+    ${docCard('🛃','Export Declaration','ใบขนสินค้าขาออก','decl',j.id)}
+  </div><div id="docSheet"></div>`;
+  if(DOC_TYPE)openDoc(DOC_JOB,DOC_TYPE);
+}
+function openDoc(jobId,type){
+  DOC_JOB=jobId;DOC_TYPE=type;
+  if(CURRENT!=='documents'){go('documents',jobId);}
+  const j=DB.jobs.find(x=>x.id===jobId);
+  let host=document.getElementById('docSheet');
+  if(!host){renderDocuments();host=document.getElementById('docSheet');if(!host)return;}
+  host.innerHTML=`<div class="toolbar-print no-print" style="margin-top:20px">
+      <button class="btn" onclick="DOC_TYPE=null;document.getElementById('docSheet').innerHTML=''">✕ ปิด</button>
+      <button class="btn btn-primary" onclick="printDocNow('${jobId}','${type}')">🖨 พิมพ์ A4 / Print</button>
+    </div>${docHTML(j,type)}`;
+  host.scrollIntoView({behavior:'smooth'});
+}
+function docHTML(j,type){
+  const co=DB.company;
+  if(type==='invoice')return invoiceHTML(j,co);
+  if(type==='packing')return packingHTML(j,co);
+  if(type==='si')return siHTML(j,co);
+  if(type==='bl')return blHTML(j,co);
+  if(type==='decl')return declHTML(j,co);
+  return '';
+}
+function invoiceHTML(j,co){
+  return `<div class="sheet"><h1>COMMERCIAL INVOICE</h1>
+  <div class="doc-head"><div><div class="co">${escapeHtml(co.name)}</div><div>${escapeHtml(co.addr)}</div><div>Tel: ${co.tel} · Tax ID: ${co.tax}</div></div>
+    <div style="text-align:right"><div class="lbl">Invoice No</div><b>${j.invNo||'—'}</b><div class="lbl" style="margin-top:6px">Date</div>${fmtDate(j.invDate)}</div></div>
+  <div class="two"><div class="box"><div class="lbl">Consignee / Buyer</div><div style="white-space:pre-line">${escapeHtml(j.consignee)}</div></div>
+    <div class="box"><div class="lbl">Notify Party</div><div style="white-space:pre-line">${escapeHtml(j.notify||'SAME AS CONSIGNEE')}</div></div></div>
+  <div class="two"><div class="box"><div class="lbl">From / To (Port)</div>${escapeHtml(j.pol)} → ${escapeHtml(j.pod)}</div>
+    <div class="box"><div class="lbl">Terms</div>${j.incoterm} ${escapeHtml(short(j.pod))} · ${escapeHtml(j.payterm||'')}</div></div>
+  <table class="dt"><thead><tr><th>#</th><th>Description of Goods</th><th>HS Code</th><th>Qty</th><th>Unit Price (${j.ccy})</th><th>Amount (${j.ccy})</th></tr></thead>
+  <tbody>${(j.items||[]).map((i,n)=>`<tr><td>${n+1}</td><td>${escapeHtml(i.desc)}</td><td>${i.hs}</td><td>${i.qty} ${i.unit}</td><td style="text-align:right">${Number(i.price).toLocaleString('en',{minimumFractionDigits:2})}</td><td style="text-align:right">${(i.qty*i.price).toLocaleString('en',{minimumFractionDigits:2})}</td></tr>`).join('')}
+  <tr><td colspan="5" class="tot">TOTAL ${j.incoterm} (${j.ccy})</td><td class="tot">${jobTotal(j).toLocaleString('en',{minimumFractionDigits:2})}</td></tr></tbody></table>
+  <div style="font-size:11px"><b>Total Net Weight:</b> ${jobNW(j).toLocaleString()} KGS &nbsp; <b>Gross:</b> ${jobGW(j).toLocaleString()} KGS &nbsp; <b>Packages:</b> ${jobCtns(j)} CTNS</div>
+  ${j.remarks?`<div class="box" style="margin-top:8px"><div class="lbl">Remarks</div>${escapeHtml(j.remarks)}</div>`:''}
+  <div class="sig"><div>For and on behalf of<br><b>${escapeHtml(co.name)}</b></div><div style="margin-top:36px;border-top:1px solid #333;display:inline-block;padding-top:4px">Authorized Signature</div></div>
+  </div>`;
+}
+function packingHTML(j,co){
+  return `<div class="sheet"><h1>PACKING LIST</h1>
+  <div class="doc-head"><div><div class="co">${escapeHtml(co.name)}</div><div>${escapeHtml(co.addr)}</div></div>
+    <div style="text-align:right"><div class="lbl">Invoice No</div><b>${j.invNo||'—'}</b><div class="lbl" style="margin-top:6px">Date</div>${fmtDate(j.invDate)}</div></div>
+  <div class="box"><div class="lbl">Consignee</div><div style="white-space:pre-line">${escapeHtml(j.consignee)}</div></div>
+  <div class="two"><div class="box"><div class="lbl">Vessel / Voyage</div>${j.vessel||'—'} ${j.voyage||''}</div>
+    <div class="box"><div class="lbl">Container / Seal</div>${j.container||'—'} / ${j.seal||'—'}</div></div>
+  <table class="dt"><thead><tr><th>#</th><th>Description</th><th>Pkgs</th><th>Qty</th><th>Net Wt (kg)</th><th>Gross Wt (kg)</th><th>Measurement</th></tr></thead>
+  <tbody>${(j.items||[]).map((i,n)=>`<tr><td>${n+1}</td><td>${escapeHtml(i.desc)}</td><td>${i.ctns} CTN</td><td>${i.qty} ${i.unit}</td><td style="text-align:right">${Number(i.nw).toLocaleString()}</td><td style="text-align:right">${Number(i.gw).toLocaleString()}</td><td>—</td></tr>`).join('')}
+  <tr style="font-weight:800;background:#eee"><td colspan="2">TOTAL</td><td>${jobCtns(j)} CTN</td><td>—</td><td style="text-align:right">${jobNW(j).toLocaleString()}</td><td style="text-align:right">${jobGW(j).toLocaleString()}</td><td>—</td></tr></tbody></table>
+  <div style="font-size:11px"><b>Shipping Marks:</b> ${escapeHtml(j.remarks||'N/M')}</div>
+  <div class="sig"><div><b>${escapeHtml(co.name)}</b></div><div style="margin-top:36px;border-top:1px solid #333;display:inline-block;padding-top:4px">Authorized Signature</div></div>
+  </div>`;
+}
+function siHTML(j,co){
+  return `<div class="sheet"><h1>SHIPPING INSTRUCTION</h1>
+  <div class="doc-head"><div><div class="co">${escapeHtml(co.name)}</div><div>Booking No: <b>${j.bookingNo||'—'}</b></div></div>
+    <div style="text-align:right"><div class="lbl">Job No</div><b>${j.jobNo}</b><div class="lbl" style="margin-top:6px">Date</div>${fmtDate(today())}</div></div>
+  <div class="two"><div class="box"><div class="lbl">Shipper</div><div style="white-space:pre-line">${escapeHtml(j.shipper)}</div></div>
+    <div class="box"><div class="lbl">Consignee</div><div style="white-space:pre-line">${escapeHtml(j.consignee)}</div></div></div>
+  <div class="box"><div class="lbl">Notify Party</div><div style="white-space:pre-line">${escapeHtml(j.notify||'SAME AS CONSIGNEE')}</div></div>
+  <table class="dt"><tbody>
+    <tr><th style="width:25%">Vessel / Voyage</th><td>${j.vessel||'—'} ${j.voyage||''}</td><th style="width:25%">Port of Loading</th><td>${escapeHtml(j.pol)}</td></tr>
+    <tr><th>Port of Discharge</th><td>${escapeHtml(j.pod)}</td><th>Place of Delivery</th><td>${escapeHtml(short(j.pod))}</td></tr>
+    <tr><th>Container / Seal</th><td>${j.container||'—'} / ${j.seal||'—'}</td><th>Type / Mode</th><td>${j.mode}</td></tr>
+    <tr><th>Freight Terms</th><td>${j.incoterm}</td><th>B/L Type</th><td>Original (3/3)</td></tr>
+  </tbody></table>
+  <table class="dt"><thead><tr><th>Marks & Nos</th><th>No. of Pkgs</th><th>Description of Goods</th><th>Gross Wt (kg)</th><th>Measurement</th></tr></thead>
+  <tbody><tr><td style="white-space:pre-line">${escapeHtml(j.remarks||'N/M')}</td><td>${jobCtns(j)} CTNS</td>
+    <td>${(j.items||[]).map(i=>escapeHtml(i.desc)+' ('+i.hs+')').join('<br>')}</td><td style="text-align:right">${jobGW(j).toLocaleString()}</td><td>—</td></tr></tbody></table>
+  <div style="font-size:11px;margin-top:8px"><b>Special Instructions:</b> Please issue Draft B/L for approval before confirmation. VGM to be submitted prior to cut-off.</div>
+  <div class="sig"><div>Submitted by <b>CS Export — ${escapeHtml(co.name)}</b></div></div>
+  </div>`;
+}
+function blHTML(j,co){
+  return `<div class="sheet"><h1 style="font-size:16px">DRAFT — BILL OF LADING</h1>
+  <div style="text-align:center;color:#b91c1c;font-weight:800;letter-spacing:3px;margin:-4px 0 10px">★ DRAFT / NON-NEGOTIABLE — FOR APPROVAL ONLY ★</div>
+  <div class="doc-head"><div><div class="lbl">B/L No</div><b>${j.blNo||'(to be assigned)'}</b></div>
+    <div style="text-align:right"><div class="lbl">Booking No</div>${j.bookingNo||'—'}</div></div>
+  <div class="two"><div class="box"><div class="lbl">Shipper</div><div style="white-space:pre-line">${escapeHtml(j.shipper)}</div></div>
+    <div class="box"><div class="lbl">Consignee</div><div style="white-space:pre-line">${escapeHtml(j.consignee)}</div></div></div>
+  <div class="box"><div class="lbl">Notify Party</div><div style="white-space:pre-line">${escapeHtml(j.notify||'SAME AS CONSIGNEE')}</div></div>
+  <table class="dt"><tbody>
+    <tr><th style="width:25%">Vessel / Voyage</th><td>${j.vessel||'—'} ${j.voyage||''}</td><th style="width:25%">Port of Loading</th><td>${escapeHtml(j.pol)}</td></tr>
+    <tr><th>Port of Discharge</th><td>${escapeHtml(j.pod)}</td><th>Place of Delivery</th><td>${escapeHtml(short(j.pod))}</td></tr>
+  </tbody></table>
+  <table class="dt"><thead><tr><th>Container / Seal No</th><th>No. of Pkgs</th><th>Description of Goods</th><th>Gross Weight</th><th>Measurement</th></tr></thead>
+  <tbody><tr><td>${j.container||'—'}<br>${j.seal||''}</td><td>${jobCtns(j)} CTNS</td>
+    <td>${(j.items||[]).map(i=>escapeHtml(i.desc)).join('<br>')}<br><i>"SAID TO CONTAIN"</i></td><td style="text-align:right">${jobGW(j).toLocaleString()} KGS</td><td>—</td></tr></tbody></table>
+  <div class="two" style="margin-top:8px"><div class="box"><div class="lbl">Freight & Charges</div>FREIGHT ${j.incoterm==='CIF'||j.incoterm==='CFR'||j.incoterm==='CPT'||j.incoterm==='CIP'?'PREPAID':'COLLECT'}</div>
+    <div class="box"><div class="lbl">No. of Original B/L</div>THREE (3)</div></div>
+  <div class="sig"><div style="margin-top:24px;border-top:1px solid #333;display:inline-block;padding-top:4px">As Carrier / Agent</div></div>
+  </div>`;
+}
+
+/* ============ Customs / Export Declaration ============ */
+const CUSTOMS_PRIVILEGES=['000 ทั่วไป (ไม่ใช้สิทธิ)','BOI ส่งเสริมการลงทุน','19BIS คืนอากร ม.19 ทวิ','FZ เขตปลอดอากร (Free Zone)','BWH คลังสินค้าทัณฑ์บน','DBK ชดเชยค่าภาษีอากร'];
+const CUSTOMS_DOCS=[
+  {cat:'invoice',label:'Commercial Invoice (ใบกำกับการค้า)',req:true},
+  {cat:'packing',label:'Packing List (ใบรายการบรรจุ)',req:true},
+  {cat:'decl',label:'ใบขนสินค้าขาออก (Export Declaration)',req:true},
+  {cat:'co',label:'Certificate of Origin / C/O (ถ้าผู้ซื้อขอใช้สิทธิ)',req:false},
+  {cat:'permit',label:'ใบอนุญาต/ใบรับรอง (กรณีสินค้าควบคุม)',req:false},
+];
+function fobForeign(j){return jobTotal(j);}
+function fobTHB(j){const r=parseFloat((j.customs&&j.customs.exchangeRate)||'')||0;return fobForeign(j)*r;}
+function hasFileCat(j,cat){return (j.files||[]).some(f=>f.category===cat);}
+function declHTML(j,co){
+  const cu=j.customs||{};const rate=parseFloat(cu.exchangeRate||'')||0;
+  const rows=(j.items||[]).map((i,n)=>{const amt=Number(i.qty||0)*Number(i.price||0);
+    return `<tr><td>${n+1}</td><td>${escapeHtml(i.desc)}</td><td class="mono">${escapeHtml(i.hs||'—')}</td><td>${escapeHtml(cu.countryOrigin||'TH')}</td><td>${i.qty||0} ${escapeHtml(i.unit||'')}</td><td style="text-align:right">${Number(i.gw||0).toLocaleString()}</td><td style="text-align:right">${amt.toLocaleString('en',{minimumFractionDigits:2})}</td><td style="text-align:right">${(amt*rate).toLocaleString('en',{minimumFractionDigits:2})}</td></tr>`;}).join('');
+  const totFC=fobForeign(j),totTHB=totFC*rate;
+  return `<div class="sheet">
+  <div style="text-align:center;font-size:10px;color:#555">กรมศุลกากร · THE CUSTOMS DEPARTMENT</div>
+  <h1 style="font-size:17px">ใบขนสินค้าขาออก · EXPORT DECLARATION</h1>
+  <div class="doc-head"><div><div class="lbl">เลขที่ใบขน / Declaration No</div><b>${escapeHtml(cu.declNo||'(รอเลขที่จากระบบ e-Export)')}</b>
+    <div class="lbl" style="margin-top:5px">ประเภท / Type</div>${escapeHtml(cu.declType||'0 - ใบขนสินค้าขาออก')}</div>
+    <div style="text-align:right"><div class="lbl">วันที่ / Date</div>${fmtDate(today())}<div class="lbl" style="margin-top:5px">Job / Invoice</div>${escapeHtml(j.jobNo)} · ${escapeHtml(j.invNo||'—')}</div></div>
+  <div class="two">
+    <div class="box"><div class="lbl">ผู้ส่งออก / Exporter</div><div style="white-space:pre-line">${escapeHtml(j.shipper)}</div>
+      <div style="margin-top:4px"><b>เลขผู้เสียภาษี:</b> ${escapeHtml(cu.exporterTax||'—')} &nbsp; <b>สาขา:</b> ${escapeHtml(cu.branch||'00000')}</div></div>
+    <div class="box"><div class="lbl">ผู้ซื้อ / Consignee</div><div style="white-space:pre-line">${escapeHtml(j.consignee)}</div></div>
+  </div>
+  <table class="dt"><tbody>
+    <tr><th style="width:22%">ที่ทำการศุลกากร / Office</th><td>${escapeHtml(cu.customsOffice||'—')}</td><th style="width:22%">ท่าส่งออก / Export Port</th><td>${escapeHtml(cu.exportPort||short(j.pol))}</td></tr>
+    <tr><th>ประเทศกำเนิด / Origin</th><td>${escapeHtml(cu.countryOrigin||'TH')}</td><th>ประเทศปลายทาง / Dest.</th><td>${escapeHtml(cu.countryDest||short(j.pod))}</td></tr>
+    <tr><th>Incoterms</th><td>${escapeHtml(j.incoterm)}</td><th>เรือ / Vessel</th><td>${escapeHtml(j.vessel||'—')} ${escapeHtml(j.voyage||'')}</td></tr>
+    <tr><th>สกุลเงิน / Currency</th><td>${escapeHtml(j.ccy)}</td><th>อัตราแลกเปลี่ยน / FX Rate</th><td>${rate?rate.toFixed(4):'— (ยังไม่ระบุ)'} THB/${escapeHtml(j.ccy)}</td></tr>
+    <tr><th>สิทธิประโยชน์ / Privilege</th><td colspan="3">${escapeHtml(cu.privilege||'000 ทั่วไป')}</td></tr>
+  </tbody></table>
+  <table class="dt"><thead><tr><th>ลำดับ</th><th>รายการ / Description</th><th>พิกัด / HS</th><th>กำเนิด</th><th>ปริมาณ</th><th>น้ำหนัก (kg)</th><th>FOB (${escapeHtml(j.ccy)})</th><th>FOB (THB)</th></tr></thead>
+  <tbody>${rows}
+    <tr style="font-weight:800;background:#eee"><td colspan="5">รวม / TOTAL · ${jobCtns(j)} CTNS</td><td style="text-align:right">${jobGW(j).toLocaleString()}</td><td style="text-align:right">${totFC.toLocaleString('en',{minimumFractionDigits:2})}</td><td style="text-align:right">${totTHB.toLocaleString('en',{minimumFractionDigits:2})}</td></tr>
+  </tbody></table>
+  <div style="font-size:10px;color:#555;margin-top:6px">* ราคา FOB (THB) = ราคา FOB สกุลต่างประเทศ × อัตราแลกเปลี่ยนที่กรมศุลกากรประกาศ · เอกสารนี้จัดทำเพื่อยื่นผ่านระบบ e-Export (Paperless)</div>
+  <div class="sig"><div>ผู้รับมอบอำนาจ / Declarant<br><b>${escapeHtml(co.name)}</b></div><div style="margin-top:30px;border-top:1px solid #333;display:inline-block;padding-top:4px">ลายมือชื่อ / Signature</div></div>
+  </div>`;
+}
+/* Customs tab (editable) */
+function detailCustoms(j){
+  const cu=j.customs||{};const rate=parseFloat(cu.exchangeRate||'')||0;
+  const v=runValidation(j);const errN=v.filter(x=>x.level==='err').length,warnN=v.filter(x=>x.level==='warn').length;
+  return `<div class="panel"><div class="panel-h"><h3>ข้อมูลใบขนสินค้าขาออก / Export Declaration</h3>
+    <span class="sub">โครงสร้างตามระบบ e-Export กรมศุลกากร</span><div class="spacer"></div>
+    <button class="btn btn-sm" onclick="validateJob('${j.id}')">✓ ตรวจสอบ ${errN||warnN?`(${errN} ผิด · ${warnN} เตือน)`:''}</button>
+    <button class="btn btn-sm" onclick="openDoc('${j.id}','decl')">🛃 ดูใบขน</button></div>
+    <div class="panel-b"><div class="form-grid">
+      <div class="section-title">ผู้ส่งออก / Exporter</div>
+      <div class="fg"><label>เลขประจำตัวผู้เสียภาษี <span class="en">/ Tax ID (13)</span></label><input id="cu_exporterTax" value="${escapeAttr(cu.exporterTax||'')}" maxlength="13" placeholder="0105540012345"></div>
+      <div class="fg"><label>สาขา <span class="en">/ Branch</span></label><input id="cu_branch" value="${escapeAttr(cu.branch||'00000')}" placeholder="00000"></div>
+      <div class="section-title">พิธีการ / Declaration</div>
+      <div class="fg"><label>ประเภทใบขน <span class="en">/ Type</span></label>
+        <select id="cu_declType"><option ${cu.declType&&cu.declType.startsWith('0')?'selected':''}>0 - ใบขนสินค้าขาออก</option><option ${cu.declType==='1 - ใบขนสินค้าขาออกพร้อมโอนสิทธิ'?'selected':''}>1 - ใบขนสินค้าขาออกพร้อมโอนสิทธิ</option><option ${cu.declType==='3 - ใบขนสินค้าขาออกชั่วคราว'?'selected':''}>3 - ใบขนสินค้าขาออกชั่วคราว</option></select></div>
+      <div class="fg"><label>เลขที่ใบขน <span class="en">/ Declaration No</span></label><input id="cu_declNo" value="${escapeAttr(cu.declNo||'')}" placeholder="ได้รับจากระบบ e-Export"></div>
+      <div class="fg"><label>ที่ทำการศุลกากร <span class="en">/ Customs Office</span></label><input id="cu_customsOffice" value="${escapeAttr(cu.customsOffice||'')}" placeholder="0309 ศุลกากรท่าเรือแหลมฉบัง"></div>
+      <div class="fg"><label>ท่าส่งออก <span class="en">/ Export Port</span></label><input id="cu_exportPort" value="${escapeAttr(cu.exportPort||short(j.pol))}" placeholder="THLCH"></div>
+      <div class="fg"><label>ประเทศกำเนิด <span class="en">/ Country of Origin</span></label><input id="cu_countryOrigin" value="${escapeAttr(cu.countryOrigin||'TH')}" placeholder="TH"></div>
+      <div class="fg"><label>ประเทศปลายทาง <span class="en">/ Destination</span></label><input id="cu_countryDest" value="${escapeAttr(cu.countryDest||'')}" placeholder="JP"></div>
+      <div class="section-title">มูลค่า / Valuation</div>
+      <div class="fg"><label>อัตราแลกเปลี่ยน <span class="en">/ FX Rate (THB per 1 ${escapeHtml(j.ccy)})</span></label><input id="cu_exchangeRate" value="${escapeAttr(cu.exchangeRate||'')}" type="number" step="0.0001" placeholder="36.5000" oninput="updateFobPreview('${j.id}')"></div>
+      <div class="fg"><label>สิทธิประโยชน์ <span class="en">/ Privilege</span></label>
+        <select id="cu_privilege">${CUSTOMS_PRIVILEGES.map(p=>`<option ${cu.privilege===p?'selected':''}>${p}</option>`).join('')}</select></div>
+      <div class="fg full"><div style="display:flex;gap:20px;flex-wrap:wrap;padding:12px;background:var(--slate-bg);border-radius:8px;font-size:13px">
+        <div><span style="color:var(--muted)">FOB (${escapeHtml(j.ccy)})</span><div style="font-weight:800;font-size:16px">${fobForeign(j).toLocaleString('en',{minimumFractionDigits:2})}</div></div>
+        <div><span style="color:var(--muted)">FOB (บาท / THB)</span><div style="font-weight:800;font-size:16px;color:var(--green)" id="fobThbView">฿ ${fobTHB(j).toLocaleString('en',{minimumFractionDigits:2})}</div></div>
+        <div><span style="color:var(--muted)">น้ำหนักสุทธิ/รวม</span><div style="font-weight:700">${jobNW(j).toLocaleString()} / ${jobGW(j).toLocaleString()} kg</div></div>
+      </div></div>
+      <div class="fg full" style="flex-direction:row;justify-content:flex-end;gap:10px"><button class="btn btn-primary" onclick="saveCustoms('${j.id}')">บันทึกข้อมูลใบขน / Save</button></div>
+    </div></div></div>
+    <div class="panel"><div class="panel-h"><h3>เอกสารที่ศุลกากรต้องการ / Required Documents</h3><span class="sub">ติ๊กอัตโนมัติเมื่อแนบไฟล์</span></div>
+    <div class="panel-b">${CUSTOMS_DOCS.map(dn=>{const has=customsDocOk(j,dn);
+      return `<div class="chk ${has?'checked':''}" style="cursor:default">
+        <span style="font-size:16px">${has?'✅':(dn.req?'⛔':'⬜')}</span>
+        <div><div class="ct">${dn.label}</div><div class="cs">${dn.req?'<b style="color:var(--red)">จำเป็น / Required</b>':'ตามกรณี / Conditional'}</div></div>
+        <div class="dl ${has?'dl-ok':dn.req?'dl-late':''}">${has?'มีแล้ว':dn.req?'ยังขาด':'—'}</div>
+      </div>`;}).join('')}
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">ไปที่แท็บ "ไฟล์แนบ" เพื่ออัปโหลดเอกสารจากลูกค้า</div>
+    </div></div>`;
+}
+function customsDocOk(j,dn){if(dn.cat==='decl')return hasFileCat(j,'decl')||!!(j.customs&&j.customs.declNo);return hasFileCat(j,dn.cat);}
+function updateFobPreview(id){const j=DB.jobs.find(x=>x.id===id);const r=parseFloat(val('cu_exchangeRate'))||0;const el=document.getElementById('fobThbView');if(el)el.textContent='฿ '+(fobForeign(j)*r).toLocaleString('en',{minimumFractionDigits:2});}
+function saveCustoms(id){
+  const j=DB.jobs.find(x=>x.id===id);
+  j.customs=Object.assign(j.customs||{},{exporterTax:val('cu_exporterTax'),branch:val('cu_branch'),declType:val('cu_declType'),
+    declNo:val('cu_declNo'),customsOffice:val('cu_customsOffice'),exportPort:val('cu_exportPort'),
+    countryOrigin:val('cu_countryOrigin'),countryDest:val('cu_countryDest'),exchangeRate:val('cu_exchangeRate'),privilege:val('cu_privilege')});
+  save();renderJobDetail(id);toast('บันทึกข้อมูลใบขนแล้ว');
+}
+
+/* ============ File Attachments ============ */
+const FILE_CATS=[
+  {id:'invoice',label:'Commercial Invoice',th:'ใบกำกับการค้า'},
+  {id:'packing',label:'Packing List',th:'ใบรายการบรรจุ'},
+  {id:'co',label:'Certificate of Origin',th:'C/O ถิ่นกำเนิด'},
+  {id:'permit',label:'License / Permit',th:'ใบอนุญาต/ใบรับรอง'},
+  {id:'bl',label:'Bill of Lading',th:'ใบตราส่ง'},
+  {id:'decl',label:'Export Declaration',th:'ใบขนสินค้าขาออก'},
+  {id:'other',label:'Other',th:'อื่นๆ'},
+];
+function fileCat(id){return FILE_CATS.find(c=>c.id===id)||FILE_CATS[FILE_CATS.length-1];}
+function fileCatTag(id){const c=fileCat(id);return `<span class="tag s-si">${c.label}</span>`;}
+function fmtBytes(b){if(!b)return '—';const u=['B','KB','MB'];let i=0;b=Number(b);while(b>=1024&&i<2){b/=1024;i++;}return b.toFixed(i?1:0)+' '+u[i];}
+function fileIcon(t){if((t||'').includes('pdf'))return '📕';if((t||'').includes('image'))return '🖼';if((t||'').includes('sheet')||(t||'').includes('excel'))return '📗';return '📄';}
+function detailFiles(j){
+  const files=j.files||[];
+  return `<div class="panel"><div class="panel-h"><h3>ไฟล์เอกสารแนบ / Attached Documents</h3>
+    <span class="sub">${files.length} ไฟล์ · รับจากลูกค้า/แนบเข้าระบบ</span><div class="spacer"></div>
+    <select id="fileCatSel" class="btn btn-sm" style="font-weight:600">${FILE_CATS.map(c=>`<option value="${c.id}">${c.label} · ${c.th}</option>`).join('')}</select>
+    <input type="file" id="fileInput" multiple style="display:none" onchange="attachFiles('${j.id}')">
+    <button class="btn btn-primary btn-sm" onclick="document.getElementById('fileInput').click()">📎 แนบไฟล์</button></div>
+    <table><thead><tr><th>ไฟล์ / File</th><th>ประเภท / Category</th><th>ขนาด</th><th>วันที่</th><th></th></tr></thead>
+    <tbody>${files.length?files.map(f=>`<tr style="cursor:default">
+      <td><span style="font-size:16px">${fileIcon(f.type)}</span> ${escapeHtml(f.name)} ${f.received?'<span class="tag s-departed" style="font-size:10px">รับจากลูกค้า</span>':''}${!f.dataUrl?'<span class="tag s-done" style="font-size:10px">ตัวอย่าง</span>':''}</td>
+      <td><select class="btn btn-sm" onchange="changeFileCat('${j.id}','${f.id}',this.value)">${FILE_CATS.map(c=>`<option value="${c.id}" ${f.category===c.id?'selected':''}>${c.label}</option>`).join('')}</select></td>
+      <td>${fmtBytes(f.size)}</td><td>${fmtDate(f.uploadedAt)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm" onclick="viewFile('${j.id}','${f.id}')" title="เปิด">👁</button>
+        <button class="btn btn-sm" onclick="downloadFile('${j.id}','${f.id}')" title="ดาวน์โหลด">⬇</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteFile('${j.id}','${f.id}')" title="ลบ">✕</button>
+      </td></tr>`).join(''):`<tr><td colspan="5"><div class="empty"><div class="ei">📎</div>ยังไม่มีไฟล์แนบ<br>กดปุ่ม "แนบไฟล์" เพื่ออัปโหลด Invoice / Packing List จากลูกค้า</div></td></tr>`}</tbody></table>
+    <div class="panel-b" style="font-size:11px;color:var(--muted);border-top:1px solid var(--line)">รองรับ PDF และรูปภาพ · ขนาดไม่เกิน 3 MB ต่อไฟล์ · เก็บในเบราว์เซอร์ของคุณ (localStorage)</div>
+  </div>`;
+}
+function attachFiles(id){
+  const inp=document.getElementById('fileInput');const cat=val('fileCatSel')||'other';
+  const files=inp&&inp.files;if(!files||!files.length)return;
+  let pending=files.length;
+  const done=()=>{if(--pending===0){save();renderJobDetail(id);toast('แนบไฟล์เรียบร้อย');}};
+  [...files].forEach(file=>{
+    if(file.size>3*1024*1024){alert('ไฟล์ "'+file.name+'" ใหญ่เกิน 3MB — ข้ามไฟล์นี้');done();return;}
+    const reader=new FileReader();
+    reader.onload=e=>{const j=DB.jobs.find(x=>x.id===id);
+      j.files.push({id:'f'+Date.now()+Math.random().toString(36).slice(2,6),name:file.name,category:cat,size:file.size,type:file.type,dataUrl:e.target.result,uploadedAt:today(),received:true});done();};
+    reader.onerror=done;reader.readAsDataURL(file);
+  });
+  if(inp)inp.value='';
+}
+function changeFileCat(id,fid,cat){const j=DB.jobs.find(x=>x.id===id);const f=(j.files||[]).find(x=>x.id===fid);if(f){f.category=cat;save();renderJobDetail(id);}}
+function viewFile(id,fid){const j=DB.jobs.find(x=>x.id===id);const f=(j.files||[]).find(x=>x.id===fid);
+  if(!f||!f.dataUrl){alert('ไฟล์นี้เป็นข้อมูลตัวอย่าง (ไม่มีไฟล์จริง) — กรุณาแนบไฟล์เพื่อเปิดหรือดาวน์โหลด');return;}
+  window.open(f.dataUrl,'_blank');}
+function downloadFile(id,fid){const j=DB.jobs.find(x=>x.id===id);const f=(j.files||[]).find(x=>x.id===fid);
+  if(!f||!f.dataUrl){alert('ไฟล์นี้เป็นข้อมูลตัวอย่าง — ไม่มีไฟล์จริงให้ดาวน์โหลด');return;}
+  const a=document.createElement('a');a.href=f.dataUrl;a.download=f.name;document.body.appendChild(a);a.click();a.remove();}
+function deleteFile(id,fid){if(!confirm('ลบไฟล์นี้?'))return;const j=DB.jobs.find(x=>x.id===id);j.files=(j.files||[]).filter(x=>x.id!==fid);save();renderJobDetail(id);}
+
+/* ============ Validation ============ */
+function runValidation(j){
+  const out=[];const cu=j.customs||{};
+  const ok=m=>({level:'ok',msg:m}),warn=m=>({level:'warn',msg:m}),err=m=>({level:'err',msg:m});
+  const tax=(cu.exporterTax||'').replace(/\D/g,'');
+  out.push(tax?(tax.length===13?ok('เลขประจำตัวผู้เสียภาษีผู้ส่งออก 13 หลักถูกต้อง'):warn('เลขผู้เสียภาษีผู้ส่งออกควรมี 13 หลัก (พบ '+tax.length+' หลัก)')):err('ยังไม่ระบุเลขประจำตัวผู้เสียภาษีผู้ส่งออก'));
+  out.push(cu.customsOffice?ok('ระบุที่ทำการศุลกากร/ท่าส่งออกแล้ว'):err('ยังไม่ระบุที่ทำการศุลกากร'));
+  out.push(cu.countryDest?ok('ระบุประเทศปลายทางแล้ว'):warn('ยังไม่ระบุประเทศปลายทาง'));
+  const rate=parseFloat(cu.exchangeRate||'')||0;
+  out.push(rate>0?ok('มีอัตราแลกเปลี่ยน ('+rate+' THB/'+j.ccy+')'):err('ยังไม่ระบุอัตราแลกเปลี่ยน — คำนวณราคา FOB (บาท) ไม่ได้'));
+  const items=j.items||[];const missHs=items.filter(i=>!i.hs).length;
+  out.push(items.length?(missHs?err(missHs+' รายการสินค้ายังไม่มีพิกัดศุลกากร (HS)'):ok('ทุกรายการสินค้ามีพิกัด HS')):err('ยังไม่มีรายการสินค้า'));
+  out.push(jobTotal(j)>0?ok('มูลค่าสินค้ารวม > 0'):err('มูลค่าสินค้ารวมเป็น 0'));
+  out.push(jobGW(j)>=jobNW(j)?ok('น้ำหนักรวม ≥ น้ำหนักสุทธิ (สมเหตุสมผล)'):warn('น้ำหนัก Gross < Net — ตรวจสอบ Packing List'));
+  out.push(j.etd?ok('ระบุวัน ETD แล้ว'):warn('ยังไม่ระบุวัน ETD'));
+  out.push(hasFileCat(j,'invoice')?ok('แนบไฟล์ Commercial Invoice แล้ว'):warn('ยังไม่ได้แนบไฟล์ Invoice จากลูกค้า'));
+  out.push(hasFileCat(j,'packing')?ok('แนบไฟล์ Packing List แล้ว'):warn('ยังไม่ได้แนบไฟล์ Packing List จากลูกค้า'));
+  return out;
+}
+function validateJob(id){
+  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  const v=runValidation(j);const errN=v.filter(x=>x.level==='err').length,warnN=v.filter(x=>x.level==='warn').length,okN=v.filter(x=>x.level==='ok').length;
+  const icon={ok:'✅',warn:'⚠️',err:'⛔'},col={ok:'var(--green)',warn:'var(--amber)',err:'var(--red)'};
+  const status=errN?['ยังไม่พร้อมยื่นพิธีการ','var(--red-bg)','var(--red)']:warnN?['พร้อมยื่น แต่มีข้อควรตรวจ','var(--amber-bg)','var(--amber)']:['พร้อมยื่นพิธีการขาออก ✓','var(--green-bg)','var(--green)'];
+  const body=`<div class="panel" style="margin:0"><div class="panel-b">
+    <div style="display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:10px;background:${status[1]};color:${status[2]};font-weight:800;margin-bottom:14px">
+      <span style="font-size:20px">${errN?'⛔':warnN?'⚠️':'✅'}</span><div>${status[0]}<div style="font-weight:500;font-size:12px;opacity:.85">${j.jobNo} · ผ่าน ${okN} · เตือน ${warnN} · ผิด ${errN}</div></div></div>
+    ${v.map(x=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:9px 4px;border-bottom:1px solid var(--line)">
+      <span>${icon[x.level]}</span><div style="font-size:13.5px;color:${x.level==='ok'?'var(--ink)':col[x.level]}">${x.msg}</div></div>`).join('')}
+  </div></div>`;
+  openPreview('ผลตรวจสอบความถูกต้อง / Validation — '+escapeHtml(j.jobNo),body,
+    `<button class="btn btn-primary" onclick="closePreview();go('jobs','${id}');setDetailTab('${id}','customs')">ไปแก้ไขใบขน →</button>`);
+}
+
+/* ============ LINE customer update ============ */
+let LINE_JOB=null,HANDOFF_CTX=null;
+function findCustomerByName(name){
+  if(!name)return null;const first=(name.split('\n')[0]||'').trim().toLowerCase();
+  return DB.customers.find(c=>{const cn=(c.name||'').toLowerCase();return cn&&(first.includes(cn)||cn.includes(first));})||null;
+}
+function buildLineMessage(j){
+  const cust=findCustomerByName(j.consignee);
+  if(j.cancelled){
+    return ['🚫 แจ้งยกเลิกงานขนส่งขาออก','Job: '+j.jobNo+'  |  Invoice: '+(j.invNo||'-'),
+      '━━━━━━━━━━━━',
+      '📍 เส้นทาง: '+short(j.pol)+' → '+short(j.pod),
+      '❌ สถานะ: ยกเลิกงานแล้ว',
+      '📝 เหตุผล: '+j.cancelled.reason,
+      '━━━━━━━━━━━━',
+      'หากมีค่าใช้จ่ายที่เกิดขึ้นแล้ว จะแจ้งแยกต่างหากค่ะ/ครับ',DB.company.name].join('\n');
+  }
+  const st=statusOf(j.status);
+  const consigneeName=(j.consignee||'').split('\n')[0];
+  const greet=cust&&cust.contact?cust.contact:'ลูกค้าผู้มีอุปการคุณ';
+  const pending=CHECKLIST_TEMPLATE.filter(t=>!isChecked(j.id,t.id)).slice(0,3).map(t=>'• '+t.th);
+  const L=[];
+  L.push('🚢 อัพเดทสถานะงานขนส่งขาออก');
+  L.push('Job: '+j.jobNo+'  |  Invoice: '+(j.invNo||'-'));
+  L.push('เรียน '+greet);
+  L.push('━━━━━━━━━━━━');
+  L.push('📌 สถานะล่าสุด: '+st.label+' ('+st.th+')');
+  L.push('📦 สินค้า: '+((j.items||[]).map(i=>i.desc).join(', ')||'-'));
+  L.push('🛳 เรือ/เที่ยว: '+(j.vessel||'-')+' '+(j.voyage||''));
+  L.push('🏭 ต้นทาง → ปลายทาง: '+short(j.pol)+' → '+short(j.pod));
+  L.push('📅 ETD: '+fmtDate(j.etd)+'  |  ETA: '+fmtDate(j.eta));
+  if(j.blNo)L.push('📄 B/L No: '+j.blNo);
+  if(j.container&&j.container!=='N/A (LCL)'&&j.container!=='LCL')L.push('🚛 ตู้/ซีล: '+j.container+' / '+(j.seal||'-'));
+  L.push('━━━━━━━━━━━━');
+  if(pending.length){L.push('⏳ กำลังดำเนินการ:');pending.forEach(p=>L.push(p));}
+  else L.push('✅ เอกสารครบถ้วน ดำเนินการเรียบร้อย');
+  L.push('');
+  L.push('หากมีข้อสงสัยติดต่อกลับได้เลยค่ะ/ครับ');
+  L.push(DB.company.name);
+  return L.join('\n');
+}
+function openLineUpdate(id,override){
+  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  LINE_JOB=id;HANDOFF_CTX={jobId:id,role:(override&&override.role)||'customer'};
+  let toName,line,msg;
+  if(override){toName=override.toName||'';line=override.line||'';msg=override.message||'';}
+  else{const cust=findCustomerByName(j.consignee);toName=(j.consignee||'').split('\n')[0];line=cust&&cust.line;msg=buildLineMessage(j);}
+  const toEl=document.getElementById('lineTo');
+  toEl.innerHTML='ถึง / To: <b>'+escapeHtml(toName)+'</b>'+(line?(' &nbsp;·&nbsp; LINE: <b>'+escapeHtml(line)+'</b>'):' <span style="color:var(--amber)">· ยังไม่มี LINE ในทะเบียน (จะใช้วิธีแชร์/คัดลอก)</span>');
+  document.getElementById('lineMsg').value=msg;
+  const chatBtn=document.getElementById('lineChatBtn');
+  const url=line?lineChatUrl(line):'';
+  if(url){chatBtn.style.display='inline-flex';chatBtn.dataset.url=url;}else{chatBtn.style.display='none';}
+  document.getElementById('lineOverlay').classList.add('show');
+}
+function closeLineModal(){document.getElementById('lineOverlay').classList.remove('show');HANDOFF_CTX=null;}
+function lineChatUrl(line){
+  line=(line||'').trim();if(!line)return '';
+  if(/^https?:\/\//i.test(line))return line;
+  if(line.startsWith('@'))return 'https://line.me/R/ti/p/'+encodeURIComponent(line);
+  return 'https://line.me/R/ti/p/~'+encodeURIComponent(line.replace(/^~/,''));
+}
+function markLineSent(){
+  if(!LINE_JOB)return;const j=DB.jobs.find(x=>x.id===LINE_JOB);
+  if(j){j.lastLineUpdate=new Date().toISOString();handoffMarkSent(j);save();}
+}
+function shareToLine(){
+  const msg=document.getElementById('lineMsg').value;
+  markLineSent();
+  window.open('https://line.me/R/share?text='+encodeURIComponent(msg),'_blank');
+  toast('เปิด LINE สำหรับแชร์ข้อความ');
+}
+function openLineChat(){
+  const btn=document.getElementById('lineChatBtn');markLineSent();
+  if(btn.dataset.url)window.open(btn.dataset.url,'_blank');
+}
+function copyLineMsg(){
+  const msg=document.getElementById('lineMsg').value;
+  const fin=()=>{markLineSent();toast('คัดลอกข้อความแล้ว — ไปวางในแชท LINE ได้เลย');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(msg).then(fin).catch(()=>fallbackCopy(msg,fin));}
+  else fallbackCopy(msg,fin);
+}
+function fallbackCopy(text,cb){
+  const ta=document.createElement('textarea');ta.value=text;ta.style.position='fixed';ta.style.opacity='0';
+  document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}catch(e){}ta.remove();if(cb)cb();
+}
+
+/* ============ Email customer update ============ */
+let MAIL_JOB=null;
+function buildMailSubject(j){
+  if(j.cancelled)return `[${j.jobNo}] แจ้งยกเลิกงานขนส่งขาออก / Shipment Cancelled`;
+  const st=statusOf(j.status);
+  return `[${j.jobNo}] อัพเดทสถานะงานขนส่งขาออก — ${st.label} (${st.th})`;
+}
+function buildMailBody(j){
+  const cust=findCustomerByName(j.consignee);
+  const greetC=cust&&cust.contact?cust.contact:(j.consignee||'').split('\n')[0];
+  if(j.cancelled){
+    return ['เรียน '+greetC+' / Dear '+greetC+',','',
+      'ตามที่ได้รับแจ้ง บริษัทฯ ขอยืนยันการยกเลิกงานขนส่งสินค้าขาออกรายการนี้',
+      'This is to confirm the cancellation of the following export shipment:','',
+      'Job No.   : '+j.jobNo,'Invoice   : '+(j.invNo||'-'),
+      'Routing   : '+short(j.pol)+' -> '+short(j.pod),
+      'เหตุผล/Reason : '+j.cancelled.reason,'',
+      'หากมีค่าใช้จ่ายที่เกิดขึ้นแล้ว บริษัทฯ จะแจ้งให้ทราบแยกต่างหาก',
+      'Any incurred charges will be advised separately.','',
+      'ขอแสดงความนับถือ / Best regards,',DB.company.name].join('\n');
+  }
+  const st=statusOf(j.status);
+  const greet=greetC;
+  const pending=CHECKLIST_TEMPLATE.filter(t=>!isChecked(j.id,t.id)).slice(0,4).map(t=>'   - '+t.t+' ('+t.th+')');
+  const L=[];
+  L.push('เรียน '+greet+' / Dear '+greet+',');
+  L.push('');
+  L.push('บริษัทฯ ขออัพเดทสถานะงานขนส่งสินค้าขาออกของท่าน ดังนี้');
+  L.push('Please find the latest status of your export shipment below:');
+  L.push('');
+  L.push('Job No.        : '+j.jobNo);
+  L.push('Invoice No.    : '+(j.invNo||'-'));
+  L.push('Status         : '+st.label+' ('+st.th+')');
+  L.push('Commodity      : '+((j.items||[]).map(i=>i.desc).join(', ')||'-'));
+  L.push('Vessel/Voyage  : '+(j.vessel||'-')+' '+(j.voyage||''));
+  L.push('Routing        : '+short(j.pol)+' -> '+short(j.pod));
+  L.push('ETD / ETA      : '+fmtDate(j.etd)+' / '+fmtDate(j.eta));
+  if(j.blNo)L.push('B/L No.        : '+j.blNo);
+  if(j.container&&j.container!=='N/A (LCL)'&&j.container!=='LCL')L.push('Container/Seal : '+j.container+' / '+(j.seal||'-'));
+  L.push('');
+  if(pending.length){L.push('รายการที่กำลังดำเนินการ / In progress:');pending.forEach(p=>L.push(p));}
+  else L.push('เอกสารครบถ้วน ดำเนินการเรียบร้อย / All documents completed.');
+  L.push('');
+  L.push('หากมีข้อสงสัยประการใด กรุณาติดต่อกลับ / Should you have any questions, please feel free to contact us.');
+  L.push('');
+  L.push('ขอแสดงความนับถือ / Best regards,');
+  L.push(DB.company.name);
+  if(DB.company.tel)L.push('Tel: '+DB.company.tel);
+  return L.join('\n');
+}
+function openMailUpdate(id,override){
+  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  MAIL_JOB=id;HANDOFF_CTX={jobId:id,role:(override&&override.role)||'customer'};
+  if(override){setVal('mail_to',override.to||'');setVal('mail_cc','');setVal('mail_subject',override.subject||'');setVal('mail_body',override.body||'');}
+  else{const cust=findCustomerByName(j.consignee);setVal('mail_to',cust&&cust.email?cust.email:'');setVal('mail_cc','');setVal('mail_subject',buildMailSubject(j));setVal('mail_body',buildMailBody(j));}
+  document.getElementById('mailOverlay').classList.add('show');
+}
+function closeMailModal(){document.getElementById('mailOverlay').classList.remove('show');HANDOFF_CTX=null;}
+function markMailSent(){if(!MAIL_JOB)return;const j=DB.jobs.find(x=>x.id===MAIL_JOB);if(j){j.lastMailUpdate=new Date().toISOString();handoffMarkSent(j);save();}}
+function sendMail(){
+  const to=val('mail_to'),cc=val('mail_cc'),subject=val('mail_subject'),body=document.getElementById('mail_body').value;
+  const params=[];
+  if(cc)params.push('cc='+encodeURIComponent(cc));
+  params.push('subject='+encodeURIComponent(subject));
+  params.push('body='+encodeURIComponent(body));
+  const href='mailto:'+encodeURIComponent(to)+'?'+params.join('&');
+  markMailSent();
+  const a=document.createElement('a');a.href=href;document.body.appendChild(a);a.click();a.remove();
+  toast('เปิดโปรแกรมอีเมลแล้ว');
+}
+function copyMailBody(){
+  const txt='Subject: '+val('mail_subject')+'\n\n'+document.getElementById('mail_body').value;
+  const fin=()=>{markMailSent();toast('คัดลอกหัวข้อ+เนื้อหาแล้ว');};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(txt).then(fin).catch(()=>fallbackCopy(txt,fin));}
+  else fallbackCopy(txt,fin);
+}
+
+/* ============ Alerts ============ */
+function collectAlerts(){
+  let out=[];
+  DB.jobs.filter(j=>j.status!=='done'&&!j.cancelled).forEach(j=>{
+    CHECKLIST_TEMPLATE.forEach(t=>{
+      if(isChecked(j.id,t.id))return;
+      let dl=chkDeadline(j,t),d=daysFromNow(dl);
+      if(d===null)return;
+      if(d<=3){ // upcoming or overdue within window
+        out.push({jobId:j.id,jobNo:j.jobNo,task:t.t,th:t.th,date:dl,days:d,
+          level:d<0?'late':d<=1?'soon':'ok'});
+      }
+    });
+  });
+  out.sort((a,b)=>a.days-b.days);
+  return out;
+}
+function alertRow(a){
+  let cfg=a.level==='late'?['⚠','var(--red-bg)','var(--red)']:a.level==='soon'?['◷','var(--amber-bg)','var(--amber)']:['◔','var(--accent-bg)','var(--brand2)'];
+  let dtxt=a.days<0?`เลย ${Math.abs(a.days)} วัน`:a.days===0?'วันนี้':`อีก ${a.days} วัน`;
+  return `<div class="alert-row" style="cursor:pointer" onclick="go('jobs','${a.jobId}')">
+    <div class="ai" style="background:${cfg[1]};color:${cfg[2]}">${cfg[0]}</div>
+    <div><div class="at">${a.task} <span style="color:var(--muted);font-weight:400">· ${a.jobNo}</span></div><div class="ad">${a.th} · ${fmtDate(a.date)}</div></div>
+    <div class="ax" style="color:${cfg[2]}">${dtxt}</div>
+  </div>`;
+}
+function renderAlerts(){
+  const alerts=collectAlerts();
+  const late=alerts.filter(a=>a.level==='late'),soon=alerts.filter(a=>a.level==='soon'),up=alerts.filter(a=>a.level==='ok');
+  const c=document.getElementById('content');
+  c.innerHTML=`
+  <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+    ${statCard('เกินกำหนด','Overdue',late.length,'ต้องทำทันที','⚠','var(--red-bg)','var(--red)')}
+    ${statCard('ใกล้ถึง','Due ≤1 day',soon.length,'เร่งด่วน','◷','var(--amber-bg)','var(--amber)')}
+    ${statCard('กำลังจะถึง','Upcoming',up.length,'ภายใน 3 วัน','◔','var(--accent-bg)','var(--brand2)')}
+  </div>
+  <div class="panel"><div class="panel-h"><h3>รายการแจ้งเตือน / Action Items</h3><span class="sub">เรียงตามความเร่งด่วน</span></div>
+  <div class="panel-b">${alerts.map(alertRow).join('')||'<div class="empty"><div class="ei">✓</div>ไม่มีงานค้าง<br>All caught up!</div>'}</div></div>`;
+  updateAlertBadge();
+}
+function updateAlertBadge(){
+  let n=collectAlerts().filter(a=>a.level!=='ok').length;
+  let b=document.getElementById('alertBadge');
+  b.textContent=n;b.style.display=n?'inline-block':'none';
+}
+
+/* ============ Customers ============ */
+let CUST_SEARCH='';
+function custTypeTag(t){
+  if(t==='shipper')return '<span class="tag s-departed">Shipper</span>';
+  if(t==='consignee')return '<span class="tag s-si">Consignee</span>';
+  if(t==='both')return '<span class="tag s-bl">Both</span>';
+  return '<span class="tag s-done">—</span>';
+}
+function renderCustomers(){
+  const c=document.getElementById('content');
+  let list=DB.customers;
+  if(CUST_SEARCH){let q=CUST_SEARCH.toLowerCase();
+    list=list.filter(cu=>((cu.name||'')+(cu.taxId||'')+(cu.country||'')+(cu.contact||'')).toLowerCase().includes(q));}
+  c.innerHTML=`<div class="panel"><div class="panel-h"><h3>ทะเบียนลูกค้า / Customer Registry</h3>
+    <span class="sub">${DB.customers.length} รายการ</span><div class="spacer"></div>
+    <div class="search"><span class="si">⌕</span><input style="width:200px" placeholder="ค้นหาชื่อ/เลขภาษี" value="${escapeAttr(CUST_SEARCH)}" oninput="CUST_SEARCH=this.value;renderCustomers();this.focus()"></div>
+    <button class="btn btn-primary btn-sm" onclick="openCustModal()">＋ เพิ่มลูกค้า</button></div>
+    <table><thead><tr><th>ชื่อบริษัท / Company</th><th>ประเภท</th><th>ที่อยู่ / Address</th><th>เลขผู้เสียภาษี / Tax ID</th><th>ผู้ติดต่อ</th><th>งาน</th><th></th></tr></thead>
+    <tbody>${list.length?list.map(cu=>{
+      let n=DB.jobs.filter(j=>(j.consignee||'').includes(cu.name)||(j.shipper||'').includes(cu.name)).length;
+      return `<tr style="cursor:pointer" onclick="openCustModal('${cu.id}')">
+        <td><div style="font-weight:600">${escapeHtml(cu.name)}</div><div style="font-size:11px;color:var(--muted)">${escapeHtml(cu.country||'')}${cu.email?' · '+escapeHtml(cu.email):''}</div></td>
+        <td>${custTypeTag(cu.type)}</td>
+        <td style="font-size:12px;max-width:260px">${escapeHtml(cu.address||'—')}</td>
+        <td class="mono">${escapeHtml(cu.taxId||'—')}</td>
+        <td>${escapeHtml(cu.contact||'—')}${cu.tel?'<div style="font-size:11px;color:var(--muted)">'+escapeHtml(cu.tel)+'</div>':''}</td>
+        <td>${n}</td>
+        <td><button class="btn btn-sm" onclick="event.stopPropagation();openCustModal('${cu.id}')">✎</button></td>
+      </tr>`;
+    }).join(''):`<tr><td colspan="7"><div class="empty"><div class="ei">◍</div>ไม่พบลูกค้า / No customers</div></td></tr>`}</tbody></table></div>`;
+}
+function openCustModal(id){
+  const isEdit=!!id;
+  const cu=isEdit?DB.customers.find(x=>x.id===id):{};
+  document.getElementById('custModalTitle').textContent=isEdit?'แก้ไขลูกค้า / Edit Customer':'เพิ่มลูกค้า / New Customer';
+  document.getElementById('delCustBtn').style.display=isEdit?'inline-flex':'none';
+  setVal('cf_id',cu.id||'');setVal('cf_name',cu.name||'');setVal('cf_type',cu.type||'consignee');
+  setVal('cf_taxId',cu.taxId||'');setVal('cf_country',cu.country||'');setVal('cf_address',cu.address||'');
+  setVal('cf_contact',cu.contact||'');setVal('cf_tel',cu.tel||'');setVal('cf_email',cu.email||'');setVal('cf_line',cu.line||'');
+  document.getElementById('custOverlay').classList.add('show');
+}
+function closeCustModal(){document.getElementById('custOverlay').classList.remove('show')}
+function saveCustomer(){
+  const name=val('cf_name');
+  if(!name){alert('กรุณาระบุชื่อบริษัท / Company name required');return}
+  const data={name,type:val('cf_type'),taxId:val('cf_taxId'),country:val('cf_country'),
+    address:val('cf_address'),contact:val('cf_contact'),tel:val('cf_tel'),email:val('cf_email'),line:val('cf_line')};
+  const id=val('cf_id');
+  if(id){Object.assign(DB.customers.find(x=>x.id===id),data);}
+  else{data.id='c'+Date.now();DB.customers.push(data);}
+  save();closeCustModal();renderCustomers();toast('บันทึกลูกค้าแล้ว');
+}
+function deleteCustomer(){
+  const id=val('cf_id');if(!id)return;
+  if(!confirm('ลบลูกค้ารายนี้?'))return;
+  DB.customers=DB.customers.filter(x=>x.id!==id);save();closeCustModal();renderCustomers();
+}
+
+/* ============ Partners (Shipping / Freight / Transport) ============ */
+const PARTNER_ROLES={shipping:{label:'Shipping · พิธีการ',cls:'s-docs',icon:'🛃'},freight:{label:'Freight · สายเรือ',cls:'s-bl',icon:'🚢'},transport:{label:'Transport · รถลาก',cls:'s-booking',icon:'🚛'}};
+let PARTNER_FILTER='all';
+function partnersByRole(role){return DB.partners.filter(p=>p.role===role);}
+function renderPartners(){
+  const c=document.getElementById('content');
+  let list=PARTNER_FILTER==='all'?DB.partners:DB.partners.filter(p=>p.role===PARTNER_FILTER);
+  c.innerHTML=`<div class="panel"><div class="panel-h">
+    <div class="filters">
+      <span class="chip ${PARTNER_FILTER==='all'?'active':''}" onclick="PARTNER_FILTER='all';renderPartners()">ทั้งหมด</span>
+      ${Object.keys(PARTNER_ROLES).map(r=>`<span class="chip ${PARTNER_FILTER===r?'active':''}" onclick="PARTNER_FILTER='${r}';renderPartners()">${PARTNER_ROLES[r].icon} ${PARTNER_ROLES[r].label}</span>`).join('')}
+    </div><div class="spacer"></div>
+    <button class="btn btn-primary btn-sm" onclick="openPartnerModal()">＋ เพิ่มพาร์ทเนอร์</button></div>
+    <table><thead><tr><th>ชื่อ / Company</th><th>ประเภท</th><th>ผู้ติดต่อ</th><th>Email</th><th>LINE</th><th>งานที่ใช้</th><th></th></tr></thead>
+    <tbody>${list.length?list.map(p=>{
+      const used=DB.jobs.filter(j=>j.handoff&&Object.values(j.handoff).some(h=>h.partnerId===p.id)).length;
+      const r=PARTNER_ROLES[p.role]||{label:p.role,cls:'s-done'};
+      return `<tr style="cursor:pointer" onclick="openPartnerModal('${p.id}')">
+        <td><div style="font-weight:600">${escapeHtml(p.name)}</div>${p.note?`<div style="font-size:11px;color:var(--muted)">${escapeHtml(p.note)}</div>`:''}</td>
+        <td><span class="tag ${r.cls}">${r.label}</span></td>
+        <td>${escapeHtml(p.contact||'—')}${p.tel?`<div style="font-size:11px;color:var(--muted)">${escapeHtml(p.tel)}</div>`:''}</td>
+        <td style="font-size:12px">${escapeHtml(p.email||'—')}</td><td>${escapeHtml(p.line||'—')}</td><td>${used}</td>
+        <td><button class="btn btn-sm" onclick="event.stopPropagation();openPartnerModal('${p.id}')">✎</button></td>
+      </tr>`;}).join(''):`<tr><td colspan="7"><div class="empty"><div class="ei">⬡</div>ยังไม่มีพาร์ทเนอร์</div></td></tr>`}</tbody></table></div>`;
+}
+function openPartnerModal(id){
+  const isEdit=!!id;const p=isEdit?DB.partners.find(x=>x.id===id):{};
+  document.getElementById('partnerModalTitle').textContent=isEdit?'แก้ไขพาร์ทเนอร์ / Edit Partner':'เพิ่มพาร์ทเนอร์ / New Partner';
+  document.getElementById('delPartnerBtn').style.display=isEdit?'inline-flex':'none';
+  setVal('pf_id',p.id||'');setVal('pf_role',p.role||'shipping');setVal('pf_name',p.name||'');
+  setVal('pf_contact',p.contact||'');setVal('pf_tel',p.tel||'');setVal('pf_email',p.email||'');setVal('pf_line',p.line||'');setVal('pf_note',p.note||'');
+  document.getElementById('partnerOverlay').classList.add('show');
+}
+function closePartnerModal(){document.getElementById('partnerOverlay').classList.remove('show')}
+function savePartner(){
+  const name=val('pf_name');if(!name){alert('กรุณาระบุชื่อพาร์ทเนอร์');return}
+  const data={role:val('pf_role'),name,contact:val('pf_contact'),tel:val('pf_tel'),email:val('pf_email'),line:val('pf_line'),note:val('pf_note')};
+  const id=val('pf_id');
+  if(id){Object.assign(DB.partners.find(x=>x.id===id),data);}else{data.id='p'+Date.now();DB.partners.push(data);}
+  save();closePartnerModal();renderPartners();toast('บันทึกพาร์ทเนอร์แล้ว');
+}
+function deletePartner(){
+  const id=val('pf_id');if(!id)return;if(!confirm('ลบพาร์ทเนอร์รายนี้?'))return;
+  DB.partners=DB.partners.filter(x=>x.id!==id);save();closePartnerModal();renderPartners();
+}
+
+/* ============ Hand-off board / Stakeholder workflow ============ */
+const HANDOFF_STATUS={pending:{label:'รอส่ง',cls:'s-docs'},sent:{label:'ส่งแล้ว',cls:'s-si'},confirmed:{label:'ยืนยันแล้ว',cls:'s-departed'}};
+const WORKFLOW_ROLES=[
+  {id:'customer',label:'ลูกค้า / Customer',icon:'🧑‍💼',duty:'รับงาน & อัพเดทสถานะให้ลูกค้า'},
+  {id:'shipping',label:'Shipping / พิธีการ',icon:'🛃',duty:'จัดทำใบขน · ผ่านพิธีการศุลกากร'},
+  {id:'freight',label:'Freight / สายเรือ',icon:'🚢',duty:'จองระวาง · ยืนยัน Booking · ออก B/L'},
+  {id:'transport',label:'Transport / รถลากตู้',icon:'🚛',duty:'ลากตู้ · รับสินค้าไปท่า'},
+];
+function getHandoffContact(j,role){
+  if(role==='customer'){const c=findCustomerByName(j.consignee);return {name:(j.consignee||'').split('\n')[0],email:(c&&c.email)||'',line:(c&&c.line)||'',contact:(c&&c.contact)||''};}
+  const p=DB.partners.find(x=>x.id===((j.handoff[role]||{}).partnerId));
+  return p?{name:p.name,email:p.email||'',line:p.line||'',contact:p.contact||''}:{name:'',email:'',line:'',contact:''};
+}
+function detailWorkflow(j){
+  const done=WORKFLOW_ROLES.filter(r=>j.handoff[r.id].status==='confirmed').length;
+  return `<div class="panel"><div class="panel-h"><h3>บอร์ดส่งมอบงาน / Hand-off Board</h3>
+    <span class="sub">ประสานทุกฝ่ายให้จบใน 1 job</span><div class="spacer"></div>
+    <span style="font-weight:700">ยืนยันแล้ว ${done}/${WORKFLOW_ROLES.length}</span></div>
+    <div class="panel-b"><div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    ${WORKFLOW_ROLES.map(r=>workflowCard(j,r)).join('')}
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-top:12px">เลือกพาร์ทเนอร์จากทะเบียน (เมนู "พาร์ทเนอร์") → กดส่งงานผ่าน Email/LINE ระบบจะเปลี่ยนสถานะเป็น "ส่งแล้ว" อัตโนมัติ → เมื่ออีกฝ่ายตอบรับให้กด "ยืนยันรับงาน"</div>
+    </div></div>`;
+}
+function workflowCard(j,r){
+  const h=j.handoff[r.id];const st=HANDOFF_STATUS[h.status]||HANDOFF_STATUS.pending;const c=getHandoffContact(j,r.id);
+  let assignHtml;
+  if(r.id==='customer'){assignHtml=`<div style="font-weight:600;padding:7px 0">${escapeHtml(c.name||'—')}</div>`;}
+  else{const opts=partnersByRole(r.id);
+    assignHtml=`<select class="btn btn-sm" style="width:100%;font-weight:600" onchange="assignPartner('${j.id}','${r.id}',this.value)">
+      <option value="">— เลือกพาร์ทเนอร์ —</option>
+      ${opts.map(p=>`<option value="${p.id}" ${h.partnerId===p.id?'selected':''}>${escapeHtml(p.name)}</option>`).join('')}
+    </select>${opts.length?'':`<a class="lnk-add" onclick="go('partners')">+ เพิ่มพาร์ทเนอร์</a>`}`;}
+  const contactLine=(c.email||c.line)?`<div style="font-size:11px;color:var(--muted);margin-top:5px">${c.email?'✉ '+escapeHtml(c.email):''} ${c.line?' · 💬 '+escapeHtml(c.line):''}</div>`:'';
+  const times=[];if(h.sentAt)times.push('ส่ง '+fmtDateTime(h.sentAt));if(h.confirmedAt)times.push('ยืนยัน '+fmtDateTime(h.confirmedAt));
+  return `<div style="border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:20px">${r.icon}</span>
+      <div style="flex:1"><div style="font-weight:700;font-size:13.5px">${r.label}</div><div style="font-size:11px;color:var(--muted)">${r.duty}</div></div>
+      <span class="tag ${st.cls}">${st.label}</span>
+    </div>
+    ${assignHtml}${contactLine}
+    ${times.length?`<div style="font-size:11px;color:var(--muted);margin-top:6px">${times.join(' · ')}</div>`:''}
+    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-sm" onclick="dispatchHandoff('${j.id}','${r.id}','email')">✉️ ส่งงาน</button>
+      <button class="btn btn-sm" style="background:#06c755;border-color:#06c755;color:#fff" onclick="dispatchHandoff('${j.id}','${r.id}','line')">💬 ส่งงาน</button>
+      ${h.status==='confirmed'
+        ?`<button class="btn btn-sm" onclick="setHandoffStatus('${j.id}','${r.id}','sent')">↺ ยกเลิกยืนยัน</button>`
+        :`<button class="btn btn-sm" style="color:var(--green);border-color:#bbf7d0" onclick="setHandoffStatus('${j.id}','${r.id}','confirmed')">✓ ยืนยันรับงาน</button>`}
+    </div>
+  </div>`;
+}
+function assignPartner(jobId,role,partnerId){const j=DB.jobs.find(x=>x.id===jobId);j.handoff[role].partnerId=partnerId;save();renderJobDetail(jobId);}
+function setHandoffStatus(jobId,role,status){const j=DB.jobs.find(x=>x.id===jobId);const h=j.handoff[role];h.status=status;if(status==='confirmed')h.confirmedAt=new Date().toISOString();save();renderJobDetail(jobId);toast(status==='confirmed'?'ยืนยันรับงานแล้ว':'อัพเดทสถานะแล้ว');}
+function refreshWorkflowIfOpen(jobId){if(CURRENT==='jobs'&&CURRENT_JOB===jobId&&DETAIL_TAB==='workflow')renderJobDetail(jobId);}
+function handoffMarkSent(j){if(!HANDOFF_CTX||HANDOFF_CTX.jobId!==j.id)return;const h=j.handoff&&j.handoff[HANDOFF_CTX.role];if(h){if(h.status!=='confirmed')h.status='sent';h.sentAt=new Date().toISOString();refreshWorkflowIfOpen(j.id);}}
+/* role-specific dispatch */
+function shipmentLines(j){return [
+  'Job No.        : '+j.jobNo,
+  'Invoice No.    : '+(j.invNo||'-'),
+  'Commodity      : '+((j.items||[]).map(i=>i.desc).join(', ')||'-'),
+  'Routing        : '+short(j.pol)+' -> '+short(j.pod),
+  'Incoterms      : '+j.incoterm,
+  'Vessel/Voyage  : '+(j.vessel||'-')+' '+(j.voyage||''),
+  'ETD / ETA      : '+fmtDate(j.etd)+' / '+fmtDate(j.eta),
+  'Packages/Wt    : '+jobCtns(j)+' CTNS · NW '+jobNW(j).toLocaleString()+' / GW '+jobGW(j).toLocaleString()+' kg',
+];}
+function buildRoleMail(j,role){
+  const c=getHandoffContact(j,role);const greet=c.contact||c.name||'';
+  if(j.cancelled){
+    const what={shipping:'ขอยกเลิกงานพิธีการ/ใบขนสินค้าขาออก',freight:'ขอยกเลิก Booking',transport:'ขอยกเลิกการนัดลากตู้/รับสินค้า'}[role]||'ขอยกเลิกงาน';
+    return {subject:'['+j.jobNo+'] แจ้งยกเลิกงาน / Cancellation — '+role,
+      body:['เรียน '+greet,'',what+' สำหรับงานต่อไปนี้','',
+        'Job No.   : '+j.jobNo,'Invoice   : '+(j.invNo||'-'),
+        'Routing   : '+short(j.pol)+' -> '+short(j.pod),
+        'Vessel    : '+(j.vessel||'-')+' '+(j.voyage||''),
+        'เหตุผล/Reason : '+j.cancelled.reason,'',
+        'รบกวนยืนยันการยกเลิกและแจ้งค่าใช้จ่าย (ถ้ามี) กลับด้วยครับ/ค่ะ','',
+        'ขอบคุณครับ/ค่ะ',DB.company.name].join('\n'),to:c.email};
+  }
+  let subject;const L=['เรียน '+greet,''];
+  if(role==='shipping'){
+    subject='['+j.jobNo+'] ส่งงานทำพิธีการขาออก / Customs clearance request';
+    L.push('ขอส่งงานจัดทำใบขนสินค้าขาออกและดำเนินพิธีการศุลกากร รายละเอียดดังนี้','');
+    L.push(...shipmentLines(j));
+    const cu=j.customs||{};const r=parseFloat(cu.exchangeRate||'')||0;
+    L.push('Exporter/Tax   : '+(cu.exporterTax||'-')+' (สาขา '+(cu.branch||'00000')+')');
+    L.push('ที่ทำการศุลกากร: '+(cu.customsOffice||'-'));
+    L.push('ปลายทาง        : '+(cu.countryDest||short(j.pod)));
+    L.push('พิกัด HS       : '+((j.items||[]).map(i=>i.hs).filter(Boolean).join(', ')||'-'));
+    L.push('มูลค่า FOB     : '+fobForeign(j).toLocaleString()+' '+j.ccy+(r?(' (≈ THB '+(fobForeign(j)*r).toLocaleString()+')'):''));
+    const fl=(j.files||[]).filter(f=>['invoice','packing','co','permit'].includes(f.category)).map(f=>'   - '+f.name);
+    L.push('','เอกสารแนบจากลูกค้า:',...(fl.length?fl:['   - (โปรดดูไฟล์แนบในอีเมล)']));
+    L.push('','รบกวนจัดทำใบขนและแจ้งเลขที่ใบขนกลับก่อนวัน ETD ด้วยครับ/ค่ะ');
+  }else if(role==='freight'){
+    subject='['+j.jobNo+'] ขอจอง/ยืนยัน Booking / Booking request';
+    L.push('ขอจองระวางเรือ / ยืนยัน Booking สำหรับงานส่งออก รายละเอียดดังนี้','');
+    L.push(...shipmentLines(j));
+    L.push('Container/Type : '+(j.seal||j.container||'-'));
+    L.push('','รบกวนยืนยัน Booking No. และส่ง Draft B/L กลับด้วยครับ/ค่ะ');
+  }else{
+    subject='['+j.jobNo+'] นัดลากตู้/รับสินค้า / Haulage request';
+    L.push('ขอใช้บริการรถลากตู้ / เข้ารับสินค้า รายละเอียดดังนี้','');
+    L.push('สถานที่รับสินค้า: '+(j.shipper||'').split('\n').join(' '));
+    L.push('ส่งขึ้นท่า      : '+short(j.pol));
+    L.push('Container/Seal : '+(j.container||'-')+' / '+(j.seal||'-'));
+    L.push('ปริมาณ/น้ำหนัก : '+jobCtns(j)+' CTNS · GW '+jobGW(j).toLocaleString()+' kg');
+    L.push('ต้องการรับก่อน : ETD '+fmtDate(j.etd));
+    L.push('','รบกวนยืนยันวัน-เวลาเข้ารับด้วยครับ/ค่ะ');
+  }
+  L.push('','ขอบคุณครับ/ค่ะ',DB.company.name);if(DB.company.tel)L.push('Tel: '+DB.company.tel);
+  return {subject,body:L.join('\n'),to:c.email};
+}
+function buildRoleLine(j,role){const m=buildRoleMail(j,role);return m.subject+'\n\n'+m.body;}
+function dispatchHandoff(jobId,role,channel){
+  const j=DB.jobs.find(x=>x.id===jobId);if(!j)return;
+  if(role!=='customer'&&!((j.handoff[role]||{}).partnerId)){alert('กรุณาเลือกพาร์ทเนอร์ก่อนส่งงาน');return;}
+  if(role==='customer'){if(channel==='email')openMailUpdate(jobId);else openLineUpdate(jobId);return;}
+  const c=getHandoffContact(j,role);
+  if(channel==='email'){const m=buildRoleMail(j,role);openMailUpdate(jobId,{role,to:m.to,subject:m.subject,body:m.body});}
+  else{openLineUpdate(jobId,{role,toName:c.name,line:c.line,message:buildRoleLine(j,role)});}
+}
+
+/* ============ Settings ============ */
+function renderSettings(){
+  const co=DB.company;
+  const c=document.getElementById('content');
+  c.innerHTML=`<div class="panel" style="max-width:640px"><div class="panel-h"><h3>ข้อมูลบริษัท / Company Profile</h3><span class="sub">ใช้บนหัวเอกสาร</span></div>
+  <div class="panel-b"><div class="form-grid" style="grid-template-columns:1fr">
+    <div class="fg"><label>ชื่อบริษัท / Company Name</label><input id="s_name" value="${escapeAttr(co.name)}"></div>
+    <div class="fg"><label>ที่อยู่ / Address</label><textarea id="s_addr">${escapeHtml(co.addr)}</textarea></div>
+    <div class="fg"><label>โทรศัพท์ / Tel</label><input id="s_tel" value="${escapeAttr(co.tel)}"></div>
+    <div class="fg"><label>เลขผู้เสียภาษี / Tax ID</label><input id="s_tax" value="${escapeAttr(co.tax)}"></div>
+    <button class="btn btn-primary" onclick="saveSettings()">บันทึก / Save</button>
+  </div></div></div>
+  <div class="panel" style="max-width:640px"><div class="panel-h"><h3>ข้อมูลระบบ / Data</h3></div><div class="panel-b">
+    <p style="color:var(--muted);margin-bottom:12px">ข้อมูลทั้งหมดเก็บในเบราว์เซอร์ของคุณ (localStorage) — ${DB.jobs.length} งาน, ${DB.customers.length} ลูกค้า</p>
+    <button class="btn" onclick="exportData()">⬇ Export JSON</button>
+    <input type="file" id="importFile" accept="application/json,.json" style="display:none" onchange="handleImport(this)">
+    <button class="btn" onclick="document.getElementById('importFile').click()">⬆ Import JSON (ย้ายข้อมูล)</button>
+    <button class="btn btn-danger" onclick="resetData()">⟳ รีเซ็ตข้อมูลตัวอย่าง</button>
+    <p style="color:var(--muted);font-size:12px;margin-top:10px">วิธีย้ายข้อมูล: เปิดไฟล์เดิม → Export JSON → เปิดไฟล์นี้ → Import JSON แล้วเลือกไฟล์ที่ได้</p>
+  </div></div>`;
+}
+function handleImport(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data||!Array.isArray(data.jobs)){alert('ไฟล์ไม่ถูกต้อง — ไม่พบข้อมูลงาน (jobs)');return;}
+      if(!confirm('นำเข้าข้อมูลนี้จะแทนที่ข้อมูลปัจจุบันทั้งหมด\nไฟล์มี '+data.jobs.length+' งาน, '+((data.customers||[]).length)+' ลูกค้า\nดำเนินการต่อ?'))return;
+      data.jobs.forEach(normalizeJob);
+      if(!data.partners)data.partners=seedPartners();
+      if(!data.checklistState)data.checklistState={};
+      DB=data;if(save()){alert('นำเข้าข้อมูลสำเร็จ ✓');location.reload();}
+    }catch(err){alert('อ่านไฟล์ไม่สำเร็จ: '+err.message);}
+  };
+  reader.readAsText(f);input.value='';
+}
+function saveSettings(){
+  DB.company={name:val('s_name'),addr:val('s_addr'),tel:val('s_tel'),tax:val('s_tax')};save();
+  toast('บันทึกข้อมูลบริษัทแล้ว');
+}
+function exportData(){
+  let blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  let a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cs-export-data.json';a.click();
+}
+function resetData(){if(confirm('รีเซ็ตเป็นข้อมูลตัวอย่าง? ข้อมูลปัจจุบันจะหาย')){localStorage.removeItem(KEY);location.reload();}}
+
+/* ============ Job Modal CRUD ============ */
+function fillParty(targetId,custId){
+  if(!custId)return;
+  const cu=DB.customers.find(x=>x.id===custId);if(!cu)return;
+  setVal(targetId,[cu.name,cu.address,cu.taxId?'Tax ID: '+cu.taxId:''].filter(Boolean).join('\n'));
+}
+function populatePickers(){
+  ['pick_shipper','pick_consignee'].forEach(pid=>{
+    const sel=document.getElementById(pid);if(!sel)return;
+    const want=pid==='pick_shipper'?['shipper','both']:['consignee','both','notify'];
+    sel.innerHTML='<option value="">↧ ดึงจากทะเบียน</option>'+
+      DB.customers.filter(c=>!c.type||want.includes(c.type)).map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+  });
+}
+function openJobModal(id){
+  document.getElementById('itemsBody').innerHTML='';
+  populatePickers();
+  const isEdit=!!id;
+  document.getElementById('jobModalTitle').textContent=isEdit?'แก้ไขงาน / Edit Job':'สร้างงานขาออก / New Export Job';
+  document.getElementById('delJobBtn').style.display=isEdit?'inline-flex':'none';
+  if(isEdit){
+    const j=DB.jobs.find(x=>x.id===id);
+    setVal('f_id',j.id);setVal('f_jobNo',j.jobNo);setVal('f_status',j.status);setVal('f_bookingNo',j.bookingNo);setVal('f_blNo',j.blNo);
+    setVal('f_shipper',j.shipper);setVal('f_consignee',j.consignee);setVal('f_notify',j.notify);
+    setVal('f_pol',j.pol);setVal('f_pod',j.pod);setVal('f_incoterm',j.incoterm);setVal('f_mode',j.mode);
+    setVal('f_vessel',j.vessel);setVal('f_voyage',j.voyage);setVal('f_etd',j.etd);setVal('f_eta',j.eta);
+    setVal('f_container',j.container);setVal('f_seal',j.seal);setVal('f_invNo',j.invNo);setVal('f_invDate',j.invDate);
+    setVal('f_ccy',j.ccy);setVal('f_payterm',j.payterm);setVal('f_remarks',j.remarks);
+    (j.items||[]).forEach(addItemRow);
+  }else{
+    document.getElementById('jobForm').reset();setVal('f_id','');
+    let next='EXP-'+new Date().getFullYear()+'-'+String(DB.jobs.length+1).padStart(4,'0');
+    setVal('f_jobNo',next);setVal('f_invNo','INV-'+new Date().getFullYear()+'-'+String(DB.jobs.length+1).padStart(4,'0'));
+    setVal('f_invDate',today());setVal('f_notify','SAME AS CONSIGNEE');addItemRow();
+  }
+  document.getElementById('jobOverlay').classList.add('show');
+}
+function closeJobModal(){document.getElementById('jobOverlay').classList.remove('show')}
+function addItemRow(it){
+  it=it||{desc:'',hs:'',qty:'',unit:'CTN',price:'',ctns:'',nw:'',gw:''};
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input value="${escapeAttr(it.desc)}" data-f="desc" placeholder="Goods"></td>
+    <td><input value="${escapeAttr(it.hs)}" data-f="hs" placeholder="0000.00"></td>
+    <td><input value="${it.qty}" data-f="qty" type="number" style="width:60px"></td>
+    <td><input value="${escapeAttr(it.unit)}" data-f="unit" style="width:55px"></td>
+    <td><input value="${it.price}" data-f="price" type="number" step="0.01" style="width:75px"></td>
+    <td><input value="${it.ctns}" data-f="ctns" type="number" style="width:55px"></td>
+    <td><input value="${it.nw}" data-f="nw" type="number" style="width:70px"></td>
+    <td><input value="${it.gw}" data-f="gw" type="number" style="width:70px"></td>
+    <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()">✕</button></td>`;
+  document.getElementById('itemsBody').appendChild(tr);
+}
+function collectItems(){
+  return [...document.querySelectorAll('#itemsBody tr')].map(tr=>{
+    let o={};tr.querySelectorAll('input').forEach(i=>o[i.dataset.f]=i.type==='number'?Number(i.value||0):i.value);
+    return o;
+  }).filter(i=>i.desc);
+}
+function readJobForm(){
+  return {id:val('f_id'),jobNo:val('f_jobNo'),status:val('f_status'),bookingNo:val('f_bookingNo'),blNo:val('f_blNo'),
+    shipper:val('f_shipper'),consignee:val('f_consignee'),notify:val('f_notify'),
+    pol:val('f_pol'),pod:val('f_pod'),incoterm:val('f_incoterm'),mode:val('f_mode'),
+    vessel:val('f_vessel'),voyage:val('f_voyage'),etd:val('f_etd'),eta:val('f_eta'),
+    container:val('f_container'),seal:val('f_seal'),invNo:val('f_invNo'),invDate:val('f_invDate'),
+    ccy:val('f_ccy'),payterm:val('f_payterm'),remarks:val('f_remarks'),items:collectItems()};
+}
+function saveJob(){
+  const data=readJobForm();const id=data.id;delete data.id;
+  if(!data.jobNo){alert('กรุณาระบุ Job No');return}
+  if(id){Object.assign(DB.jobs.find(x=>x.id===id),data);}
+  else{data.id='j'+Date.now();data.createdAt=today();DB.jobs.unshift(data);}
+  save();closeJobModal();toast('บันทึกงานแล้ว');
+  if(CURRENT_JOB)go('jobs',id||CURRENT_JOB);else go('jobs');
+}
+function deleteJob(){
+  const id=val('f_id');if(!id)return;
+  if(!confirm('ลบงานนี้?'))return;
+  DB.jobs=DB.jobs.filter(x=>x.id!==id);save();closeJobModal();go('jobs');
+}
+
+/* ============ Cancel job (customer cancellation) ============ */
+function openCancelModal(id){
+  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  setVal('cancel_jobId',id);setVal('cancel_reason','');
+  document.getElementById('cancel_jobInfo').textContent=j.jobNo+' · '+((j.consignee||'').split('\n')[0]);
+  document.getElementById('cancelOverlay').classList.add('show');
+}
+function closeCancelModal(){document.getElementById('cancelOverlay').classList.remove('show')}
+function pickCancelReason(r){const ta=document.getElementById('cancel_reason');ta.value=r;}
+function confirmCancelJob(){
+  const id=val('cancel_jobId');const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  const reason=val('cancel_reason')||'ไม่ระบุเหตุผล';
+  j.cancelled={at:new Date().toISOString(),reason};
+  save();closeCancelModal();renderJobDetail(id);toast('ยกเลิกงานแล้ว — แจ้งผู้เกี่ยวข้องได้จากแบนเนอร์');
+}
+function restoreJob(id){
+  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  if(!confirm('คืนสถานะงานนี้กลับมาดำเนินการต่อ?'))return;
+  j.cancelled=null;save();renderJobDetail(id);toast('คืนสถานะงานแล้ว');
+}
+function isCancelled(j){return !!(j&&j.cancelled);}
+
+/* ============ Preview Engine (shared) ============ */
+function openPreview(title,bodyHtml,footHtml){
+  document.getElementById('previewTitle').innerHTML=title;
+  document.getElementById('previewBody').innerHTML=bodyHtml;
+  document.getElementById('previewFoot').innerHTML=(footHtml||'')+`<button class="btn" onclick="closePreview()">ปิด / Close</button>`;
+  document.getElementById('previewOverlay').classList.add('show');
+}
+function closePreview(){document.getElementById('previewOverlay').classList.remove('show')}
+
+/* Job preview (summary) — used by Job Modal & Job List */
+function previewJobHTML(j){
+  const st=statusOf(j.status);
+  const rows=(j.items||[]).map(i=>`<tr style="cursor:default"><td>${escapeHtml(i.desc)}</td><td class="mono">${escapeHtml(i.hs||'')}</td><td>${i.qty||0} ${escapeHtml(i.unit||'')}</td><td class="mono">${fmtMoney(i.price,j.ccy)}</td><td class="mono">${fmtMoney((i.qty||0)*(i.price||0),j.ccy)}</td></tr>`).join('')
+    ||`<tr style="cursor:default"><td colspan="5" style="color:var(--muted)">ยังไม่มีรายการสินค้า</td></tr>`;
+  return `<div class="panel" style="margin:0"><div class="panel-b">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="font-size:20px;font-weight:800">${escapeHtml(j.jobNo||'(ยังไม่ระบุ Job No)')}</div>
+      <span class="tag ${st.cls}">${st.label} · ${st.th}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 18px" class="kv">
+      <div class="k">เส้นทาง / Route</div><div class="v">${escapeHtml(short(j.pol))} → ${escapeHtml(short(j.pod))}</div>
+      <div class="k">Incoterms / Mode</div><div class="v">${j.incoterm||'—'} · ${j.mode||'—'}</div>
+      <div class="k">Vessel / Voyage</div><div class="v">${escapeHtml(j.vessel||'—')} ${escapeHtml(j.voyage||'')}</div>
+      <div class="k">ETD / ETA</div><div class="v">${fmtDate(j.etd)} → ${fmtDate(j.eta)}</div>
+      <div class="k">Booking / B/L</div><div class="v mono">${escapeHtml(j.bookingNo||'—')} / ${escapeHtml(j.blNo||'—')}</div>
+      <div class="k">Container / Seal</div><div class="v mono">${escapeHtml(j.container||'—')} · ${escapeHtml(j.seal||'—')}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin:16px 0">
+      ${partyBox('Shipper',j.shipper)}${partyBox('Consignee',j.consignee)}${partyBox('Notify',j.notify)}
+    </div>
+    <table style="border:1px solid var(--line);border-radius:8px;overflow:hidden">
+      <thead><tr><th>Description</th><th>HS</th><th>Qty</th><th>Unit Price</th><th>Amount</th></tr></thead>
+      <tbody>${rows}
+        <tr style="cursor:default;font-weight:800;background:var(--slate-bg)"><td colspan="4">TOTAL · ${jobCtns(j)} CTNS · N.W ${jobNW(j).toLocaleString()} / G.W ${jobGW(j).toLocaleString()} kg</td><td class="mono">${fmtMoney(jobTotal(j),j.ccy)}</td></tr>
+      </tbody></table>
+    ${j.remarks?`<div style="margin-top:12px"><span style="font-size:11px;color:var(--muted);font-weight:700">REMARKS</span><div>${escapeHtml(j.remarks)}</div></div>`:''}
+  </div></div>`;
+}
+function previewJobFromForm(){
+  openPreview('ดูตัวอย่างงาน / Job Preview',previewJobHTML(readJobForm()));
+}
+function previewJobRow(id){
+  const j=DB.jobs.find(x=>x.id===id);if(!j)return;
+  openPreview('ดูตัวอย่างงาน / Job Preview',previewJobHTML(j),
+    `<button class="btn btn-primary" onclick="closePreview();go('jobs','${id}')">เปิดงานเต็ม / Open →</button>`);
+}
+
+/* Document preview — used by Documents view */
+function previewDoc(jobId,type){
+  const j=DB.jobs.find(x=>x.id===jobId);if(!j)return;
+  const names={invoice:'Commercial Invoice',packing:'Packing List',si:'Shipping Instruction',bl:'Draft B/L',decl:'ใบขนสินค้าขาออก / Export Declaration'};
+  openPreview('ดูตัวอย่างเอกสาร / '+names[type],
+    `<div style="background:#cbd5e1;padding:18px">${docHTML(j,type)}</div>`,
+    `<button class="btn btn-primary" onclick="printDoc('${jobId}','${type}')">🖨 พิมพ์ / Print</button>`);
+}
+/* Print ONLY the chosen document on real A4 paper */
+function printDocNow(jobId,type){
+  const j=DB.jobs.find(x=>x.id===jobId);if(!j)return;
+  closePreview();
+  const area=document.getElementById('printArea');
+  area.innerHTML=docHTML(j,type);
+  document.body.classList.add('printing');
+  const cleanup=()=>{document.body.classList.remove('printing');area.innerHTML='';window.removeEventListener('afterprint',cleanup);};
+  window.addEventListener('afterprint',cleanup);
+  setTimeout(()=>{window.print();setTimeout(cleanup,800);},60);
+}
+/* back-compat alias */
+function printDoc(jobId,type){printDocNow(jobId,type);}
+
+/* Customer preview — used by Customer Modal */
+function readCustForm(){
+  return {name:val('cf_name'),type:val('cf_type'),taxId:val('cf_taxId'),country:val('cf_country'),
+    address:val('cf_address'),contact:val('cf_contact'),tel:val('cf_tel'),email:val('cf_email'),line:val('cf_line')};
+}
+function previewCustomer(){
+  const cu=readCustForm();
+  if(!cu.name){alert('กรุณาระบุชื่อบริษัทก่อน Preview');return}
+  const body=`<div class="panel" style="margin:0"><div class="panel-b">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="width:42px;height:42px;border-radius:10px;background:var(--brand);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800">${escapeHtml((cu.name||'?').slice(0,1))}</div>
+      <div><div style="font-size:18px;font-weight:800">${escapeHtml(cu.name)}</div><div>${custTypeTag(cu.type)} <span style="color:var(--muted);font-size:12px">${escapeHtml(cu.country||'')}</span></div></div>
+    </div>
+    <div class="kv">
+      <div class="k">ที่อยู่ / Address</div><div class="v" style="white-space:pre-line">${escapeHtml(cu.address||'—')}</div>
+      <div class="k">เลขผู้เสียภาษี / Tax ID</div><div class="v mono">${escapeHtml(cu.taxId||'—')}</div>
+      <div class="k">ผู้ติดต่อ / Contact</div><div class="v">${escapeHtml(cu.contact||'—')}</div>
+      <div class="k">โทร / Tel</div><div class="v">${escapeHtml(cu.tel||'—')}</div>
+      <div class="k">อีเมล / Email</div><div class="v">${escapeHtml(cu.email||'—')}</div>
+    </div>
+    <div style="margin-top:14px;padding:12px;background:var(--slate-bg);border-radius:8px">
+      <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:6px">ตัวอย่างบนเอกสาร / As shown on documents</div>
+      <div style="white-space:pre-line;font-size:13px">${escapeHtml([cu.name,cu.address,cu.taxId?'Tax ID: '+cu.taxId:''].filter(Boolean).join('\n'))}</div>
+    </div>
+  </div></div>`;
+  openPreview('ดูตัวอย่างลูกค้า / Customer Preview',body);
+}
+
+/* ============ Utils ============ */
+function val(id){return document.getElementById(id).value.trim()}
+function setVal(id,v){let e=document.getElementById(id);if(e)e.value=v==null?'':v}
+function short(s){return (s||'').split(' ').slice(1).join(' ')||s||''}
+function escapeHtml(s){return (s==null?'':String(s)).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function escapeAttr(s){return (s==null?'':String(s)).replace(/"/g,'&quot;').replace(/</g,'&lt;')}
+function toast(msg){
+  let t=document.createElement('div');t.textContent=msg;
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--brand);color:#fff;padding:11px 22px;border-radius:10px;font-weight:600;z-index:100;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2000);
+}
+document.getElementById('globalSearch').addEventListener('input',e=>{
+  JOB_SEARCH=e.target.value;
+  if(CURRENT!=='jobs')go('jobs');else renderJobsBody();
+});
+document.getElementById('jobOverlay').addEventListener('click',e=>{if(e.target.id==='jobOverlay')closeJobModal()});
+document.getElementById('custOverlay').addEventListener('click',e=>{if(e.target.id==='custOverlay')closeCustModal()});
+document.getElementById('previewOverlay').addEventListener('click',e=>{if(e.target.id==='previewOverlay')closePreview()});
+document.getElementById('lineOverlay').addEventListener('click',e=>{if(e.target.id==='lineOverlay')closeLineModal()});
+document.getElementById('mailOverlay').addEventListener('click',e=>{if(e.target.id==='mailOverlay')closeMailModal()});
+document.getElementById('partnerOverlay').addEventListener('click',e=>{if(e.target.id==='partnerOverlay')closePartnerModal()});
+document.getElementById('cancelOverlay').addEventListener('click',e=>{if(e.target.id==='cancelOverlay')closeCancelModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePreview();closeJobModal();closeCustModal();closeLineModal();closeMailModal();closePartnerModal();closeCancelModal();}});
+
+/* init */
+go('dashboard');
+updateAlertBadge();
+</script>
+</body>
+</html>
