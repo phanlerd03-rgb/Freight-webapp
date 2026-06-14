@@ -220,21 +220,39 @@ async function fetchAndWriteNews(topic, timeSlot) {
       model: 'gpt-4o-mini',
       messages: [{
         role: 'user',
-        content: `ค้นหาและสรุปข่าวล่าสุด (ปี 2026) เกี่ยวกับ: "${topic}"
+        content: `เขียนบทความข่าวภาษาไทยสำหรับผู้ประกอบการนำเข้า-ส่งออก SME เกี่ยวกับ: "${topic}"
 
-เขียนเป็นโพสต์ Facebook ภาษาไทย สำหรับผู้ประกอบการนำเข้า-ส่งออก SME
-รูปแบบ:
-1. หัวข้อข่าว (bold, น่าสนใจ)
-2. สรุปประเด็นสำคัญ 3-5 ข้อ (bullet)
-3. ผลกระทบต่อผู้ประกอบการไทย
-4. คำแนะนำปฏิบัติ 2-3 ข้อ
-5. แหล่งอ้างอิง (ใส่ลิ้งหรือชื่อแหล่งข่าวที่น่าเชื่อถือ เช่น กรมศุลกากร, DITP, BOT, สภาหอการค้า)
-6. CTA ติดต่อ PIT Freight (Line: @pitfreight, pitfreight.com)
-7. Hashtag 8-10 อัน รวม #PITFreight #นำเข้าส่งออก #SMEไทย
+รูปแบบบทความ (อ่านง่าย เป็นกระทู้ความรู้):
 
-ความยาวรวม 300-400 คำ`,
+**[หัวข้อบทความที่ชัดเจนและน่าสนใจ — 1 บรรทัด]**
+
+**ภาพรวมสถานการณ์**
+เขียนย่อหน้าสรุปสถานการณ์ปัจจุบัน 2-3 ประโยค อธิบายบริบทให้ผู้อ่านเข้าใจ
+
+**ประเด็นสำคัญที่ควรรู้**
+• ประเด็นที่ 1 พร้อมรายละเอียด
+• ประเด็นที่ 2 พร้อมรายละเอียด
+• ประเด็นที่ 3 พร้อมรายละเอียด
+
+**ผลกระทบต่อผู้ประกอบการไทย**
+อธิบายผลกระทบที่ผู้นำเข้า-ส่งออกควรทราบ 2-3 ประโยค
+
+**คำแนะนำสำหรับ SME ไทย**
+• แนวทางที่ 1
+• แนวทางที่ 2
+• แนวทางที่ 3
+
+**แหล่งข้อมูลอ้างอิง**
+ระบุชื่อหน่วยงานที่น่าเชื่อถือ เช่น กรมศุลกากร, DITP, BOT, สภาหอการค้า, WTO (พร้อม URL ถ้ามี)
+
+---
+ต้องการข้อมูลเพิ่มเติม ติดต่อ PIT Freight: Line @pitfreight | pitfreight.com
+
+#PITFreight #นำเข้าส่งออก #SMEไทย #โลจิสติกส์ #TradeNews
+
+ความยาว 350-450 คำ เนื้อหากระชับ อ่านง่าย ไม่ใช้ภาษาเป็นทางการมากเกินไป`,
       }],
-      max_tokens: 750,
+      max_tokens: 900,
       temperature: 0.7,
     }),
   });
@@ -323,8 +341,8 @@ async function runNewsFeed(timeSlot) {
     if (bgImagePath && fs.existsSync(bgImagePath)) fs.unlinkSync(bgImagePath);
     console.log('[NewsFeed] Cover ✅');
 
-    // 4. Notion Blog
-    const title = `[${timeSlot}] ${cleanHeadline.slice(0, 60)}`;
+    // 4. Notion Blog — ใช้ headline ตรงๆ ไม่มีเวลานำหน้า
+    const title = cleanHeadline.slice(0, 80);
     await postNotion(title, slug, content, coverUrl);
     console.log('[NewsFeed] Notion ✅');
 
