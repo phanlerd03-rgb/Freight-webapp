@@ -51,22 +51,22 @@ img { max-width: 100%; }
 /* ===== NAVBAR ===== */
 .navbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-  background: rgba(6,16,30,.96); backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(255,255,255,.07); transition: all .3s;
+  background: rgba(255,255,255,.97); backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0,0,0,.08); transition: all .3s;
 }
-.navbar.scrolled { box-shadow: 0 2px 24px rgba(0,0,0,.35); }
+.navbar.scrolled { box-shadow: 0 2px 16px rgba(0,0,0,.10); }
 .nav-inner { display: flex; align-items: center; gap: 24px; height: 64px; }
 .logo { display: flex; align-items: center; gap: 10px; }
 .logo-icon { font-size: 24px; }
-.logo-name { font-weight: 800; font-size: 15px; color: #fff; line-height: 1.2; }
-.logo-sub { font-size: 10px; color: rgba(255,255,255,.45); letter-spacing: .5px; text-transform: uppercase; }
+.logo-name { font-weight: 800; font-size: 15px; color: var(--primary); line-height: 1.2; }
+.logo-sub { font-size: 10px; color: var(--gray-400); letter-spacing: .5px; text-transform: uppercase; }
 .logo-img { height: 34px; width: auto; display: block; object-fit: contain; }
 .nav-links { display: flex; gap: 2px; margin-left: auto; }
 .nav-links a {
   padding: 7px 13px; border-radius: 7px; font-size: 13.5px; font-weight: 500;
-  color: rgba(255,255,255,.7); transition: all .18s; white-space: nowrap;
+  color: #1a1a2e; transition: all .18s; white-space: nowrap;
 }
-.nav-links a:hover { color: #fff; background: rgba(255,255,255,.08); }
+.nav-links a:hover { color: var(--primary); background: var(--gray-100); }
 .btn-nav-cta {
   background: linear-gradient(135deg, #1a4f8a, var(--accent2));
   color: #fff; border: none; padding: 9px 18px; border-radius: 8px;
@@ -75,22 +75,22 @@ img { max-width: 100%; }
   box-shadow: 0 2px 12px rgba(201,168,76,.25);
 }
 .btn-nav-cta:hover { opacity: .9; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(201,168,76,.35); }
-.hamburger { display: none; background: none; border: none; font-size: 22px; cursor: pointer; margin-left: auto; color: #fff; }
+.hamburger { display: none; background: none; border: none; font-size: 22px; cursor: pointer; margin-left: auto; color: var(--primary); }
 .btn-lang {
-  background: transparent; border: 1.5px solid rgba(255,255,255,.2);
+  background: transparent; border: 1.5px solid var(--gray-200);
   padding: 6px 12px; border-radius: 7px; font-size: 12.5px; font-weight: 600;
-  cursor: pointer; font-family: 'Sarabun', sans-serif; color: rgba(255,255,255,.6);
+  cursor: pointer; font-family: 'Sarabun', sans-serif; color: var(--gray-600);
   transition: all .18s; white-space: nowrap; flex-shrink: 0;
 }
-.btn-lang:hover { border-color: var(--accent2); color: var(--accent2); }
+.btn-lang:hover { border-color: var(--accent); color: var(--accent); }
 .btn-nav-register {
-  background: var(--accent2); border: none;
+  background: var(--primary); border: none;
   padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: 'Sarabun', sans-serif; color: #0a1e38;
+  cursor: pointer; font-family: 'Sarabun', sans-serif; color: #fff;
   transition: all .18s; white-space: nowrap; flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(201,168,76,.3);
+  box-shadow: 0 2px 8px rgba(8,22,36,.25);
 }
-.btn-nav-register:hover { background: #d4b05a; transform: translateY(-1px); box-shadow: 0 4px 14px rgba(201,168,76,.4); }
+.btn-nav-register:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,79,138,.35); }
 
 /* ===== HERO ===== */
 .hero {
@@ -448,11 +448,11 @@ img { max-width: 100%; }
   .hamburger { display: block; }
   .nav-links.open {
     display: flex; flex-direction: column; position: fixed;
-    top: 64px; left: 0; right: 0; background: rgba(6,16,30,.98); padding: 16px 24px;
-    box-shadow: 0 8px 32px rgba(0,0,0,.4); z-index: 999;
-    border-bottom: 1px solid rgba(255,255,255,.08);
+    top: 64px; left: 0; right: 0; background: rgba(255,255,255,.98); padding: 16px 24px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.12); z-index: 999;
+    border-bottom: 1px solid rgba(0,0,0,.08);
   }
-  .nav-links.open a { color: rgba(255,255,255,.8); }
+  .nav-links.open a { color: #1a1a2e; }
   .nav-links.open + .btn-nav-cta { display: block; position: fixed; bottom: 24px; left: 24px; right: 24px; text-align: center; z-index: 999; }
   .hero-title { font-size: 32px; }
   .hero-stats { gap: 24px; }
