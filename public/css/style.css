@@ -1264,14 +1264,22 @@ img { max-width: 100%; }
 .currency-strip small { color: #7a6a4c; }
 .import-tax-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
 .btn-import-primary,
+.btn-import-preview,
 .btn-import-secondary,
 .btn-import-ghost,
 .btn-lead-submit { min-height: 44px; border-radius: 10px; border: 0; padding: 11px 18px; font: inherit; font-weight: 800; cursor: pointer; transition: transform .2s, box-shadow .2s, background .2s; }
 .btn-import-primary,
 .btn-lead-submit { background: linear-gradient(135deg,var(--it-gold),var(--it-gold-2)); color: #071629; box-shadow: 0 8px 22px rgba(214,168,79,.28); }
+.btn-import-preview {
+  background: linear-gradient(135deg, #1a4f8a, #1a8fd1);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(26,79,138,.3);
+  display: inline-flex; align-items: center; gap: 6px;
+}
 .btn-import-secondary { background: var(--it-navy); color: #fff; }
 .btn-import-ghost { background: #eef2f7; color: #334155; }
 .btn-import-primary:hover,
+.btn-import-preview:hover,
 .btn-import-secondary:hover,
 .btn-lead-submit:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(8,26,47,.2); }
 .import-tax-side { padding: 24px; background: linear-gradient(180deg,#eef3f9,#f8fafc); border-left: 1px solid #dce4ee; }

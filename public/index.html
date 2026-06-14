@@ -207,7 +207,8 @@
               </div>
 
               <div class="import-tax-actions">
-                <button type="submit" class="btn-import-primary">Calculate Tax</button>
+                <button type="submit" class="btn-import-primary">คำนวณค่าภาษี</button>
+                <button type="button" class="btn-import-preview" id="importTaxPreview">🔍 Preview ก่อนพิมพ์</button>
                 <button type="button" class="btn-import-secondary" id="importTaxPdf">Export PDF</button>
                 <button type="button" class="btn-import-ghost" id="importTaxReset">Reset</button>
               </div>
@@ -1417,6 +1418,61 @@ async function submitRegister(e) {
     btn.disabled = false; txt.style.display = ''; ldr.style.display = 'none';
   }
 }
+</script>
+
+<!-- ===== PRINT PREVIEW MODAL ===== -->
+<div id="printPreviewModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(5,15,30,.85);backdrop-filter:blur(6px);display:none;flex-direction:column;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.45);width:96vw;max-width:900px;max-height:92vh;display:flex;flex-direction:column;overflow:hidden;">
+    <!-- Modal Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 24px;border-bottom:1px solid #e2e8f0;background:#081624;border-radius:16px 16px 0 0;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-size:20px;">🔍</span>
+        <div>
+          <div style="color:#fff;font-weight:800;font-size:15px;font-family:'Sarabun',sans-serif;">Preview ก่อนพิมพ์</div>
+          <div style="color:rgba(255,255,255,.5);font-size:12px;font-family:'Sarabun',sans-serif;">ตรวจสอบข้อมูลก่อนสั่งพิมพ์</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button onclick="printFromPreview()" style="background:linear-gradient(135deg,#1a4f8a,#1a8fd1);color:#fff;border:none;padding:10px 22px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Sarabun',sans-serif;display:flex;align-items:center;gap:7px;box-shadow:0 3px 12px rgba(26,79,138,.4);">
+          🖨️ พิมพ์ / บันทึก PDF
+        </button>
+        <button onclick="closePrintPreview()" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:10px 18px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Sarabun',sans-serif;">
+          ✕ ปิด
+        </button>
+      </div>
+    </div>
+    <!-- iframe Preview -->
+    <div style="flex:1;overflow:hidden;background:#e8edf3;padding:16px;">
+      <iframe id="printPreviewFrame" style="width:100%;height:100%;border:none;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.18);background:#fff;" title="Print Preview"></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openPrintPreview() {
+    if (typeof window._importTaxPreview === 'function') {
+      window._importTaxPreview();
+    }
+  }
+  function closePrintPreview() {
+    const modal = document.getElementById('printPreviewModal');
+    modal.style.display = 'none';
+  }
+  function printFromPreview() {
+    const frame = document.getElementById('printPreviewFrame');
+    if (frame && frame.contentWindow) {
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
+    }
+  }
+  // Close on backdrop click
+  document.getElementById('printPreviewModal').addEventListener('click', function(e) {
+    if (e.target === this) closePrintPreview();
+  });
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closePrintPreview();
+  });
 </script>
 </body>
 </html>

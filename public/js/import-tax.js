@@ -213,14 +213,16 @@
       const form = document.getElementById('importTaxForm');
       if (form) calculateAndRender(form);
     }
+    if (!latestSnapshot) return;
 
     const printWindow = window.open('', '_blank', 'noopener,noreferrer,width=980,height=760');
-    if (!printWindow || !latestSnapshot) {
-      window.print();
-      return;
-    }
+    if (!printWindow) { window.print(); return; }
 
-    const data = latestSnapshot;
+    printWindow.document.write(buildPrintHtml(latestSnapshot, true));
+    printWindow.document.close();
+  }
+
+  function buildPrintHtml(data, autoPrint) {
     const rows = [
       ['CIF Value', money.format(data.totals.cifTHB)],
       ['Import Duty', money.format(data.totals.duty)],
@@ -231,50 +233,113 @@
       ['Estimated Landed Cost', money.format(data.totals.landedCost)],
     ].map(([label, value]) => `<tr><td>${label}</td><td>${value}</td></tr>`).join('');
 
-    printWindow.document.write(`<!doctype html>
-      <html>
-      <head>
-        <title>Thailand Import Tax Estimate</title>
-        <style>
-          body { margin: 0; padding: 36px; font-family: Arial, sans-serif; color: #081a2f; }
-          .header { border-bottom: 4px solid #d6a84f; padding-bottom: 18px; margin-bottom: 24px; }
-          .kicker { color: #8a6a2f; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-          h1 { margin: 8px 0 4px; font-size: 30px; }
-          p { color: #475569; line-height: 1.6; }
-          .meta { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px 22px; margin-bottom: 24px; font-size: 13px; }
-          .card { background: #081a2f; color: #fff; padding: 20px; border-radius: 12px; margin-bottom: 18px; }
-          .card strong { color: #f2d188; font-size: 28px; display: block; margin-top: 6px; }
-          table { width: 100%; border-collapse: collapse; }
-          th, td { border-bottom: 1px solid #dce4ee; padding: 12px; text-align: left; }
-          th { background: #f8f3e8; color: #5f4a22; }
-          td:last-child { text-align: right; font-weight: 700; }
-          .note { margin-top: 22px; font-size: 12px; color: #64748b; }
-        </style>
-      </head>
-      <body>
-        <div class="header">
-          <div class="kicker">Project International Trade</div>
-          <h1>Thailand Import Tax Estimate</h1>
-          <p>Professional landed-cost estimate for customs planning.</p>
-        </div>
-        <div class="meta">
-          <div><strong>Product:</strong> ${escapeHtml(data.product)}</div>
-          <div><strong>HS Code:</strong> ${escapeHtml(data.hsCode)}</div>
-          <div><strong>Origin:</strong> ${escapeHtml(data.originCountry)}</div>
-          <div><strong>FTA:</strong> ${escapeHtml(data.ftaLabel)}</div>
-          <div><strong>Currency:</strong> ${escapeHtml(data.currency)} (${escapeHtml(currencyNames[data.currency] || data.currency)})</div>
-          <div><strong>Generated:</strong> ${escapeHtml(data.generatedAt)}</div>
-        </div>
-        <div class="card">Estimated Landed Cost<strong>${money.format(data.totals.landedCost)}</strong></div>
-        <table>
-          <thead><tr><th>Component</th><th>Amount</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-        <p class="note">This estimate is for planning only. Final tax depends on Thai Customs classification, declared customs value, licenses, FTA documents and shipment inspection.</p>
-        <script>window.onload = () => window.print();<\/script>
-      </body>
-      </html>`);
-    printWindow.document.close();
+    return `<!doctype html>
+<html>
+<head>
+  <title>Thailand Import Tax Estimate</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { margin: 0; padding: 36px; font-family: Arial, sans-serif; color: #081a2f; background: #fff; }
+    .header { display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 4px solid #c9a84c; padding-bottom: 18px; margin-bottom: 24px; }
+    .header-left .kicker { color: #8a6a2f; font-size: 12px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 6px; }
+    .header-left h1 { font-size: 26px; font-weight: 900; color: #081624; margin-bottom: 4px; }
+    .header-left p { color: #64748b; font-size: 13px; }
+    .header-right { text-align: right; font-size: 12px; color: #64748b; line-height: 1.7; }
+    .meta-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px 20px; margin-bottom: 24px; background: #f8f9fc; border-radius: 10px; padding: 16px; }
+    .meta-item label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #94a3b8; display: block; margin-bottom: 2px; }
+    .meta-item span { font-size: 13px; font-weight: 600; color: #081624; }
+    .card-landed { background: linear-gradient(135deg, #081624, #1a4f8a); color: #fff; padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+    .card-landed .label { font-size: 13px; opacity: .75; margin-bottom: 4px; }
+    .card-landed .amount { font-size: 32px; font-weight: 900; color: #f2d188; }
+    .card-landed .sub { font-size: 11px; opacity: .6; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #f1f5f9; }
+    th { padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #475569; }
+    td { padding: 11px 14px; border-bottom: 1px solid #e8eef6; }
+    td:last-child { text-align: right; font-weight: 700; color: #081624; }
+    tr:last-child td { border-bottom: none; background: #fffbf0; font-weight: 800; color: #7a4f00; }
+    tr:last-child td:last-child { color: #c9a84c; font-size: 15px; }
+    .note { margin-top: 20px; padding: 14px 16px; background: #f8f9fc; border-left: 3px solid #c9a84c; border-radius: 0 8px 8px 0; font-size: 11px; color: #64748b; line-height: 1.7; }
+    .footer-line { margin-top: 28px; padding-top: 12px; border-top: 1px solid #e2e8f0; text-align: center; font-size: 11px; color: #94a3b8; }
+    @media print {
+      body { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="kicker">Project International Trade · PIT Freight</div>
+      <h1>ใบประมาณการค่าภาษีนำเข้า</h1>
+      <p>Thailand Import Tax Estimate — Professional landed-cost estimate for customs planning.</p>
+    </div>
+    <div class="header-right">
+      วันที่: ${escapeHtml(data.generatedAt)}<br>
+      pitfreight.com
+    </div>
+  </div>
+
+  <div class="meta-grid">
+    <div class="meta-item"><label>สินค้า / Product</label><span>${escapeHtml(data.product)}</span></div>
+    <div class="meta-item"><label>HS Code</label><span>${escapeHtml(data.hsCode)}</span></div>
+    <div class="meta-item"><label>ประเทศต้นทาง / Origin</label><span>${escapeHtml(data.originCountry)}</span></div>
+    <div class="meta-item"><label>สิทธิ์ FTA</label><span>${escapeHtml(data.ftaLabel)}</span></div>
+    <div class="meta-item"><label>สกุลเงิน / Currency</label><span>${escapeHtml(data.currency)} (${escapeHtml(currencyNames[data.currency] || data.currency)})</span></div>
+    <div class="meta-item"><label>อัตราแลกเปลี่ยน</label><span>1 ${escapeHtml(data.currency)} = ${data.exchangeRate.toLocaleString('th-TH',{maximumFractionDigits:4})} THB</span></div>
+  </div>
+
+  <div class="card-landed">
+    <div>
+      <div class="label">ราคาต้นทุนนำเข้าประมาณการ (Estimated Landed Cost)</div>
+      <div class="amount">${money.format(data.totals.landedCost)}</div>
+      <div class="sub">รวมภาษีนำเข้า, VAT และค่าธรรมเนียมทั้งหมด</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="label">ภาษีและค่าธรรมเนียมรวม</div>
+      <div style="font-size:20px;font-weight:800;color:#f2d188;">${money.format(data.totals.taxesAndFees)}</div>
+    </div>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>รายการ (Component)</th>
+        <th style="text-align:right;">จำนวนเงิน (THB)</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+
+  <div class="note">
+    ⚠️ เอกสารนี้เป็นเพียงการประมาณการเบื้องต้นเพื่อวางแผนต้นทุน ค่าภาษีจริงขึ้นอยู่กับการพิจารณาของกรมศุลกากรไทย ราคาสินค้าที่แจ้ง ใบรับรองสิทธิ์ FTA และเอกสารประกอบการนำเข้า<br>
+    This estimate is for planning purposes only. Final tax depends on Thai Customs classification, declared customs value, licenses, FTA certificates and shipment inspection.
+  </div>
+
+  <div class="footer-line">
+    Project International Trade Co., Ltd. · pitfreight.com · สอบถามข้อมูลเพิ่มเติม: info@pitfreight.com
+  </div>
+  ${autoPrint ? `<script>window.onload = () => { window.focus(); window.print(); }<\/script>` : ''}
+</body>
+</html>`;
+  }
+
+  function previewPdf() {
+    if (!latestSnapshot) {
+      const form = document.getElementById('importTaxForm');
+      if (form) calculateAndRender(form);
+    }
+    if (!latestSnapshot) {
+      alert('กรุณากรอกข้อมูลและกดคำนวณก่อน');
+      return;
+    }
+
+    const modal = document.getElementById('printPreviewModal');
+    const frame = document.getElementById('printPreviewFrame');
+    if (!modal || !frame) return;
+
+    const html = buildPrintHtml(latestSnapshot, false);
+    frame.srcdoc = html;
+    modal.style.display = 'flex';
   }
 
   async function submitLead(event) {
@@ -347,6 +412,10 @@
     });
 
     document.getElementById('importTaxPdf')?.addEventListener('click', exportPdf);
+
+    // Preview button — show iframe modal before printing
+    document.getElementById('importTaxPreview')?.addEventListener('click', previewPdf);
+    window._importTaxPreview = previewPdf;
 
     document.getElementById('importTaxReset')?.addEventListener('click', () => {
       form.reset();
