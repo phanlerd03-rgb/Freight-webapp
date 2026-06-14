@@ -205,6 +205,9 @@
     latestSnapshot = snapshotForm(form, totals);
     renderImportTaxResult(form, latestSnapshot);
     updateCurrencyStrip(form);
+    // Show share bar after calculation
+    const shareBar = document.getElementById('importTaxShare');
+    if (shareBar) shareBar.style.display = 'flex';
     return latestSnapshot;
   }
 
@@ -342,6 +345,44 @@
     modal.style.display = 'flex';
   }
 
+  function sendToEmail() {
+    if (!latestSnapshot) {
+      alert('กรุณากรอกข้อมูลและกดคำนวณก่อน');
+      return;
+    }
+    const d = latestSnapshot;
+    const subject = encodeURIComponent(`[PIT Freight] ประมาณการค่าภาษีนำเข้า — ${d.product} (HS ${d.hsCode})`);
+    const body = encodeURIComponent(
+`สวัสดีครับ/ค่ะ ทีมงาน PIT Freight
+
+ขอส่งผลประมาณการค่าภาษีนำเข้าดังนี้:
+
+=== ข้อมูลสินค้า ===
+สินค้า: ${d.product}
+HS Code: ${d.hsCode}
+ประเทศต้นทาง: ${d.originCountry}
+สิทธิ์ FTA: ${d.ftaLabel}
+สกุลเงิน: ${d.currency}
+อัตราแลกเปลี่ยน: 1 ${d.currency} = ${d.exchangeRate} THB
+
+=== ผลคำนวณ (หน่วย: บาท) ===
+CIF Value:              ${money.format(d.totals.cifTHB)}
+Import Duty:            ${money.format(d.totals.duty)}
+FTA Duty Saving:        ${money.format(d.totals.dutySaved)}
+VAT:                    ${money.format(d.totals.vat)}
+Customs / Port Fees:    ${money.format(d.totals.otherFees)}
+รวมภาษีและค่าธรรมเนียม: ${money.format(d.totals.taxesAndFees)}
+ราคาต้นทุนนำเข้ารวม:    ${money.format(d.totals.landedCost)}
+
+สร้างเมื่อ: ${d.generatedAt}
+คำนวณจาก: pitfreight.com
+
+กรุณาตรวจสอบและให้คำแนะนำเพิ่มเติมด้วยครับ/ค่ะ
+ขอบคุณครับ/ค่ะ`
+    );
+    window.location.href = `mailto:phanlerd.03@gmail.com?subject=${subject}&body=${body}`;
+  }
+
   async function submitLead(event) {
     event.preventDefault();
     const form = event.target;
@@ -417,10 +458,15 @@
     document.getElementById('importTaxPreview')?.addEventListener('click', previewPdf);
     window._importTaxPreview = previewPdf;
 
+    // Send to Email
+    document.getElementById('importTaxSendEmail')?.addEventListener('click', sendToEmail);
+
     document.getElementById('importTaxReset')?.addEventListener('click', () => {
       form.reset();
       latestSnapshot = null;
       updateCurrencyStrip(form);
+      const shareBar = document.getElementById('importTaxShare');
+      if (shareBar) shareBar.style.display = 'none';
       document.getElementById('importTaxResult').innerHTML = `
         <div class="import-tax-empty">
           <strong>Ready to estimate landed cost</strong>
