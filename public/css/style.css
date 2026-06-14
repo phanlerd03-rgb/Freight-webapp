@@ -84,13 +84,18 @@ img { max-width: 100%; }
 }
 .btn-lang:hover { border-color: var(--accent); color: var(--accent); }
 .btn-nav-register {
-  background: var(--primary); border: none;
-  padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: 'Sarabun', sans-serif; color: #fff;
-  transition: all .18s; white-space: nowrap; flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(8,22,36,.25);
+  background: linear-gradient(135deg, #c9a84c, #e2c06a);
+  border: none; padding: 10px 20px; border-radius: 9px; font-size: 14px; font-weight: 800;
+  cursor: pointer; font-family: 'Sarabun', sans-serif; color: #0a1a2e;
+  transition: all .22s; white-space: nowrap; flex-shrink: 0;
+  box-shadow: 0 3px 14px rgba(201,168,76,.45);
+  letter-spacing: .2px;
 }
-.btn-nav-register:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(26,79,138,.35); }
+.btn-nav-register:hover {
+  background: linear-gradient(135deg, #d4b05a, #eecf7a);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(201,168,76,.55);
+}
 
 /* ===== HERO ===== */
 .hero {
