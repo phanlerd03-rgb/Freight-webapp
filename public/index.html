@@ -39,23 +39,45 @@
 <!-- HERO -->
 <section class="hero" id="home">
   <div class="hero-bg"></div>
+  <div class="hero-globe"></div>
   <div class="container hero-content">
-    <div class="hero-badge" data-i18n="hero.badge">🌏 บริการขนส่งครบวงจร 50+ ประเทศ</div>
-    <h1 class="hero-title" data-i18n="hero.title">ขนส่งสินค้าระหว่างประเทศ<br><span class="gradient-text">ปลอดภัย รวดเร็ว คุ้มค่า</span></h1>
-    <p class="hero-desc" data-i18n="hero.desc">บริการขนส่งสินค้าทางเรือ ทางอากาศ และทางบก ครบครัน ด้วยประสบการณ์กว่า 15 ปี พร้อมให้คำปรึกษาด้านพิธีการศุลกากรและเอกสารนำเข้า-ส่งออก</p>
-    <div class="hero-actions">
-      <button class="btn-primary btn-lg" onclick="scrollToSection('quote')" data-i18n="hero.btn1">📦 ขอใบเสนอราคา</button>
-      <button class="btn-outline btn-lg" onclick="scrollToSection('tracking')" data-i18n="hero.btn2">🔍 ติดตามสินค้า</button>
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      INTERNATIONAL FREIGHT SOLUTIONS
     </div>
-    <div class="hero-stats">
-      <div class="stat"><span class="stat-num">50+</span><span class="stat-label" data-i18n="hero.stat1">ประเทศทั่วโลก</span></div>
-      <div class="stat"><span class="stat-num">15,000+</span><span class="stat-label" data-i18n="hero.stat2">ลูกค้าพึงพอใจ</span></div>
-      <div class="stat"><span class="stat-num">99.2%</span><span class="stat-label" data-i18n="hero.stat3">ส่งตรงเวลา</span></div>
-      <div class="stat"><span class="stat-num">24/7</span><span class="stat-label" data-i18n="hero.stat4">บริการลูกค้า</span></div>
+    <h1 class="hero-title" data-i18n="hero.title">
+      We Move<br><span class="hero-title-gold">What Matters.</span>
+    </h1>
+    <p class="hero-desc" data-i18n="hero.desc">บริการโลจิสติกส์ระหว่างประเทศครบวงจร ทางเรือ ทางอากาศ และทางบก ด้วยทีมผู้เชี่ยวชาญพิธีการศุลกากรกว่า 15 ปี</p>
+    <div class="hero-actions">
+      <button class="btn-hero-primary" onclick="scrollToSection('tools')">เริ่มคำนวณต้นทุน →</button>
+      <button class="btn-hero-outline" onclick="scrollToSection('contact')">ปรึกษาผู้เชี่ยวชาญ</button>
     </div>
   </div>
-  <div class="hero-wave">
-    <svg viewBox="0 0 1200 100" preserveAspectRatio="none"><path d="M0,50 C300,100 900,0 1200,50 L1200,100 L0,100 Z" fill="#f8fafc"/></svg>
+  <div class="hero-stats-band">
+    <div class="container">
+      <div class="hero-stats-grid">
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-count="50">0</span><span class="hero-stat-unit">+</span>
+          <span class="hero-stat-label">ประเทศทั่วโลก</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-count="15000">0</span><span class="hero-stat-unit">+</span>
+          <span class="hero-stat-label">Shipments Delivered</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-num" data-count="99" data-decimal="true">0</span><span class="hero-stat-unit">%</span>
+          <span class="hero-stat-label">On-Time Delivery</span>
+        </div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">15</span><span class="hero-stat-unit">yr</span>
+          <span class="hero-stat-label">Industry Experience</span>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
@@ -1508,6 +1530,32 @@ async function submitLineInquiry(e) {
     btn.disabled = false; btn.textContent = '📲 ส่งข้อมูล — แจ้งทีมงาน LINE';
   }
 }
+
+// ─── Counter Animation ─────────────────────────────────────────────────────
+function animateCounters() {
+  const nums = document.querySelectorAll('.hero-stat-num[data-count]');
+  nums.forEach(el => {
+    const target = parseInt(el.dataset.count);
+    const isDecimal = el.dataset.decimal === 'true';
+    const duration = 2000;
+    const start = performance.now();
+    function update(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - progress, 3);
+      const value = Math.floor(ease * target);
+      el.textContent = isDecimal ? (value + '.2') : value.toLocaleString('th-TH');
+      if (progress < 1) requestAnimationFrame(update);
+      else el.textContent = isDecimal ? target + '.2' : target.toLocaleString('th-TH');
+    }
+    requestAnimationFrame(update);
+  });
+}
+// Run counter when hero is visible
+const heroObserver = new IntersectionObserver((entries) => {
+  if (entries[0].isIntersecting) { animateCounters(); heroObserver.disconnect(); }
+}, { threshold: 0.3 });
+const heroEl = document.getElementById('home');
+if (heroEl) heroObserver.observe(heroEl);
 
 function sendRegEmail() {
   const d = _regData;
