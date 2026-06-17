@@ -77,4 +77,16 @@ router.post('/', async (req, res) => {
   }
 });
 
+// ─── Service Inquiry → LINE Notify Admin ───────────────────────────────────
+router.post('/service-inquiry', async (req, res) => {
+  try {
+    const { service, name, phone, message } = req.body;
+    if (!service) return res.status(400).json({ error: 'กรุณาระบุบริการ' });
+    await lineService.notifyServiceInquiry({ service, name, phone, message });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

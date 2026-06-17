@@ -310,8 +310,22 @@ async function broadcastBlog({ title, summary, slug, color, emoji, coverText }) 
   }]);
 }
 
+async function notifyServiceInquiry(s) {
+  return broadcastMessage([adminFlex({
+    emoji: '🔔', title: 'ลูกค้าสนใจบริการ', color: '#06C755',
+    rows: [
+      ['บริการ', s.service],
+      ['ชื่อ', s.name || '-'],
+      ['โทร', s.phone || '-'],
+      ['ข้อความ', s.message || '-'],
+      ['เวลา', new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })],
+    ],
+  })]);
+}
+
 module.exports = {
   sendBookingConfirmation, sendStatusUpdate, handleWebhook,
   pushMessage, broadcastMessage, broadcastBlog,
   notifyQuote, notifyBooking, notifyContact, notifyAlibaba, notifyProduct,
+  notifyServiceInquiry,
 };

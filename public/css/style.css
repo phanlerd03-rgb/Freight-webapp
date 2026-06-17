@@ -184,6 +184,15 @@ img { max-width: 100%; }
 .service-card:hover .btn-service, .service-card.featured .btn-service {
   background: linear-gradient(135deg, var(--accent), #1a8fd1); color: #fff;
 }
+.btn-line-inquiry {
+  background: #06C755 !important; color: #fff !important;
+  display: flex !important; align-items: center; justify-content: center; gap: 6px;
+  box-shadow: 0 3px 10px rgba(6,199,85,.3);
+}
+.btn-line-inquiry:hover { background: #04a847 !important; box-shadow: 0 5px 14px rgba(6,199,85,.4); }
+.service-card:hover .btn-line-inquiry, .service-card.featured .btn-line-inquiry {
+  background: #04a847 !important; color: #fff !important;
+}
 
 /* ===== QUOTE SECTION ===== */
 .quote-layout { display: grid; grid-template-columns: 1fr 360px; gap: 32px; align-items: start; }
