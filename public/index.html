@@ -1494,6 +1494,7 @@ function openLineInquiry(serviceName) {
   document.getElementById('li_serviceLabel').textContent = serviceName;
   document.getElementById('li_name').value = '';
   document.getElementById('li_phone').value = '';
+  document.getElementById('li_email').value = '';
   document.getElementById('li_message').value = '';
   document.getElementById('li_error').style.display = 'none';
   document.getElementById('li_success').style.display = 'none';
@@ -1513,6 +1514,7 @@ async function submitLineInquiry(e) {
     service:  document.getElementById('li_service').value,
     name:     document.getElementById('li_name').value.trim(),
     phone:    document.getElementById('li_phone').value.trim(),
+    email:    document.getElementById('li_email').value.trim(),
     message:  document.getElementById('li_message').value.trim(),
   };
   try {
@@ -1608,6 +1610,10 @@ function sendRegEmail() {
       <div style="margin-bottom:14px;">
         <label style="display:block;font-size:13px;font-weight:700;color:#1a2e44;margin-bottom:6px;">เบอร์โทรศัพท์ <span style="color:#dc2626">*</span></label>
         <input id="li_phone" type="tel" required placeholder="0XX-XXX-XXXX" style="width:100%;padding:11px 14px;border:1.5px solid #cdd8e8;border-radius:10px;font-size:14px;font-family:'Sarabun',sans-serif;color:#101f30;box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:14px;">
+        <label style="display:block;font-size:13px;font-weight:700;color:#1a2e44;margin-bottom:6px;">อีเมล (สำหรับตอบกลับ)</label>
+        <input id="li_email" type="email" placeholder="example@email.com" style="width:100%;padding:11px 14px;border:1.5px solid #cdd8e8;border-radius:10px;font-size:14px;font-family:'Sarabun',sans-serif;color:#101f30;box-sizing:border-box;">
       </div>
       <div style="margin-bottom:18px;">
         <label style="display:block;font-size:13px;font-weight:700;color:#1a2e44;margin-bottom:6px;">รายละเอียดเพิ่มเติม (ถ้ามี)</label>

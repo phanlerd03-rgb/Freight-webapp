@@ -311,16 +311,32 @@ async function broadcastBlog({ title, summary, slug, color, emoji, coverText }) 
 }
 
 async function notifyServiceInquiry(s) {
-  return broadcastMessage([adminFlex({
-    emoji: '🔔', title: 'ลูกค้าสนใจบริการ', color: '#06C755',
-    rows: [
-      ['บริการ', s.service],
-      ['ชื่อ', s.name || '-'],
-      ['โทร', s.phone || '-'],
-      ['ข้อความ', s.message || '-'],
-      ['เวลา', new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })],
-    ],
-  })]);
+  const rows = [
+    ['บริการ', s.service],
+    ['ชื่อ', s.name || '-'],
+    ['โทร', s.phone || '-'],
+    ['อีเมล', s.email || '-'],
+    ['ข้อความ', s.message || '-'],
+    ['เวลา', new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })],
+  ];
+
+  const flex = adminFlex({ emoji: '🔔', title: 'ลูกค้าสนใจบริการ', color: '#06C755', rows });
+
+  // เพิ่มปุ่ม "ตอบกลับทาง Email" ใน footer ถ้ามี email
+  if (s.email) {
+    const subject = encodeURIComponent(`[PIT Freight] ตอบกลับ: ${s.service}`);
+    const body = encodeURIComponent(`สวัสดีคุณ ${s.name || ''},\n\nขอบคุณที่สนใจบริการ ${s.service} ของเรา\n\n`);
+    const mailtoUrl = `mailto:${s.email}?subject=${subject}&body=${body}`;
+    flex.contents.footer = {
+      type: 'box', layout: 'vertical', spacing: 'sm', paddingAll: '12px',
+      contents: [{
+        type: 'button', style: 'primary', color: '#0071e3', height: 'sm',
+        action: { type: 'uri', label: '✉️ ตอบกลับทาง Email', uri: mailtoUrl },
+      }],
+    };
+  }
+
+  return broadcastMessage([flex]);
 }
 
 module.exports = {
