@@ -76,6 +76,7 @@ app.get('/admin', (req, res) => {
 
 // ===== LINE Rich Menu Pages =====
 app.get('/quote-form', (req, res) => {
+  res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(__dirname, 'public', 'quote-form.html'));
 });
 
