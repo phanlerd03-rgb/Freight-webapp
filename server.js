@@ -77,7 +77,111 @@ app.get('/admin', (req, res) => {
 // ===== LINE Rich Menu Pages =====
 app.get('/quote-form', (req, res) => {
   res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-  res.sendFile(path.join(__dirname, 'public', 'quote-form.html'));
+  res.set('Content-Type', 'text/html; charset=UTF-8');
+  res.send(`<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ขอใบเสนอราคา — PIT Freight</title>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Sarabun',sans-serif;background:#f0f4f8;color:#1e293b;min-height:100vh}
+    .header{background:linear-gradient(135deg,#04101e,#0a1e38);padding:18px 20px;display:flex;align-items:center;gap:12px}
+    .header-logo{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:22px}
+    .header-text h1{font-size:16px;font-weight:800;color:#fff}
+    .header-text p{font-size:12px;color:rgba(255,255,255,.55);margin-top:1px}
+    .card{background:#fff;margin:16px;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+    .card-title{background:linear-gradient(135deg,#04101e,#0d2b4e);padding:20px;display:flex;align-items:center;gap:10px}
+    .card-title h2{font-size:17px;font-weight:800;color:#fff}
+    .card-title p{font-size:13px;color:rgba(255,255,255,.65);margin-top:3px}
+    .gold-line{width:4px;height:42px;background:#c9a84c;border-radius:3px;flex-shrink:0}
+    .form-body{padding:20px}
+    .section-label{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#64748b;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0}
+    .section-label:first-child{margin-top:0}
+    .form-group{margin-bottom:14px}
+    .form-group label{display:block;font-size:13px;font-weight:700;color:#1e293b;margin-bottom:6px}
+    .req{color:#ef4444}
+    input,select,textarea{width:100%;padding:12px 14px;border:1.5px solid #cbd5e1;border-radius:10px;font-size:15px;font-family:'Sarabun',sans-serif;color:#1e293b;background:#f8fafc;transition:border-color .2s;-webkit-appearance:none}
+    input:focus,select:focus,textarea:focus{outline:none;border-color:#0d6efd;background:#fff;box-shadow:0 0 0 3px rgba(13,110,253,.1)}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .btn-submit{width:100%;padding:16px;background:linear-gradient(135deg,#c9a84c,#e6c96c);color:#04101e;font-size:16px;font-weight:800;border:none;border-radius:12px;cursor:pointer;margin-top:8px;box-shadow:0 4px 16px rgba(201,168,76,.4);transition:all .2s}
+    .btn-submit:active{transform:scale(.98)}
+    .btn-submit:disabled{opacity:.6;cursor:not-allowed}
+    .success-box{display:none;text-align:center;padding:40px 20px}
+    .success-icon{font-size:64px;margin-bottom:16px}
+    .success-box h3{font-size:20px;font-weight:800;color:#1e293b;margin-bottom:8px}
+    .success-box p{font-size:14px;color:#64748b;line-height:1.6}
+    .error-msg{display:none;margin-top:10px;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;font-size:13px;font-weight:600;padding:10px 14px;border-radius:8px}
+    .footer{text-align:center;padding:16px 20px 32px;font-size:12px;color:#94a3b8}
+    @media(max-width:400px){.form-row{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<div class="header">
+  <div class="header-logo">🚢</div>
+  <div class="header-text"><h1>PIT Freight</h1><p>INTERNATIONAL FREIGHT SERVICES</p></div>
+</div>
+<div class="card">
+  <div class="card-title">
+    <div class="gold-line"></div>
+    <div><h2>📋 ขอใบเสนอราคา</h2><p>กรอกข้อมูลด้านล่าง ทีมงานจะติดต่อกลับเร็วๆ นี้</p></div>
+  </div>
+  <div class="form-body">
+    <div class="success-box" id="successBox">
+      <div class="success-icon">✅</div>
+      <h3>ส่งข้อมูลเรียบร้อย!</h3>
+      <p>ทีมงาน PIT Freight ได้รับข้อมูลของคุณแล้ว<br>จะติดต่อกลับภายใน 24 ชั่วโมง</p>
+    </div>
+    <form id="qf">
+      <div class="section-label">ข้อมูลผู้ส่ง</div>
+      <div class="form-group"><label>ชื่อ-นามสกุล <span class="req">*</span></label><input type="text" name="name" placeholder="ชื่อของคุณ" required autocomplete="name"></div>
+      <div class="form-row">
+        <div class="form-group"><label>เบอร์โทร <span class="req">*</span></label><input type="tel" name="phone" placeholder="08x-xxx-xxxx" required></div>
+        <div class="form-group"><label>อีเมล</label><input type="email" name="email" placeholder="email@example.com"></div>
+      </div>
+      <div class="section-label">ข้อมูลการขนส่ง</div>
+      <div class="form-row">
+        <div class="form-group"><label>ต้นทาง <span class="req">*</span></label><input type="text" name="origin" placeholder="เมือง, ประเทศ" value="กรุงเทพฯ, Thailand" required></div>
+        <div class="form-group"><label>ปลายทาง <span class="req">*</span></label><input type="text" name="destination" placeholder="เมือง, ประเทศ" required></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>น้ำหนัก (kg) <span class="req">*</span></label><input type="number" name="weight" placeholder="0" min="0.1" step="0.1" required inputmode="decimal"></div>
+        <div class="form-group"><label>ขนาด (กxยxส cm)</label><input type="text" name="dimensions" placeholder="40x30x20"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>ประเภทสินค้า</label><select name="cargoType"><option>สินค้าทั่วไป</option><option>อิเล็กทรอนิกส์</option><option>อาหาร/เกษตร</option><option>เสื้อผ้า/แฟชั่น</option><option>เครื่องจักร/อุตสาหกรรม</option><option>เคมีภัณฑ์</option><option>สินค้ามีมูลค่าสูง</option><option>อื่นๆ</option></select></div>
+        <div class="form-group"><label>วิธีขนส่ง</label><select name="shippingMethod"><option value="sea">🚢 ทางเรือ</option><option value="air">✈️ ทางอากาศ</option><option value="express">⚡ Express</option><option value="road">🚛 ทางบก</option></select></div>
+      </div>
+      <div class="form-group"><label>หมายเหตุ</label><textarea name="notes" rows="3" placeholder="ระบุเงื่อนไขพิเศษ, Incoterms, หรือข้อมูลอื่นๆ..."></textarea></div>
+      <div class="error-msg" id="errMsg"></div>
+      <button type="submit" class="btn-submit" id="submitBtn">📨 ส่งขอใบเสนอราคา</button>
+    </form>
+  </div>
+</div>
+<div class="footer">PIT Freight — International Freight Services<br>โทร 063-446-7735 | phanlerd.03@gmail.com</div>
+<script>
+document.getElementById('qf').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const btn=document.getElementById('submitBtn');
+  const err=document.getElementById('errMsg');
+  err.style.display='none';btn.disabled=true;btn.textContent='⏳ กำลังส่ง...';
+  const fd=new FormData(this);
+  const msg=[fd.get('origin')&&fd.get('destination')?'ต้นทาง: '+fd.get('origin')+' → ปลายทาง: '+fd.get('destination'):'',fd.get('weight')?'น้ำหนัก: '+fd.get('weight')+' kg':'',fd.get('dimensions')?'ขนาด: '+fd.get('dimensions')+' cm':'',fd.get('cargoType')?'สินค้า: '+fd.get('cargoType'):'',fd.get('shippingMethod')?'วิธีขนส่ง: '+fd.get('shippingMethod'):'',fd.get('notes')?'หมายเหตุ: '+fd.get('notes'):''].filter(Boolean).join('\\n');
+  try{
+    const res=await fetch('/api/contact/service-inquiry',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({service:'ขอใบเสนอราคา',name:fd.get('name'),phone:fd.get('phone'),email:fd.get('email'),message:msg})});
+    if(!res.ok)throw new Error('เกิดข้อผิดพลาด กรุณาลองใหม่');
+    document.getElementById('qf').style.display='none';
+    document.getElementById('successBox').style.display='block';
+  }catch(ex){
+    err.textContent='❌ '+ex.message;err.style.display='block';
+    btn.disabled=false;btn.textContent='📨 ส่งขอใบเสนอราคา';
+  }
+});
+</script>
+</body>
+</html>`);
 });
 
 // ===== Debug / Test Notifications =====

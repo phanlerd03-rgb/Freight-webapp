@@ -39,7 +39,7 @@ const richMenuBody = {
       action: {
         type:  'uri',
         label: 'ขอใบเสนอราคา',
-        uri:   SITE + '/quote-form',
+        uri:   SITE + '/quote-form.html',
       },
     },
     // Row 1 — right: Services
