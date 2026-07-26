@@ -74,6 +74,11 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// ===== LINE Rich Menu Pages =====
+app.get('/quote-form', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'quote-form.html'));
+});
+
 // ===== Debug / Test Notifications =====
 app.get('/api/debug/test', async (req, res) => {
   const results = {};
