@@ -99,6 +99,30 @@ function readLabel(lang) {
   return lang === 'en' ? 'Read more →' : 'อ่านต่อ →';
 }
 
+// ── Incoterm full names ──────────────────────────────────
+const INCOTERM_NAMES = {
+  FOB: 'Free On Board',
+  CIF: 'Cost, Insurance & Freight',
+  EXW: 'Ex Works',
+  DDP: 'Delivered Duty Paid',
+  DAP: 'Delivered At Place',
+  FCA: 'Free Carrier',
+  CPT: 'Carriage Paid To',
+  CFR: 'Cost & Freight',
+  CIP: 'Carriage & Insurance Paid To',
+  DPU: 'Delivered At Place Unloaded',
+};
+
+// ── Category descriptions ────────────────────────────────
+const CAT_DESC = {
+  'คู่มือ':          'คู่มือสำหรับผู้ส่งออก-นำเข้า',
+  'ข่าวสาร':         'ข่าวสารโลจิสติกส์ล่าสุด',
+  'ราคา & โปรโมชัน': 'อัพเดทราคาและโปรโมชันพิเศษ',
+  'กฎระเบียบ':       'กฎหมายนำเข้า-ส่งออก',
+  'เคล็ดลับ':        'เทคนิคการส่งออกอย่างมืออาชีพ',
+  'Incoterms':       'คู่มือ Incoterms® 2020',
+};
+
 // ── Incoterm color map ───────────────────────────────────
 const TERM_STYLE = {
   FOB: { bg: 'linear-gradient(145deg,#0d2137 0%,#1a3a5c 100%)', accent: '#F5A623', shadow: 'rgba(245,166,35,.35)' },
@@ -142,17 +166,21 @@ function _makePlaceholderHtml(post, phClass) {
   const cs   = CAT_STYLE[post.category] || null;
 
   if (ts) {
+    const fullName = INCOTERM_NAMES[term] || '';
     return `<div class="${phClass} blog-cover-branded" style="background:${ts.bg}">` +
-      `<div class="bcc-term" style="color:${ts.accent};text-shadow:0 6px 28px ${ts.shadow}">${term}</div>` +
-      `<div class="bcc-line" style="background:${ts.accent}"></div>` +
       `<div class="bcc-badge">INCOTERMS® 2020</div>` +
+      `<div class="bcc-term" style="color:${ts.accent};text-shadow:0 8px 32px ${ts.shadow}">${term}</div>` +
+      `<div class="bcc-fullname" style="color:${ts.accent}">${fullName}</div>` +
+      `<div class="bcc-line" style="background:${ts.accent}"></div>` +
       `<div class="bcc-sub">PIT FREIGHT</div></div>`;
   }
   if (cs) {
+    const desc = CAT_DESC[post.category] || 'บทความด้านโลจิสติกส์';
     return `<div class="${phClass} blog-cover-branded" style="background:${cs.bg}">` +
       `<div class="bcc-cat-icon">${cs.icon}</div>` +
+      `<div class="bcc-cat-name" style="color:${cs.accent}">${post.category || 'บทความ'}</div>` +
       `<div class="bcc-line" style="background:${cs.accent}"></div>` +
-      `<div class="bcc-badge" style="color:rgba(255,255,255,.8)">${post.category || 'บทความ'}</div>` +
+      `<div class="bcc-cat-desc">${desc}</div>` +
       `<div class="bcc-sub">PIT FREIGHT</div></div>`;
   }
   return `<div class="${phClass}">${categoryEmoji(post.category)}</div>`;
