@@ -84,15 +84,15 @@ img { max-width: 100%; }
 }
 .btn-lang:hover { border-color: var(--accent); color: var(--accent); }
 .btn-nav-register {
-  background: #e4eaf2;
+  background: #c9a84c;
   border: none; padding: 10px 20px; border-radius: 9px; font-size: 14px; font-weight: 800;
-  cursor: pointer; font-family: 'Sarabun', sans-serif; color: #081624;
+  cursor: pointer; font-family: 'Sarabun', sans-serif; color: #04101e;
   transition: all .22s; white-space: nowrap; flex-shrink: 0;
-  letter-spacing: .2px;
+  letter-spacing: .2px; box-shadow: 0 2px 12px rgba(201,168,76,.4);
 }
 .btn-nav-register:hover {
-  background: #cdd8e8;
-  transform: translateY(-2px);
+  background: #d4b55a;
+  transform: translateY(-2px); box-shadow: 0 4px 18px rgba(201,168,76,.55);
 }
 
 /* ===== HERO ===== */
