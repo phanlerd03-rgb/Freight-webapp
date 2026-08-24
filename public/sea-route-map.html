@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แผนที่เส้นทางเดินเรือ & คำนวณเวลาขนส่งทางเรือ | PIT Freight</title>
+<meta name="description" content="เครื่องมือฟรีจาก PIT Freight — คำนวณเส้นทางเดินเรือ ระยะทาง และเวลาขนส่งสินค้าทางเรือ (Sea Freight Transit Time) บนภาพดาวเทียมจริง ครอบคลุมท่าเรือหลักไทย จีน อาเซียน ยุโรป อเมริกา พร้อม ETA และตำแหน่งเรือประมาณการแบบเรียลไทม์">
+<meta name="keywords" content="เส้นทางเดินเรือ, transit time ทางเรือ, ระยะเวลาขนส่งทางเรือ, sea freight, แหลมฉบัง, freight forwarder, ชิปปิ้ง, PIT Freight">
+<link rel="canonical" href="https://pitfreight.com/sea-route-map.html">
+<meta property="og:title" content="แผนที่เส้นทางเดินเรือ & คำนวณเวลาขนส่งทางเรือ | PIT Freight">
+<meta property="og:description" content="คำนวณระยะทางและ Transit Time ขนส่งทางเรือบนภาพดาวเทียม — แหลมฉบัง ↔ จีน อาเซียน ยุโรป อเมริกา ฟรีจาก PIT Freight">
+<meta property="og:url" content="https://pitfreight.com/sea-route-map.html">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🚢</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root{
+  --ocean:#071120; --panel:#0a1628; --panel2:#0e1e35;
+  --gold:#c9a227; --gold-soft:#e8d9a0; --ink:#e8eef7; --muted:#8aa3c0;
+  --good:#4fd1a1; --line:#1e3a5c;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--ocean);color:var(--ink);font-family:'Sarabun',sans-serif;min-height:100vh}
+h1,h2,h3,.kanit{font-family:'Kanit',sans-serif}
+
+/* ---------- Header ---------- */
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 22px;
+  background:linear-gradient(180deg,#0c1c33,#0a1628);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand .logo{width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#c9a227,#8a6d12);
+  display:flex;align-items:center;justify-content:center;font-family:'Kanit';font-weight:700;color:#0a1628;font-size:17px}
+.brand h1{font-size:19px;font-weight:600;letter-spacing:.3px}
+.brand h1 span{color:var(--gold)}
+.brand small{display:block;color:var(--muted);font-size:12px;font-weight:300}
+.clocks{display:flex;gap:18px;align-items:center}
+.clock{text-align:right}
+.clock .t{font-family:'Kanit';font-size:18px;font-weight:500;color:var(--gold-soft);font-variant-numeric:tabular-nums}
+.clock .z{font-size:11px;color:var(--muted)}
+.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--good);margin-right:6px;animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 #4fd1a166}70%{box-shadow:0 0 0 9px #4fd1a100}100%{box-shadow:0 0 0 0 #4fd1a100}}
+
+/* ---------- Layout ---------- */
+.wrap{max-width:1280px;margin:0 auto;padding:18px 18px 40px}
+.grid{display:grid;grid-template-columns:330px 1fr;gap:16px;align-items:start}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+
+/* ---------- Control card ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.card h2{font-size:16px;font-weight:600;color:var(--gold);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+label{display:block;font-size:12.5px;color:var(--muted);margin:10px 0 5px}
+select,input[type=date]{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:9px;
+  color:var(--ink);padding:10px 12px;font-family:'Sarabun';font-size:14.5px;outline:none}
+select:focus,input:focus{border-color:var(--gold)}
+.swap-row{display:flex;justify-content:center;margin:4px 0 -4px}
+.swap-btn{background:none;border:1px solid var(--line);color:var(--gold);border-radius:50%;width:32px;height:32px;
+  cursor:pointer;font-size:15px;transition:.2s}
+.swap-btn:hover{background:var(--gold);color:#0a1628}
+.speed-row{display:flex;gap:7px;margin-top:5px}
+.speed-btn{flex:1;background:var(--panel2);border:1px solid var(--line);border-radius:9px;color:var(--muted);
+  padding:8px 4px;cursor:pointer;font-family:'Sarabun';font-size:12.5px;text-align:center;transition:.15s}
+.speed-btn b{display:block;font-family:'Kanit';font-size:14px;color:var(--ink);font-weight:500}
+.speed-btn.on{border-color:var(--gold);background:#c9a2271a;color:var(--gold-soft)}
+.speed-btn.on b{color:var(--gold)}
+.calc-btn{width:100%;margin-top:16px;background:linear-gradient(135deg,#c9a227,#a4841a);border:none;border-radius:10px;
+  color:#0a1628;font-family:'Kanit';font-weight:600;font-size:16px;padding:12px;cursor:pointer;transition:.2s}
+.calc-btn:hover{filter:brightness(1.1)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.chip{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:20px;
+  padding:5px 11px;font-size:12px;cursor:pointer;transition:.15s;font-family:'Sarabun'}
+.chip:hover{border-color:var(--gold);color:var(--gold-soft)}
+.hint{font-size:11.5px;color:var(--muted);margin-top:12px;line-height:1.55}
+
+/* ---------- Map ---------- */
+.map-card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;position:relative}
+.map-head{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap;gap:8px}
+.map-head h2{font-size:15px;font-weight:500;color:var(--gold-soft)}
+.layer-btns{display:flex;gap:6px}
+.lbtn{background:var(--panel2);border:1px solid var(--line);color:var(--muted);border-radius:7px;
+  padding:5px 12px;cursor:pointer;font-size:12px;font-family:'Sarabun'}
+.lbtn.on{border-color:var(--gold);color:var(--gold-soft);background:#c9a2271a}
+#map{height:540px;width:100%;background:#0b1526}
+@media(max-width:900px){#map{height:420px}}
+.leaflet-container{font-family:'Sarabun',sans-serif}
+.leaflet-control-attribution{background:#0a1628cc !important;color:#8aa3c0 !important;font-size:10px !important}
+.leaflet-control-attribution a{color:#c9a227 !important}
+.leaflet-control-zoom a{background:#0e1e35 !important;color:#e8eef7 !important;border-color:#1e3a5c !important}
+.leaflet-control-zoom a:hover{color:#c9a227 !important}
+.port-tip{background:#0e1e35ee !important;border:1px solid #c9a227 !important;color:#e8d9a0 !important;
+  font-family:'Kanit' !important;font-weight:400 !important;border-radius:8px !important;box-shadow:0 3px 10px #0008 !important}
+.port-tip::before{border-top-color:#c9a227 !important}
+.port-label{background:transparent !important;border:none !important;box-shadow:none !important;
+  color:#fff !important;font-family:'Kanit' !important;font-size:12px !important;font-weight:500 !important;
+  text-shadow:0 1px 3px #000,0 0 8px #000 !important}
+.route-glow{stroke-linecap:round}
+.route-dash{stroke-dasharray:9 7;animation:dashmove 1.2s linear infinite;stroke-linecap:round}
+@keyframes dashmove{to{stroke-dashoffset:-16}}
+.ship-ico{position:relative;width:34px;height:34px}
+.ship-ico .ring{position:absolute;inset:0;border:2px solid #4fd1a1;border-radius:50%;animation:ring 1.8s ease-out infinite}
+@keyframes ring{0%{transform:scale(.25);opacity:.9}100%{transform:scale(1.15);opacity:0}}
+.ship-ico svg{position:absolute;left:50%;top:50%;translate:-50% -50%;filter:drop-shadow(0 1px 3px #000c)}
+
+/* ---------- Results ---------- */
+.results{display:none;margin-top:16px}
+.results.show{display:block;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi .v{font-family:'Kanit';font-size:22px;font-weight:600;color:var(--gold);margin-top:2px}
+.kpi .s{font-size:11.5px;color:var(--muted);margin-top:1px}
+.ticket{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-top:10px}
+.ticket .route-line{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.port-box .p{font-family:'Kanit';font-size:17px;font-weight:600}
+.port-box .d{font-size:12px;color:var(--muted)}
+.arrow{flex:1;min-width:70px;border-top:2px dashed var(--gold);position:relative;opacity:.7}
+.arrow::after{content:'⛴';position:absolute;top:-14px;left:50%;transform:translateX(-50%);font-size:15px}
+.via{font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.6}
+.via b{color:var(--gold-soft);font-weight:500}
+.transit-live{margin-top:12px;border-top:1px dashed var(--line);padding-top:12px;display:none}
+.transit-live.show{display:block}
+.pbar{height:8px;background:var(--panel2);border-radius:6px;overflow:hidden;margin:8px 0 6px}
+.pfill{height:100%;background:linear-gradient(90deg,#c9a227,#e8d9a0);border-radius:6px;transition:width .5s}
+.plabels{display:flex;justify-content:space-between;font-size:11.5px;color:var(--muted)}
+.pos-line{font-size:13px;color:var(--good);margin-top:6px}
+.disclaimer{font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.6}
+
+.home-btn{background:var(--panel2);border:1px solid var(--line);color:var(--gold-soft);border-radius:9px;
+  padding:8px 14px;font-size:13px;text-decoration:none;font-family:'Kanit';font-weight:400;transition:.2s}
+.home-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ---------- CTA ---------- */
+.cta{background:linear-gradient(135deg,#122444,#0e1e35);border:1px solid var(--gold);border-radius:14px;
+  padding:20px 22px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.cta h3{font-size:17px;font-weight:600;color:var(--gold-soft)}
+.cta p{font-size:13px;color:var(--muted);margin-top:3px}
+.cta-btns{display:flex;gap:9px;flex-wrap:wrap}
+.cta-btn{display:inline-block;text-decoration:none;font-family:'Kanit';font-weight:500;font-size:14px;
+  padding:10px 18px;border-radius:10px;transition:.2s}
+.cta-line{background:#06c755;color:#fff}
+.cta-line:hover{filter:brightness(1.08)}
+.cta-tel{background:linear-gradient(135deg,#c9a227,#a4841a);color:#0a1628}
+.cta-tel:hover{filter:brightness(1.1)}
+.cta-ai{background:var(--panel2);border:1px solid var(--line);color:var(--gold-soft)}
+.cta-ai:hover{border-color:var(--gold)}
+
+footer{border-top:1px solid var(--line);margin-top:28px;padding:20px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.9}
+footer b{color:var(--gold);font-family:'Kanit';font-weight:500}
+footer a{color:var(--gold-soft);text-decoration:none}
+footer a:hover{color:var(--gold)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">PIT</div>
+    <div>
+      <h1>PIT <span>Sea Route Map</span> · Satellite</h1>
+      <small>คำนวณเส้นทาง–ระยะทาง–เวลาขนส่งสินค้าทางเรือ บนภาพดาวเทียมจริง · Project International Trade Co., Ltd.</small>
+    </div>
+  </div>
+  <div class="clocks">
+    <div class="clock"><div class="t" id="clock-bkk">--:--:--</div><div class="z"><span class="live-dot"></span>กรุงเทพฯ (UTC+7)</div></div>
+    <div class="clock"><div class="t" id="clock-utc">--:--:--</div><div class="z">UTC</div></div>
+    <a href="https://pitfreight.com" class="home-btn">← หน้าหลัก</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="grid">
+
+    <!-- Controls -->
+    <div>
+      <div class="card">
+        <h2>⚓ วางแผนเส้นทาง</h2>
+        <label>ท่าเรือต้นทาง (Origin)</label>
+        <select id="origin"></select>
+        <div class="swap-row"><button class="swap-btn" id="swap" title="สลับต้นทาง-ปลายทาง">⇅</button></div>
+        <label>ท่าเรือปลายทาง (Destination)</label>
+        <select id="dest"></select>
+
+        <label>ความเร็วเรือ</label>
+        <div class="speed-row">
+          <button class="speed-btn" data-kn="14"><b>14 นอต</b>Slow steaming</button>
+          <button class="speed-btn on" data-kn="16.5"><b>16.5 นอต</b>มาตรฐาน</button>
+          <button class="speed-btn" data-kn="19"><b>19 นอต</b>Express</button>
+        </div>
+
+        <label>วันเรือออก (ETD)</label>
+        <input type="date" id="etd">
+
+        <button class="calc-btn" id="calc">🧭 คำนวณเส้นทาง</button>
+
+        <div class="chips" id="chips"></div>
+        <div class="hint">💡 คลิกหมุดท่าเรือบนแผนที่เพื่อเลือกต้นทาง → ปลายทางได้เลย · ซูมเข้าใกล้ ๆ จะเห็นท่าเรือจริงจากดาวเทียม 🛰️</div>
+      </div>
+    </div>
+
+    <!-- Map + results -->
+    <div>
+      <div class="map-card">
+        <div class="map-head">
+          <h2 id="map-title">🛰️ Satellite Chart — เส้นทางเดินเรือหลักของโลก</h2>
+          <div class="layer-btns">
+            <button class="lbtn on" id="ly-sat">🛰️ ดาวเทียม</button>
+            <button class="lbtn" id="ly-dark">🌑 Dark Chart</button>
+          </div>
+        </div>
+        <div id="map"></div>
+      </div>
+
+      <div class="results" id="results">
+        <div class="kpis">
+          <div class="kpi"><div class="l">ระยะทางเดินเรือ</div><div class="v" id="k-nm">–</div><div class="s" id="k-km">–</div></div>
+          <div class="kpi"><div class="l">เวลาเดินเรือ (Sailing)</div><div class="v" id="k-sail">–</div><div class="s" id="k-speed">–</div></div>
+          <div class="kpi"><div class="l">ประมาณการรวม*</div><div class="v" id="k-total">–</div><div class="s">รวมคลอง + รอเทียบท่า ~2 วัน</div></div>
+          <div class="kpi"><div class="l">ETA (ถึงปลายทาง)</div><div class="v" id="k-eta" style="font-size:17px">–</div><div class="s" id="k-etd">–</div></div>
+        </div>
+        <div class="ticket">
+          <div class="route-line">
+            <div class="port-box"><div class="p" id="t-o">–</div><div class="d">ต้นทาง</div></div>
+            <div class="arrow"></div>
+            <div class="port-box" style="text-align:right"><div class="p" id="t-d">–</div><div class="d">ปลายทาง</div></div>
+          </div>
+          <div class="via" id="t-via"></div>
+          <div class="transit-live" id="live">
+            <div style="font-family:'Kanit';font-size:14px;color:var(--good)"><span class="live-dot"></span>เรืออยู่ระหว่างเดินทาง — ตำแหน่งประมาณการแบบเรียลไทม์</div>
+            <div class="pbar"><div class="pfill" id="pfill" style="width:0%"></div></div>
+            <div class="plabels"><span id="p-pct">0%</span><span id="p-left">–</span></div>
+            <div class="pos-line" id="p-pos"></div>
+          </div>
+        </div>
+        <div class="disclaimer">* ระยะทางประมาณจากเส้นทางเดินเรือพาณิชย์หลัก (ผ่านช่องแคบ/คลองจริง) · เวลาจริงขึ้นอยู่กับตารางสายเรือ สภาพอากาศ ความแออัดของท่าเรือ และการ Transshipment · ตำแหน่งเรือเป็นการประมาณจากกำหนดการ ไม่ใช่ข้อมูล AIS สด · ภาพดาวเทียม © Esri World Imagery</div>
+
+        <div class="cta">
+          <div>
+            <h3>💬 อยากได้เรทค่าระวาง + ตารางเรือจริงของเส้นทางนี้?</h3>
+            <p>ทีม PIT Freight เช็คราคา FCL/LCL ตารางเรือ และดูแลพิธีการศุลกากรให้ครบจบในที่เดียว — ฟรี ไม่มีค่าใช้จ่าย</p>
+          </div>
+          <div class="cta-btns">
+            <a class="cta-btn cta-line" href="https://lin.ee/GdtXwYn" target="_blank" rel="noopener">💚 LINE Official</a>
+            <a class="cta-btn cta-ai" href="https://lin.ee/klJzmBg" target="_blank" rel="noopener">🤖 AI Assistant</a>
+            <a class="cta-btn cta-tel" href="tel:+66634467735">📞 063 446 7735</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <b>Project International Trade Co., Ltd.</b> — International Freight Services · บริการขนส่งสินค้าระหว่างประเทศครบวงจร ประสบการณ์ 15+ ปี<br>
+  👤 Ms. Thanyalak Phanlerd · 📞 <a href="tel:+66634467735">+66 63 446 7735</a> · LINE ID 0634467735 · WeChat 063 446 7735 · <a href="https://lin.ee/GdtXwYn" target="_blank" rel="noopener">💚 Official Line OA</a><br>
+  📍 26/134 หมู่บ้านกลางเมือง รามอินทรา-วงแหวน ท่าแร้ง, บางเขน, กรุงเทพฯ 10220 · <a href="https://pitfreight.com">🏠 pitfreight.com</a><br>
+  © 2026 Project International Trade. All rights reserved.
+</footer>
+
+<script>
+/* ================= Ports ================= */
+const PORTS = {
+  lcb:{n:'แหลมฉบัง',en:'Laem Chabang',c:'🇹🇭',g:'ไทย',lat:13.08,lon:100.88},
+  bkk:{n:'กรุงเทพฯ (คลองเตย)',en:'Bangkok',c:'🇹🇭',g:'ไทย',lat:13.70,lon:100.57},
+  sgp:{n:'สิงคโปร์',en:'Singapore',c:'🇸🇬',g:'อาเซียน',lat:1.26,lon:103.84},
+  pkl:{n:'พอร์ตกลัง',en:'Port Klang',c:'🇲🇾',g:'อาเซียน',lat:3.00,lon:101.39},
+  jkt:{n:'จาการ์ตา',en:'Jakarta',c:'🇮🇩',g:'อาเซียน',lat:-6.10,lon:106.88},
+  mnl:{n:'มะนิลา',en:'Manila',c:'🇵🇭',g:'อาเซียน',lat:14.58,lon:120.97},
+  hcm:{n:'โฮจิมินห์',en:'Ho Chi Minh',c:'🇻🇳',g:'อาเซียน',lat:10.75,lon:106.72},
+  hph:{n:'ไฮฟอง',en:'Haiphong',c:'🇻🇳',g:'อาเซียน',lat:20.85,lon:106.78},
+  hkg:{n:'ฮ่องกง',en:'Hong Kong',c:'🇭🇰',g:'จีน',lat:22.30,lon:114.17},
+  szx:{n:'เซินเจิ้น (เหยียนเถียน)',en:'Shenzhen',c:'🇨🇳',g:'จีน',lat:22.58,lon:114.30},
+  can:{n:'กว่างโจว (หนานซา)',en:'Guangzhou',c:'🇨🇳',g:'จีน',lat:22.75,lon:113.60},
+  xmn:{n:'เซี่ยเหมิน',en:'Xiamen',c:'🇨🇳',g:'จีน',lat:24.45,lon:118.07},
+  sha:{n:'เซี่ยงไฮ้',en:'Shanghai',c:'🇨🇳',g:'จีน',lat:31.23,lon:121.49},
+  ngb:{n:'หนิงโป',en:'Ningbo',c:'🇨🇳',g:'จีน',lat:29.87,lon:121.55},
+  tao:{n:'ชิงต่าว',en:'Qingdao',c:'🇨🇳',g:'จีน',lat:36.07,lon:120.32},
+  tsn:{n:'เทียนจิน',en:'Tianjin',c:'🇨🇳',g:'จีน',lat:38.99,lon:117.79},
+  dlc:{n:'ต้าเหลียน',en:'Dalian',c:'🇨🇳',g:'จีน',lat:38.92,lon:121.63},
+  khh:{n:'เกาสง',en:'Kaohsiung',c:'🇹🇼',g:'เอเชียตะวันออก',lat:22.61,lon:120.28},
+  pus:{n:'ปูซาน',en:'Busan',c:'🇰🇷',g:'เอเชียตะวันออก',lat:35.10,lon:129.04},
+  tyo:{n:'โตเกียว',en:'Tokyo',c:'🇯🇵',g:'เอเชียตะวันออก',lat:35.63,lon:139.79},
+  cmb:{n:'โคลัมโบ',en:'Colombo',c:'🇱🇰',g:'เอเชียใต้ / ตะวันออกกลาง',lat:6.95,lon:79.85},
+  maa:{n:'เจนไน',en:'Chennai',c:'🇮🇳',g:'เอเชียใต้ / ตะวันออกกลาง',lat:13.08,lon:80.29},
+  nsa:{n:'นาวาเชวา (มุมไบ)',en:'Nhava Sheva',c:'🇮🇳',g:'เอเชียใต้ / ตะวันออกกลาง',lat:18.95,lon:72.94},
+  jea:{n:'เจเบลอาลี (ดูไบ)',en:'Jebel Ali',c:'🇦🇪',g:'เอเชียใต้ / ตะวันออกกลาง',lat:25.01,lon:55.06},
+  rtm:{n:'รอตเตอร์ดัม',en:'Rotterdam',c:'🇳🇱',g:'ยุโรป',lat:51.95,lon:4.14},
+  ham:{n:'ฮัมบูร์ก',en:'Hamburg',c:'🇩🇪',g:'ยุโรป',lat:53.54,lon:9.98},
+  lax:{n:'ลอสแอนเจลิส / ลองบีช',en:'Los Angeles',c:'🇺🇸',g:'อเมริกา',lat:33.73,lon:-118.26},
+  nyc:{n:'นิวยอร์ก / นิวเจอร์ซีย์',en:'New York',c:'🇺🇸',g:'อเมริกา',lat:40.67,lon:-74.05},
+  syd:{n:'ซิดนีย์',en:'Sydney',c:'🇦🇺',g:'โอเชียเนีย',lat:-33.85,lon:151.20},
+};
+
+/* ================= Sea waypoints ================= */
+const WPS = {
+  gulf:{lat:8.3,lon:102.3}, scss:{lat:7.8,lon:108.3}, scs:{lat:14.0,lon:111.5},
+  tonkin:{lat:19.8,lon:107.3}, haine:{lat:17.3,lon:111.0}, prd:{lat:21.6,lon:114.6},
+  tw:{lat:24.3,lon:119.3,n:'ช่องแคบไต้หวัน'}, luzon:{lat:20.6,lon:121.6,n:'ช่องแคบลูซอน'},
+  ecs:{lat:28.5,lon:123.5}, yellow:{lat:35.8,lon:122.8}, bohai:{lat:38.4,lon:119.8},
+  korea:{lat:34.2,lon:128.8,n:'ช่องแคบเกาหลี'}, jps:{lat:34.2,lon:139.5},
+  pacm:{lat:38.0,lon:172.0,n:'มหาสมุทรแปซิฟิกเหนือ'}, pace:{lat:36.0,lon:-135.0},
+  mex:{lat:12.5,lon:-97.0}, panp:{lat:7.2,lon:-79.8,n:'คลองปานามา'}, pana:{lat:9.6,lon:-79.4},
+  carib:{lat:15.5,lon:-71.0,n:'ทะเลแคริบเบียน'}, atlus:{lat:34.5,lon:-74.5}, atlmid:{lat:42.0,lon:-45.0,n:'มหาสมุทรแอตแลนติกเหนือ'},
+  sg:{lat:1.15,lon:103.85,n:'ช่องแคบสิงคโปร์'}, malm:{lat:3.0,lon:100.6,n:'ช่องแคบมะละกา'}, maln:{lat:5.9,lon:97.2},
+  java:{lat:-5.6,lon:107.2}, lombok:{lat:-9.2,lon:116.2,n:'ช่องแคบลอมบอก'}, coral:{lat:-21.0,lon:155.5,n:'ทะเลคอรัล'},
+  sri:{lat:5.6,lon:80.4,n:'ตอนใต้ศรีลังกา'}, arab:{lat:12.8,lon:55.5,n:'ทะเลอาหรับ'},
+  hormuz:{lat:26.4,lon:56.7,n:'ช่องแคบฮอร์มุซ'}, oman:{lat:22.8,lon:60.3},
+  bab:{lat:12.4,lon:43.6,n:'ช่องแคบบับเอลมันเดบ'}, suezs:{lat:27.6,lon:33.9,n:'คลองสุเอซ'}, mede:{lat:31.6,lon:32.2},
+  medc:{lat:36.8,lon:14.8,n:'ทะเลเมดิเตอร์เรเนียน'}, gib:{lat:35.9,lon:-6.0,n:'ช่องแคบยิบรอลตาร์'}, portu:{lat:38.8,lon:-10.2},
+  chan:{lat:49.8,lon:-2.5,n:'ช่องแคบอังกฤษ'}, dover:{lat:51.3,lon:2.2}, german:{lat:54.2,lon:7.6},
+};
+
+const EDGES = [
+ ['lcb','gulf'],['bkk','gulf'],['gulf','sg'],['gulf','scss'],['scss','sg'],['scss','scs'],['hcm','scss'],
+ ['scs','prd'],['scs','luzon'],['scs','haine'],['haine','tonkin'],['hph','tonkin'],['haine','prd'],
+ ['mnl','scs'],['mnl','luzon'],
+ ['hkg','prd'],['szx','prd'],['can','prd'],['prd','tw'],['prd','luzon'],
+ ['xmn','tw'],['khh','tw'],['tw','ecs'],['sha','ecs'],['ngb','ecs'],
+ ['ecs','yellow'],['tao','yellow'],['bohai','yellow'],['tsn','bohai'],['dlc','bohai'],
+ ['yellow','korea'],['pus','korea'],['korea','ecs'],['korea','jps'],['ecs','jps'],['tyo','jps'],
+ ['luzon','jps'],['jps','pacm'],['luzon','pacm'],['pacm','pace'],['pace','lax'],['lax','mex'],['pace','mex'],
+ ['mex','panp'],['panp','pana'],['pana','carib'],['carib','atlus'],['atlus','nyc'],
+ ['sgp','sg'],['sg','malm'],['pkl','malm'],['malm','maln'],['maln','sri'],['cmb','sri'],['maa','sri'],
+ ['sri','arab'],['nsa','arab'],['jea','hormuz'],['hormuz','oman'],['oman','arab'],
+ ['arab','bab'],['bab','suezs'],['suezs','mede'],['mede','medc'],['medc','gib'],['gib','portu'],
+ ['portu','chan'],['chan','dover'],['rtm','dover'],['dover','german'],['ham','german'],
+ ['portu','atlmid'],['atlmid','atlus'],
+ ['jkt','java'],['java','sg'],['sg','lombok'],['lombok','coral'],['coral','syd'],
+];
+
+const NODE = id => PORTS[id] || WPS[id];
+
+/* ================= Geo math ================= */
+const R_NM = 3440.065, D2R = Math.PI/180;
+function havNM(a,b){
+  const dLat=(b.lat-a.lat)*D2R, dLon=(b.lon-a.lon)*D2R;
+  const s=Math.sin(dLat/2)**2 + Math.cos(a.lat*D2R)*Math.cos(b.lat*D2R)*Math.sin(dLon/2)**2;
+  return 2*R_NM*Math.asin(Math.sqrt(s));
+}
+function gcPoints(a,b,n){
+  const φ1=a.lat*D2R, λ1=a.lon*D2R, φ2=b.lat*D2R, λ2=b.lon*D2R;
+  const v1=[Math.cos(φ1)*Math.cos(λ1),Math.cos(φ1)*Math.sin(λ1),Math.sin(φ1)];
+  const v2=[Math.cos(φ2)*Math.cos(λ2),Math.cos(φ2)*Math.sin(λ2),Math.sin(φ2)];
+  const dot=Math.min(1,Math.max(-1,v1[0]*v2[0]+v1[1]*v2[1]+v1[2]*v2[2]));
+  const ω=Math.acos(dot); const pts=[];
+  for(let i=0;i<=n;i++){
+    const t=i/n; let x,y,z;
+    if(ω<1e-6){x=v1[0];y=v1[1];z=v1[2];}
+    else{
+      const A=Math.sin((1-t)*ω)/Math.sin(ω), B=Math.sin(t*ω)/Math.sin(ω);
+      x=A*v1[0]+B*v2[0]; y=A*v1[1]+B*v2[1]; z=A*v1[2]+B*v2[2];
+    }
+    pts.push({lat:Math.atan2(z,Math.hypot(x,y))/D2R, lon:Math.atan2(y,x)/D2R});
+  }
+  return pts;
+}
+
+/* ================= Dijkstra ================= */
+const ADJ = {};
+EDGES.forEach(([a,b])=>{
+  const d = havNM(NODE(a),NODE(b));
+  (ADJ[a]=ADJ[a]||[]).push([b,d]); (ADJ[b]=ADJ[b]||[]).push([a,d]);
+});
+function shortestPath(src,dst){
+  const dist={},prev={},vis={}; Object.keys(ADJ).forEach(k=>dist[k]=Infinity);
+  dist[src]=0;
+  while(true){
+    let u=null,best=Infinity;
+    for(const k in dist) if(!vis[k]&&dist[k]<best){best=dist[k];u=k;}
+    if(u===null||u===dst) break;
+    vis[u]=true;
+    for(const [v,w] of ADJ[u]||[]) if(dist[u]+w<dist[v]){dist[v]=dist[u]+w;prev[v]=u;}
+  }
+  if(!isFinite(dist[dst])) return null;
+  const path=[dst]; let c=dst; while(c!==src){c=prev[c];path.unshift(c);}
+  return {path, nm:dist[dst]};
+}
+
+/* ================= Leaflet map ================= */
+const map = L.map('map',{worldCopyJump:true, minZoom:2, zoomControl:true}).setView([20,110],3);
+
+const satLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{
+  maxZoom:18, attribution:'ภาพดาวเทียม © Esri, Maxar, Earthstar Geographics'
+}).addTo(map);
+const darkLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{
+  maxZoom:18, attribution:'© OpenStreetMap © CARTO', subdomains:'abcd'
+});
+/* ป้ายชื่อเมือง/ประเทศ ทับบนดาวเทียม */
+const refLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',{
+  maxZoom:18, attribution:''
+}).addTo(map);
+
+document.getElementById('ly-sat').onclick=e=>{
+  map.removeLayer(darkLayer); satLayer.addTo(map); refLayer.addTo(map); refLayer.bringToFront();
+  setBtn(e.target);
+};
+document.getElementById('ly-dark').onclick=e=>{
+  map.removeLayer(satLayer); map.removeLayer(refLayer); darkLayer.addTo(map);
+  setBtn(e.target);
+};
+function setBtn(b){document.querySelectorAll('.lbtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');}
+
+/* ================= Port markers ================= */
+const origin=document.getElementById('origin'), dest=document.getElementById('dest');
+const portMarkers={};
+let clickState=0;
+for(const id in PORTS){
+  const p=PORTS[id];
+  const m=L.circleMarker([p.lat,p.lon],{radius:5,color:'#0a1628',weight:1.5,fillColor:'#c9a227',fillOpacity:1}).addTo(map);
+  m.bindTooltip(`${p.c} ${p.n} · ${p.en}`,{className:'port-tip',direction:'top',offset:[0,-6]});
+  m.on('click',()=>{
+    if(clickState===0){origin.value=id;clickState=1;highlightSel();}
+    else{dest.value=id;clickState=0;calcRoute();}
+  });
+  portMarkers[id]=m;
+}
+function highlightSel(){
+  for(const id in portMarkers){
+    const sel=(id===origin.value||id===dest.value);
+    portMarkers[id].setStyle({radius:sel?8:5,fillColor:sel?'#e8d9a0':'#c9a227',color:sel?'#c9a227':'#0a1628',weight:sel?2.5:1.5});
+  }
+}
+
+/* ================= Controls ================= */
+function fillSelects(){
+  const groups={};
+  for(const id in PORTS){(groups[PORTS[id].g]=groups[PORTS[id].g]||[]).push(id);}
+  for(const sel of [origin,dest]){
+    for(const g in groups){
+      const og=document.createElement('optgroup');og.label=g;
+      groups[g].forEach(id=>{
+        const o=document.createElement('option');o.value=id;o.textContent=`${PORTS[id].c} ${PORTS[id].n}`;og.appendChild(o);
+      });
+      sel.appendChild(og);
+    }
+  }
+  origin.value='lcb'; dest.value='sha';
+}
+fillSelects();
+document.getElementById('swap').onclick=()=>{const t=origin.value;origin.value=dest.value;dest.value=t;calcRoute();};
+origin.onchange=dest.onchange=()=>highlightSel();
+
+let speedKn=16.5;
+document.querySelectorAll('.speed-btn').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.speed-btn').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); speedKn=parseFloat(b.dataset.kn);
+  if(currentRoute) calcRoute();
+});
+const etdInput=document.getElementById('etd');
+etdInput.valueAsDate=new Date();
+etdInput.onchange=()=>{if(currentRoute)calcRoute();};
+
+const POPULAR=[['lcb','sha','แหลมฉบัง→เซี่ยงไฮ้'],['lcb','szx','แหลมฉบัง→เซินเจิ้น'],['bkk','sgp','กรุงเทพ→สิงคโปร์'],
+  ['lcb','rtm','แหลมฉบัง→รอตเตอร์ดัม'],['lcb','lax','แหลมฉบัง→ลอสแอนเจลิส'],['lcb','jea','แหลมฉบัง→ดูไบ']];
+const chips=document.getElementById('chips');
+POPULAR.forEach(([o,d,t])=>{
+  const c=document.createElement('button');c.className='chip';c.textContent=t;
+  c.onclick=()=>{origin.value=o;dest.value=d;calcRoute();};chips.appendChild(c);
+});
+
+/* ================= Route calc + draw ================= */
+let currentRoute=null, shipAnim=null, routeLayers=[], shipMarker=null, endLabels=[];
+
+function samplePath(nodeIds){
+  const pts=[];
+  for(let i=0;i<nodeIds.length-1;i++){
+    const a=NODE(nodeIds[i]), b=NODE(nodeIds[i+1]);
+    const n=Math.max(2,Math.round(havNM(a,b)/120));
+    const seg=gcPoints(a,b,n);
+    pts.push(...(i?seg.slice(1):seg));
+  }
+  /* unwrap longitudes ให้ต่อเนื่องข้ามเส้นแบ่งวัน */
+  const upts=[pts[0]]; let off=0;
+  for(let i=1;i<pts.length;i++){
+    let lon=pts[i].lon+off;
+    while(lon-upts[i-1].lon>180){lon-=360;off-=360;}
+    while(lon-upts[i-1].lon<-180){lon+=360;off+=360;}
+    upts.push({lat:pts[i].lat,lon});
+  }
+  return upts;
+}
+
+function drawRoute(upts,o,d){
+  routeLayers.forEach(l=>map.removeLayer(l)); routeLayers=[];
+  endLabels.forEach(l=>map.removeLayer(l)); endLabels=[];
+  const latlngs=upts.map(p=>[p.lat,p.lon]);
+  routeLayers.push(L.polyline(latlngs,{color:'#c9a227',weight:9,opacity:.28,className:'route-glow'}).addTo(map));
+  routeLayers.push(L.polyline(latlngs,{color:'#ffe9a8',weight:2.5,opacity:.95,className:'route-dash'}).addTo(map));
+  /* ป้ายชื่อต้นทาง-ปลายทาง */
+  [[o,'⚓ '],[d,'🎯 ']].forEach(([id,ic])=>{
+    const p=PORTS[id];
+    endLabels.push(L.marker([p.lat,p.lon],{icon:L.divIcon({className:'port-label',html:ic+p.n,iconAnchor:[-10,8]}),interactive:false}).addTo(map));
+  });
+  map.fitBounds(L.latLngBounds(latlngs).pad(0.12));
+}
+
+function makeShip(){
+  if(shipMarker)map.removeLayer(shipMarker);
+  shipMarker=L.marker([0,0],{icon:L.divIcon({
+    className:'', iconSize:[34,34], iconAnchor:[17,17],
+    html:`<div class="ship-ico"><div class="ring"></div>
+      <svg id="ship-svg" width="20" height="20" viewBox="-10 -10 20 20">
+        <path d="M0,-8 L5,5 L0,2.5 L-5,5 Z" fill="#4fd1a1" stroke="#062018" stroke-width="1"/>
+      </svg></div>`
+  }),interactive:false}).addTo(map);
+}
+function placeShip(upts,frac){
+  const cum=[0];
+  for(let i=1;i<upts.length;i++)cum.push(cum[i-1]+havNM(upts[i-1],upts[i]));
+  const target=frac*cum[cum.length-1];
+  let i=1; while(i<cum.length-1&&cum[i]<target)i++;
+  const t=(target-cum[i-1])/Math.max(1e-6,(cum[i]-cum[i-1]));
+  const a=upts[i-1],b=upts[i];
+  const lat=a.lat+(b.lat-a.lat)*t, lon=a.lon+(b.lon-a.lon)*t;
+  shipMarker.setLatLng([lat,lon]);
+  const ang=Math.atan2(b.lon-a.lon,b.lat-a.lat)*180/Math.PI;
+  const sv=shipMarker.getElement()?.querySelector('#ship-svg');
+  if(sv)sv.style.transform=`rotate(${ang}deg)`;
+  return {lat,lon};
+}
+
+const thDate=d=>d.toLocaleDateString('th-TH',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+const fmt=(n,d=0)=>n.toLocaleString('th-TH',{maximumFractionDigits:d});
+
+function calcRoute(){
+  const o=origin.value, d=dest.value;
+  if(o===d){alert('กรุณาเลือกท่าเรือต้นทางและปลายทางที่ต่างกัน');return;}
+  const r=shortestPath(o,d);
+  if(!r){alert('ไม่พบเส้นทางระหว่างท่าเรือคู่นี้');return;}
+  highlightSel();
+
+  const upts=samplePath(r.path);
+  drawRoute(upts,o,d);
+  makeShip();
+
+  const has=id=>r.path.includes(id);
+  let canalDays=0; const canals=[];
+  if(has('suezs')&&has('mede')){canalDays+=1;canals.push('คลองสุเอซ');}
+  if(has('panp')&&has('pana')){canalDays+=1;canals.push('คลองปานามา');}
+
+  const sailDays=r.nm/(speedKn*24);
+  const bufferDays=2;
+  const totalDays=sailDays+canalDays+bufferDays;
+
+  const etd=etdInput.valueAsDate||new Date();
+  etd.setHours(12,0,0,0);
+  const eta=new Date(etd.getTime()+totalDays*86400000);
+
+  document.getElementById('k-nm').textContent=fmt(r.nm)+' nm';
+  document.getElementById('k-km').textContent='≈ '+fmt(r.nm*1.852)+' กม.';
+  document.getElementById('k-sail').textContent=fmt(sailDays,1)+' วัน';
+  document.getElementById('k-speed').textContent='ที่ความเร็ว '+speedKn+' นอต';
+  document.getElementById('k-total').textContent=fmt(totalDays,1)+' วัน';
+  document.getElementById('k-eta').textContent=thDate(eta);
+  document.getElementById('k-etd').textContent='ออก '+thDate(etd);
+  document.getElementById('t-o').textContent=PORTS[o].c+' '+PORTS[o].n;
+  document.getElementById('t-d').textContent=PORTS[d].c+' '+PORTS[d].n;
+
+  const viaNames=[];
+  r.path.forEach(id=>{const w=WPS[id];if(w&&w.n&&!viaNames.includes(w.n))viaNames.push(w.n);});
+  document.getElementById('t-via').innerHTML=
+    (viaNames.length?('🧭 เส้นทางผ่าน: <b>'+viaNames.join(' → ')+'</b>'):'🧭 เส้นทางตรงในภูมิภาค')+
+    (canals.length?('<br>⚠️ ผ่าน <b>'+canals.join(', ')+'</b> — เผื่อเวลารอคิว/ค่าธรรมเนียมคลอง (+1 วัน/คลอง)'):'');
+
+  document.getElementById('results').classList.add('show');
+  document.getElementById('map-title').textContent=`🛰️ ${PORTS[o].en} → ${PORTS[d].en} · ${fmt(r.nm)} nm`;
+
+  currentRoute={upts,etd,eta};
+  startShip();
+}
+
+/* ================= Real-time ship ================= */
+function startShip(){
+  if(shipAnim)cancelAnimationFrame(shipAnim);
+  const live=document.getElementById('live');
+  function tick(ts){
+    const now=Date.now();
+    const {upts,etd,eta}=currentRoute;
+    if(now>=etd.getTime()&&now<eta.getTime()){
+      const frac=(now-etd.getTime())/(eta.getTime()-etd.getTime());
+      const pos=placeShip(upts,frac);
+      live.classList.add('show');
+      document.getElementById('pfill').style.width=(frac*100).toFixed(1)+'%';
+      document.getElementById('p-pct').textContent='เดินทางแล้ว '+(frac*100).toFixed(1)+'%';
+      const leftDays=(eta.getTime()-now)/86400000;
+      document.getElementById('p-left').textContent='เหลืออีก ~'+fmt(leftDays,1)+' วัน';
+      const nl=((pos.lon+540)%360)-180;
+      document.getElementById('p-pos').textContent=`📍 ตำแหน่งประมาณการ: ${Math.abs(pos.lat).toFixed(2)}°${pos.lat>=0?'N':'S'}, ${Math.abs(nl).toFixed(2)}°${nl>=0?'E':'W'}`;
+    }else{
+      live.classList.remove('show');
+      const frac=(ts%22000)/22000;
+      placeShip(upts,frac);
+    }
+    shipAnim=requestAnimationFrame(tick);
+  }
+  shipAnim=requestAnimationFrame(tick);
+}
+
+document.getElementById('calc').onclick=calcRoute;
+
+/* ================= Clocks ================= */
+function updClocks(){
+  const now=new Date();
+  document.getElementById('clock-bkk').textContent=now.toLocaleTimeString('th-TH',{timeZone:'Asia/Bangkok',hour12:false});
+  document.getElementById('clock-utc').textContent=now.toLocaleTimeString('th-TH',{timeZone:'UTC',hour12:false});
+}
+updClocks(); setInterval(updClocks,1000);
+
+/* initial demo */
+calcRoute();
+</script>
+</body>
+</html>
